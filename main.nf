@@ -672,7 +672,6 @@ process SAMTOOLS {
     """
 }
 
-
 include { FASTQ2FASTA } from './modules.nf'
 include { FASTQ2FASTA as FASTQ2FASTA_STEP1} from './modules.nf'
 include { NANOPLOT as QC_PRE_DATA_PROCESSING } from './modules.nf'
