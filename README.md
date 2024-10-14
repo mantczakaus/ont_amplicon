@@ -1,5 +1,4 @@
-# ONTViSc (ONT-based Viral Screening for Biosecurity)
-
+#ont_amplicon
 ## Introduction
 ## Pipeline overview
 ## Installation
