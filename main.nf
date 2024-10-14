@@ -9,16 +9,22 @@ def helpMessage () {
 
     Usage:
     Run the command
-    nextflow run ont_amplicon {optional arguments}...
+    nextflow run ont_amplicon {arguments}...
+
+    Required arguments:
+      --analysis_mode                 clustering, map2ref
+                                      Default: '' [required]
 
     Optional arguments:
-      -resume                           Resume a failed run
-      --outdir                          Path to save the output file
-                                        'results'
-      --samplesheet '[path/to/file]'    Path to the csv file that contains the list of
-                                        samples to be analysed by this pipeline.
-                                        Default:  'index.csv'
-      --help                            Will print this usage document
+      --help                          Will print this usage document
+      -resume                         Resume a failed run
+      --outdir                        Path to save the output file
+                                      'results'
+      --samplesheet '[path/to/file]'  Path to the csv file that contains the list of
+                                      samples to be analysed by this pipeline.
+                                      Default:  'index.csv'
+ 
+
     Contents of index.csv:
       sampleid,sample_files
       SAMPLE01,/user/folder/sample.fastq.gz
@@ -51,10 +57,6 @@ def helpMessage () {
                                       Default: ''
 
       #### Analysis mode and associated parameters ####
-      
-      --analysis_mode                 clustering, map2ref
-                                      Default: '' [required]
-
       ### Clustering (clustering) ###
       --rattle_clustering_options     Rattle clustering options
                                       Default: ''
@@ -671,34 +673,6 @@ process SAMTOOLS {
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 include { FASTQ2FASTA } from './modules.nf'
 include { FASTQ2FASTA as FASTQ2FASTA_STEP1} from './modules.nf'
 include { NANOPLOT as QC_PRE_DATA_PROCESSING } from './modules.nf'
@@ -713,7 +687,7 @@ workflow {
       .set{ ch_sample }
   } else { exit 1, "Input samplesheet file not specified!" }
 
-  if ( params.analysis_mode == 'clustering' & params.megablast)) {
+  if ( params.analysis_mode == 'clustering' & params.megablast) {
     if (!params.blast_vs_ref) {
       if ( params.blastn_db == null) {
         error("Please provide the path to a blast database using the parameter --blastn_db.")
@@ -742,8 +716,8 @@ workflow {
   }
 
   // Data pre-processing
-  // Remove adapters using either PORECHOP_ABI
   if (!params.qc_only) {
+    // Remove adapters using PORECHOP_ABI
     if (params.adapter_trimming) {
       PORECHOP_ABI ( fq )
       trimmed_fq = PORECHOP_ABI.out.porechopabi_trimmed_fq
@@ -821,12 +795,12 @@ workflow {
         EXTRACT_VIRAL_BLAST_HITS ( ASSEMBLY_BLASTN.out.blast_results )
         EXTRACT_REF_FASTA (EXTRACT_VIRAL_BLAST_HITS.out.blast_results2)
 
-        mapping_ch = EXTRACT_REF_FASTA.out.fasta_files.concat(REFORMAT.out.cov_derivation_ch).groupTuple().map { [it[0], it[1].flatten()] }//.view()
+        mapping_ch = EXTRACT_REF_FASTA.out.fasta_files.concat(REFORMAT.out.cov_derivation_ch).groupTuple().map { [it[0], it[1].flatten()] }
         MAPPING_BACK_TO_REF ( mapping_ch )
-        bamf_ch = MAPPING_BACK_TO_REF.out.bam_files.concat(MAPPING_BACK_TO_REF.out.bai_files, EXTRACT_REF_FASTA.out.fasta_files).groupTuple().map { [it[0], it[1].flatten()] }//.view()
+        bamf_ch = MAPPING_BACK_TO_REF.out.bam_files.concat(MAPPING_BACK_TO_REF.out.bai_files, EXTRACT_REF_FASTA.out.fasta_files).groupTuple().map { [it[0], it[1].flatten()] }
         MOSDEPTH (bamf_ch)
         COVERM (bamf_ch)
-        cov_stats_summary_ch = MOSDEPTH.out.mosdepth_results.concat(COVERM.out.coverm_results, EXTRACT_REF_FASTA.out.fasta_files, EXTRACT_VIRAL_BLAST_HITS.out.blast_results2, QC_PRE_DATA_PROCESSING.out.stats).groupTuple().map { [it[0], it[1].flatten()] }//.view()
+        cov_stats_summary_ch = MOSDEPTH.out.mosdepth_results.concat(COVERM.out.coverm_results, EXTRACT_REF_FASTA.out.fasta_files, EXTRACT_VIRAL_BLAST_HITS.out.blast_results2, QC_PRE_DATA_PROCESSING.out.stats).groupTuple().map { [it[0], it[1].flatten()] }
         COVSTATS(cov_stats_summary_ch)
 
         DETECTION_REPORT(COVSTATS.out.detections_summary.collect().ifEmpty([]))
