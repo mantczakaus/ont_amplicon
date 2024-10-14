@@ -1,4 +1,4 @@
-#ont_amplicon
+# ont_amplicon
 ## Introduction
 ## Pipeline overview
 ## Installation
