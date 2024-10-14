@@ -21,20 +21,6 @@ switch (workflow.containerEngine) {
     bindOptions = "";
 }
 
-process FASTQ2FASTA {
-  tag "${sampleid}"
-  label "setting_2"
-
-  input:
-  tuple val(sampleid), path(fastq)
-  output:
-  tuple val(sampleid), path("${sampleid}.fasta"), emit: fasta
-
-  script:
-  """
-  seqtk seq -A -C ${fastq} > ${sampleid}.fasta
-  """
-}
 
 process NANOPLOT {
   publishDir "${params.outdir}/${sampleid}/qc/nanoplot",  pattern: '{*NanoPlot-report.html}', mode: 'link'

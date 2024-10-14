@@ -103,12 +103,6 @@ if (params.reference != null) {
 if (params.host_fasta != null) {
     host_fasta_dir = file(params.host_fasta).parent
 }
-if (params.kaiju_nodes != null & params.kaiju_dbname != null & params.kaiju_names != null) {
-    kaiju_dbs_dir = file(params.kaiju_nodes).parent
-}
-if (params.krkdb != null) {
-    krkdb_dir = file(params.krkdb).parent
-}
 
 if (params.porechop_custom_primers == true) {
     porechop_custom_primers_dir = file(params.porechop_custom_primers_path).parent
@@ -133,17 +127,19 @@ switch (workflow.containerEngine) {
 }
 
 process BLASTN {
+  publishDir "${params.outdir}/${sampleid}/clustering/megablast", mode: 'copy', pattern: '*_megablast*_top_10_hits.txt'
   tag "${sampleid}"
   containerOptions "${bindOptions}"
   label "setting_10"
 
   input:
-    tuple val(sampleid), path(assembly)
+    tuple val(sampleid), path(assembly), path(most_abundant_clusters_ids)
   output:
-    tuple val(sampleid), path("${sampleid}*_blastn.bls"), emit: blast_results
+    path("${sampleid}*_megablast*_top_10_hits.txt")
+    tuple val(sampleid), path("${sampleid}*_megablast_top_10_hits.txt"), path(most_abundant_clusters_ids), emit: blast_results
 
   script:
-  def blastoutput = assembly.getBaseName() + "_blastn.bls"
+  def blast_output = assembly.getBaseName() + "_megablast_top_10_hits.txt"
   
   if (params.blast_mode == "ncbi") {
     """
@@ -151,11 +147,12 @@ process BLASTN {
     cp ${blastn_db_dir}/taxdb.bti .
     blastn -query ${assembly} \
       -db ${params.blastn_db} \
-      -out ${blastoutput} \
+      -out ${blast_output} \
       -evalue 1e-3 \
       -num_threads ${params.blast_threads} \
-      -outfmt '6 qseqid sgi sacc length pident mismatch gapopen qstart qend qlen sstart send slen sstrand evalue bitscore qcovhsp stitle staxids qseq sseq sseqid qcovs qframe sframe sscinames' \
-      -max_target_seqs 1
+      -outfmt '6 qseqid sgi sacc length nident pident mismatch gapopen qstart qend qlen sstart send slen sstrand evalue bitscore qcovhsp stitle staxids qseq sseq sseqid qcovs qframe sframe sscinames' \
+      -max_target_seqs 10
+
     """
   }
   
@@ -167,7 +164,7 @@ process BLASTN {
       -evalue 1e-3 \
       -num_threads ${params.blast_threads} \
       -outfmt '6 qseqid sgi sacc length pident mismatch gapopen qstart qend qlen sstart send slen sstrand evalue bitscore qcovhsp stitle staxids qseq sseq sseqid qcovs qframe sframe' \
-      -max_target_seqs 1
+      -max_target_seqs 10
     """
   }
 }
@@ -352,48 +349,31 @@ process EXTRACT_REF_FASTA {
     """
 }
 
-process EXTRACT_VIRAL_BLAST_HITS {
+process EXTRACT_BLAST_HITS {
+  publishDir "${params.outdir}/${sampleid}/clustering/megablast", mode: 'copy', pattern: '{*.txt,*.html}'
   tag "${sampleid}"
   label "setting_2"
-  publishDir "$params.outdir/$sampleid", mode: 'copy'
   containerOptions "${bindOptions}"
 
   input:
-    tuple val(sampleid), path(blast_results)
+    tuple val(sampleid), path(blast_results), path(most_abundant_clusters_ids)
 
   output:
-    file "*/*/${sampleid}*_blastn_top_hits.txt"
-    file "*/*/${sampleid}*_blastn_top_viral_hits*.txt"
-    file "*/*/${sampleid}*_blastn_top_viral_spp_hits.txt"
-    file "*/*/${sampleid}*_queryid_list_with_viral_match.txt"
-    file "*/*/${sampleid}*_viral_spp_abundance*.txt"
-    file "*/*/*report*html"
-
-    tuple val(sampleid), path("*/*/${sampleid}*_viral_spp_abundance.txt"), emit: blast_results
-    tuple val(sampleid), path("*/*/${sampleid}*_viral_spp_abundance_filtered.txt"), emit: blast_results_filt
-    tuple val(sampleid), path("*/*/${sampleid}*_blastn_top_viral_spp_hits.txt"), emit: blast_results2
+    file "${sampleid}_blastn_report*.txt"
+    file "${sampleid}*_blastn_top_hits.txt"
+    file "${sampleid}*_queryid_list_with_spp_match.txt"
+    file "${sampleid}*_spp_abundance*.txt"
+    file "*report*html"
 
   script:
     """
-    if [[ ${params.analysis_mode} == "clustering" ]] ;
-    then
-      mkdir -p clustering/blastn
-      cat ${blast_results} > clustering/blastn/${sampleid}_blastn.txt
-      cd clustering/blastn
-      select_top_blast_hit.py --sample_name ${sampleid} --blastn_results ${sampleid}_blastn.txt --analysis_method clustering --mode ${params.blast_mode}
-    elif [[ ${params.analysis_mode} == "denovo_assembly" ]] ;
-    then
-      mkdir -p assembly/blastn
-      cat ${blast_results} > assembly/blastn/${sampleid}_blastn.txt
-      cd assembly/blastn
-      select_top_blast_hit.py --sample_name ${sampleid} --blastn_results ${sampleid}_blastn.txt --analysis_method assembly --mode ${params.blast_mode}
-    elif [[ ${params.analysis_mode} == "read_classification" ]] ;
-    then
-      mkdir -p read_classification/homology_search
-      cat ${blast_results} > read_classification/homology_search/${sampleid}_blastn.txt
-      cd read_classification/homology_search
-      select_top_blast_hit.py --sample_name ${sampleid} --blastn_results ${sampleid}_blastn.txt --analysis_method read_classification --mode ${params.blast_mode}
-    fi
+    select_top_blast_hit.py --sample_name ${sampleid} --blastn_results ${blast_results} --ids ${most_abundant_clusters_ids} --mode ${params.blast_mode}
+    echo "# BLASTN 2.13.0+" > template.txt
+    echo "# Query: ${sampleid}" >> template.txt
+    echo "# Database: /scratch/datasets/blast_db/20240730/nt" >> template.txt
+    echo "# Fields: query acc., subject acc., subject title, evalue, q. start, q. end, s. start, s. end, bit score, alignment length, mismatches, % identity, identical, % query coverage per subject, subject seq, query seq" >> template.txt
+    echo "Top 10 hits reported" >> template.txt
+    cat  template.txt ${sampleid}_blastn_report.txt > ${sampleid}_blastn_report_ed.txt
     """
 }
 
@@ -420,6 +400,25 @@ process FASTCAT {
         | bgzip > ${sampleid}.fastq.gz
     """
 }
+
+process FASTQ2FASTA {
+  publishDir "${params.outdir}/${sampleid}/clustering/rattle", mode: 'copy', pattern: '*_rattle.fasta'
+  tag "${sampleid}"
+  label "setting_2"
+
+  input:
+  tuple val(sampleid), path(fastq)
+  output:
+  tuple val(sampleid), path("${sampleid}_rattle.fasta"), path("${sampleid}_most_abundant_clusters_ids.txt"), emit: fasta
+
+  script:
+  """
+  cut -f1,3 -d ' ' ${fastq} | sed 's/ total_reads=/_RC/' > ${sampleid}_tmp.fastq
+  grep '@cluster' transcriptome.fq  | cut -f1,3 -d ' '  | sed 's/total_reads=//' | sort -k2,2 -rn | sed 's/ /_RC/' | sed 's/@//' | head -n 10 > ${sampleid}_most_abundant_clusters_ids.txt
+  seqtk seq -A -C ${sampleid}_tmp.fastq > ${sampleid}_rattle.fasta
+  """
+}
+
 
 process FILTER_VCF {
   publishDir "${params.outdir}/${sampleid}/mapping", mode: 'copy'
@@ -603,7 +602,6 @@ process QCREPORT {
 }
 
 process RATTLE {
-  publishDir "${params.outdir}/${sampleid}/clustering/rattle", mode: 'copy', pattern: 'transcriptome.fq'
   tag "${sampleid}"
   label 'setting_7'
   containerOptions "${bindOptions}"
@@ -672,8 +670,6 @@ process SAMTOOLS {
     """
 }
 
-include { FASTQ2FASTA } from './modules.nf'
-include { FASTQ2FASTA as FASTQ2FASTA_STEP1} from './modules.nf'
 include { NANOPLOT as QC_PRE_DATA_PROCESSING } from './modules.nf'
 include { NANOPLOT as QC_POST_DATA_PROCESSING } from './modules.nf'
 
@@ -686,7 +682,7 @@ workflow {
       .set{ ch_sample }
   } else { exit 1, "Input samplesheet file not specified!" }
 
-  if ( params.analysis_mode == 'clustering' & params.megablast) {
+  if ( params.analysis_mode == 'clustering') {
     if (!params.blast_vs_ref) {
       if ( params.blastn_db == null) {
         error("Please provide the path to a blast database using the parameter --blastn_db.")
@@ -790,19 +786,19 @@ workflow {
         }
         //blast to database
         else {
-        ASSEMBLY_BLASTN ( contigs )
-        EXTRACT_VIRAL_BLAST_HITS ( ASSEMBLY_BLASTN.out.blast_results )
-        EXTRACT_REF_FASTA (EXTRACT_VIRAL_BLAST_HITS.out.blast_results2)
+        BLASTN ( contigs )
+        EXTRACT_BLAST_HITS ( BLASTN.out.blast_results )
+        //EXTRACT_REF_FASTA (EXTRACT_BLAST_HITS.out.blast_results2)
 
-        mapping_ch = EXTRACT_REF_FASTA.out.fasta_files.concat(REFORMAT.out.cov_derivation_ch).groupTuple().map { [it[0], it[1].flatten()] }
-        MAPPING_BACK_TO_REF ( mapping_ch )
-        bamf_ch = MAPPING_BACK_TO_REF.out.bam_files.concat(MAPPING_BACK_TO_REF.out.bai_files, EXTRACT_REF_FASTA.out.fasta_files).groupTuple().map { [it[0], it[1].flatten()] }
-        MOSDEPTH (bamf_ch)
-        COVERM (bamf_ch)
-        cov_stats_summary_ch = MOSDEPTH.out.mosdepth_results.concat(COVERM.out.coverm_results, EXTRACT_REF_FASTA.out.fasta_files, EXTRACT_VIRAL_BLAST_HITS.out.blast_results2, QC_PRE_DATA_PROCESSING.out.stats).groupTuple().map { [it[0], it[1].flatten()] }
-        COVSTATS(cov_stats_summary_ch)
+        //mapping_ch = EXTRACT_REF_FASTA.out.fasta_files.concat(REFORMAT.out.cov_derivation_ch).groupTuple().map { [it[0], it[1].flatten()] }
+        //MAPPING_BACK_TO_REF ( mapping_ch )
+        //bamf_ch = MAPPING_BACK_TO_REF.out.bam_files.concat(MAPPING_BACK_TO_REF.out.bai_files, EXTRACT_REF_FASTA.out.fasta_files).groupTuple().map { [it[0], it[1].flatten()] }
+        //MOSDEPTH (bamf_ch)
+        //COVERM (bamf_ch)
+        //cov_stats_summary_ch = MOSDEPTH.out.mosdepth_results.concat(COVERM.out.coverm_results, EXTRACT_REF_FASTA.out.fasta_files, EXTRACT_BLAST_HITS.out.blast_results2, QC_PRE_DATA_PROCESSING.out.stats).groupTuple().map { [it[0], it[1].flatten()] }
+        //COVSTATS(cov_stats_summary_ch)
 
-        DETECTION_REPORT(COVSTATS.out.detections_summary.collect().ifEmpty([]))
+        //DETECTION_REPORT(COVSTATS.out.detections_summary.collect().ifEmpty([]))
         }
       }
 
