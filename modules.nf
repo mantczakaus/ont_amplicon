@@ -20,24 +20,6 @@ switch (workflow.containerEngine) {
   default:
     bindOptions = "";
 }
-/*
-process MINIMAP2_ALIGN_DNA {
-  tag "${sampleid}"
-  label "setting_8"
-
-  input:
-  tuple val(sampleid), path(fastq)
-  path(reference)
-  output:
-  tuple val(sampleid), path(fastq), path("${sampleid}_unaligned_ids.txt"), emit: sequencing_ids
-
-  script:
-  """
-  minimap2 -ax map-ont -L ${reference} ${fastq} -t ${task.cpus} > ${sampleid}.sam
-  awk '\$6 == "*" { print \$0 }' ${sampleid}.sam | cut -f1 | uniq >  ${sampleid}_unaligned_ids.txt
-  """
-}
-*/
 
 process FASTQ2FASTA {
   tag "${sampleid}"
@@ -80,44 +62,4 @@ process NANOPLOT {
     NanoPlot -t 8 --fastq ${sample} --prefix ${sampleid}_raw_ --plots dot --N50 --tsv_stats
   fi
   """
-}
-
-process BLASTN {
-  tag "${sampleid}"
-  containerOptions "${bindOptions}"
-  label "setting_10"
-
-  input:
-    tuple val(sampleid), path(assembly)
-  output:
-    tuple val(sampleid), path("${sampleid}*_blastn.bls"), emit: blast_results
-
-  script:
-  def blastoutput = assembly.getBaseName() + "_blastn.bls"
-  
-  if (params.blast_mode == "ncbi") {
-    """
-    cp ${blastn_db_dir}/taxdb.btd .
-    cp ${blastn_db_dir}/taxdb.bti .
-    blastn -query ${assembly} \
-      -db ${params.blastn_db} \
-      -out ${blastoutput} \
-      -evalue 1e-3 \
-      -num_threads ${params.blast_threads} \
-      -outfmt '6 qseqid sgi sacc length pident mismatch gapopen qstart qend qlen sstart send slen sstrand evalue bitscore qcovhsp stitle staxids qseq sseq sseqid qcovs qframe sframe sscinames' \
-      -max_target_seqs 1
-    """
-  }
-  
-  else if (params.blast_mode == "localdb") {
-    """
-    blastn -query ${assembly} \
-      -db ${params.blastn_db} \
-      -out ${blastoutput} \
-      -evalue 1e-3 \
-      -num_threads ${params.blast_threads} \
-      -outfmt '6 qseqid sgi sacc length pident mismatch gapopen qstart qend qlen sstart send slen sstrand evalue bitscore qcovhsp stitle staxids qseq sseq sseqid qcovs qframe sframe' \
-      -max_target_seqs 1
-    """
-  }
 }
