@@ -133,10 +133,10 @@ process BLASTN {
   label "setting_10"
 
   input:
-    tuple val(sampleid), path(assembly), path(most_abundant_clusters_ids)
+    tuple val(sampleid), path(assembly)
   output:
     path("${sampleid}*_megablast*_top_10_hits.txt")
-    tuple val(sampleid), path("${sampleid}*_megablast_top_10_hits.txt"), path(most_abundant_clusters_ids), emit: blast_results
+    tuple val(sampleid), path("${sampleid}*_megablast_top_10_hits.txt"), emit: blast_results
 
   script:
   def blast_output = assembly.getBaseName() + "_megablast_top_10_hits.txt"
@@ -150,7 +150,7 @@ process BLASTN {
       -out ${blast_output} \
       -evalue 1e-3 \
       -num_threads ${params.blast_threads} \
-      -outfmt '6 qseqid sgi sacc length nident pident mismatch gapopen qstart qend qlen sstart send slen sstrand evalue bitscore qcovhsp stitle staxids qseq sseq sseqid qcovs qframe sframe sscinames' \
+      -outfmt '6 qseqid sgi sacc length nident pident mismatch gapopen qstart qend qlen sstart send slen sstrand evalue bitscore qcovhsp stitle staxids qseq sseq sseqid qcovs qframe sframe sscinames sskingdoms' \
       -max_target_seqs 10
 
     """
@@ -356,10 +356,9 @@ process EXTRACT_BLAST_HITS {
   containerOptions "${bindOptions}"
 
   input:
-    tuple val(sampleid), path(blast_results), path(most_abundant_clusters_ids)
+    tuple val(sampleid), path(blast_results)
 
   output:
-    file "${sampleid}_blastn_report*.txt"
     file "${sampleid}*_blastn_top_hits.txt"
     file "${sampleid}*_queryid_list_with_spp_match.txt"
     file "${sampleid}*_spp_abundance*.txt"
@@ -367,15 +366,19 @@ process EXTRACT_BLAST_HITS {
 
   script:
     """
-    select_top_blast_hit.py --sample_name ${sampleid} --blastn_results ${blast_results} --ids ${most_abundant_clusters_ids} --mode ${params.blast_mode}
-    echo "# BLASTN 2.13.0+" > template.txt
+    select_top_blast_hit.py --sample_name ${sampleid} --blastn_results ${blast_results} --mode ${params.blast_mode}
+    
+    """
+}
+
+/*
+echo "# BLASTN 2.13.0+" > template.txt
     echo "# Query: ${sampleid}" >> template.txt
     echo "# Database: /scratch/datasets/blast_db/20240730/nt" >> template.txt
     echo "# Fields: query acc., subject acc., subject title, evalue, q. start, q. end, s. start, s. end, bit score, alignment length, mismatches, % identity, identical, % query coverage per subject, subject seq, query seq" >> template.txt
     echo "Top 10 hits reported" >> template.txt
     cat  template.txt ${sampleid}_blastn_report.txt > ${sampleid}_blastn_report_ed.txt
-    """
-}
+*/
 
 process FASTCAT {
   publishDir "${params.outdir}/${sampleid}/qc/fastcat", mode: 'copy'
@@ -407,18 +410,46 @@ process FASTQ2FASTA {
   label "setting_2"
 
   input:
-  tuple val(sampleid), path(fastq)
+  tuple val(sampleid), path(fastq), path(assembly)
   output:
-  tuple val(sampleid), path("${sampleid}_rattle.fasta"), path("${sampleid}_most_abundant_clusters_ids.txt"), emit: fasta
+  tuple val(sampleid), path(fastq), path("${sampleid}_rattle.fasta"), emit: fasta
 
   script:
   """
-  cut -f1,3 -d ' ' ${fastq} | sed 's/ total_reads=/_RC/' > ${sampleid}_tmp.fastq
-  grep '@cluster' transcriptome.fq  | cut -f1,3 -d ' '  | sed 's/total_reads=//' | sort -k2,2 -rn | sed 's/ /_RC/' | sed 's/@//' | head -n 10 > ${sampleid}_most_abundant_clusters_ids.txt
+  cut -f1,3 -d ' ' ${assembly} | sed 's/ total_reads=/_RC/' > ${sampleid}_tmp.fastq
   seqtk seq -A -C ${sampleid}_tmp.fastq > ${sampleid}_rattle.fasta
   """
 }
+//grep '@cluster' transcriptome.fq  | cut -f1,3 -d ' '  | sed 's/total_reads=//' | sort -k2,2 -rn | sed 's/ /_RC/' | sed 's/@//' | head -n 10 > ${sampleid}_most_abundant_clusters_ids.txt
 
+process CONSENSUS_FILTER_VCF {
+  publishDir "${params.outdir}/${sampleid}/mapping", mode: 'copy'
+  tag "${sampleid}"
+  label 'setting_3'
+  containerOptions "${bindOptions}"
+
+  input:
+   tuple val(sampleid), path(vcf), path(assembly)
+
+  output:
+    path("${sampleid}_medaka.consensus.fasta")
+    path("${sampleid}_medaka.annotated.vcf.gz")
+    tuple val(sampleid), path("${sampleid}_medaka.consensus.fasta"), emit: fasta
+  script:
+    """
+    bcftools reheader ${vcf} -s <(echo '${sampleid}') \
+    | bcftools filter \
+        -e 'INFO/DP < ${params.bcftools_min_coverage}' \
+        -s LOW_DEPTH \
+        -Oz -o ${sampleid}_medaka.annotated.vcf.gz
+
+    # create consensus
+    bcftools index ${sampleid}_medaka.annotated.vcf.gz
+    bcftools consensus -f ${assembly} ${sampleid}_medaka.annotated.vcf.gz \
+        -i 'FILTER="PASS"' \
+        -o ${sampleid}_medaka.consensus.fasta
+    """
+}
 
 process FILTER_VCF {
   publishDir "${params.outdir}/${sampleid}/mapping", mode: 'copy'
@@ -497,22 +528,44 @@ process MEDAKA {
     """
 }
 
-process MINIMAP2_ALIGN_RNA {
+process MEDAKA_CONSENSUS {
+  publishDir "${params.outdir}/${sampleid}/mapping", mode: 'copy'
+  tag "${sampleid}"
+  label 'setting_3'
+  containerOptions "${bindOptions}"
+
+  input:
+   tuple val(sampleid), path(bam), path(bai), path(assembly)
+
+  output:
+    tuple val(sampleid), path("${sampleid}_medaka.annotated.unfiltered.vcf"), path(assembly), emit: unfilt_vcf
+
+  script:
+  def medaka_consensus_options = (params.medaka_consensus_options) ? " ${params.medaka_consensus_options}" : ''
+    """
+    medaka consensus ${bam} ${sampleid}_medaka_consensus_probs.hdf \
+      ${medaka_consensus_options} --threads ${task.cpus}
+
+    medaka variant ${assembly} ${sampleid}_medaka_consensus_probs.hdf ${sampleid}_medaka.vcf
+    medaka tools annotate --dpsp ${sampleid}_medaka.vcf ${assembly} ${bam} \
+          ${sampleid}_medaka.annotated.unfiltered.vcf
+    """
+}
+
+process MINIMAP2_ALIGN {
   tag "${sampleid}"
   label "setting_8"
   containerOptions "${bindOptions}"
 
   input:
-  tuple val(sampleid), path(fastq)
-  path(reference)
+  tuple val(sampleid), path(fastq), path(assembly)
   output:
-  tuple val(sampleid), path(fastq), path("${sampleid}_unaligned_ids.txt"), emit: sequencing_ids
+  tuple val(sampleid), path("${sampleid}.sam"), path(assembly), emit: aligned_sam
 
   script:
-  """
-  minimap2 -ax splice -uf -k14 -L ${reference} ${fastq} -t ${task.cpus} > ${sampleid}.sam
-  awk '\$6 == "*" { print \$0 }' ${sampleid}.sam | cut -f1 | sort | uniq >  ${sampleid}_unaligned_ids.txt
-  """
+    """
+    minimap2 -ax map-ont --sam-hit-only ${assembly} ${fastq} -t ${task.cpus} > ${sampleid}.sam
+    """
 }
 
 process MINIMAP2_REF {
@@ -612,7 +665,7 @@ process RATTLE {
   output:
     file("transcriptome.fq")
     tuple val(sampleid), path("transcriptome.fq"), emit: clusters
-    tuple val(sampleid), path(fastq), path("transcriptome.fq"), emit: clusters2
+    tuple val(sampleid), path("${fastq}"), path("transcriptome.fq"), emit: clusters2
 
   script:
   def rattle_polishing_options = (params.rattle_polishing_options) ? " ${params.rattle_polishing_options}" : ''
@@ -664,6 +717,30 @@ process SAMTOOLS {
   script:
     """
     samtools view -Sb -F 4 ${sample} | samtools sort -o ${sampleid}_aln.sorted.bam
+    samtools index ${sampleid}_aln.sorted.bam
+    samtools coverage ${sampleid}_aln.sorted.bam > ${sampleid}_histogram.txt  > ${sampleid}_coverage.txt
+    samtools coverage -A -w 50 ${sampleid}_aln.sorted.bam > ${sampleid}_histogram
+    """
+}
+
+process SAMTOOLS_ALIGN {
+  publishDir "${params.outdir}/${sampleid}/mapping", mode: 'copy'
+  tag "${sampleid}"
+  label 'setting_2'
+
+  input:
+    tuple val(sampleid), path(sam), path(assembly)
+
+  output:
+    path "${sampleid}_aln.sorted.bam"
+    path "${sampleid}_aln.sorted.bam.bai"
+    path "${sampleid}_coverage.txt"
+    path "${sampleid}_histogram"
+    tuple val(sampleid), path("${sampleid}_aln.sorted.bam"), path("${sampleid}_aln.sorted.bam.bai"), path(assembly), emit: sorted_bam
+
+  script:
+    """
+    samtools view -Sb -F 4 ${sam} | samtools sort -@ $task.cpus -o ${sampleid}_aln.sorted.bam
     samtools index ${sampleid}_aln.sorted.bam
     samtools coverage ${sampleid}_aln.sorted.bam > ${sampleid}_histogram.txt  > ${sampleid}_coverage.txt
     samtools coverage -A -w 50 ${sampleid}_aln.sorted.bam > ${sampleid}_histogram
@@ -735,7 +812,7 @@ workflow {
     if ( params.qual_filt & params.adapter_trimming | !params.qual_filt & params.adapter_trimming | params.qual_filt & !params.adapter_trimming) {
       QC_POST_DATA_PROCESSING ( filtered_fq )
     }
-
+/*
     if (params.host_filtering) {
       if ( params.host_fasta == null) {
         error("Please provide the path to a fasta file of host sequences that need to be filtered with the parameter --host_fasta.")
@@ -749,44 +826,52 @@ workflow {
     else {
       final_fq = REFORMAT.out.reformatted_fq
     }
+*/
 
-    if ( params.qual_filt & params.host_filtering | params.adapter_trimming & params.host_filtering ) {
+    final_fq = REFORMAT.out.reformatted_fq
+    //if ( params.qual_filt & params.host_filtering | params.adapter_trimming & params.host_filtering ) {
+    if ( params.qual_filt | params.adapter_trimming ) {
       ch_multiqc_files = Channel.empty()
       ch_multiqc_files = ch_multiqc_files.mix(QC_PRE_DATA_PROCESSING.out.read_counts.collect().ifEmpty([]))
-      ch_multiqc_files = ch_multiqc_files.mix(EXTRACT_READS.out.read_counts.collect().ifEmpty([]))
+//     ch_multiqc_files = ch_multiqc_files.mix(EXTRACT_READS.out.read_counts.collect().ifEmpty([]))
       ch_multiqc_files = ch_multiqc_files.mix(QC_POST_DATA_PROCESSING.out.read_counts.collect().ifEmpty([]))
       QCREPORT(ch_multiqc_files.collect())
     }
 
-    else if ( params.host_filtering & !params.adapter_trimming & !params.qual_filt ) {
-      ch_multiqc_files = Channel.empty()
-      ch_multiqc_files = ch_multiqc_files.mix(QC_PRE_DATA_PROCESSING.out.read_counts.collect().ifEmpty([]))
-      ch_multiqc_files = ch_multiqc_files.mix(EXTRACT_READS.out.read_counts.collect().ifEmpty([]))
-      QCREPORT(ch_multiqc_files.collect())
-    }
+//    else if ( params.host_filtering & !params.adapter_trimming & !params.qual_filt ) {
+//      ch_multiqc_files = Channel.empty()
+//      ch_multiqc_files = ch_multiqc_files.mix(QC_PRE_DATA_PROCESSING.out.read_counts.collect().ifEmpty([]))
+//      ch_multiqc_files = ch_multiqc_files.mix(EXTRACT_READS.out.read_counts.collect().ifEmpty([]))
+//     QCREPORT(ch_multiqc_files.collect())
+//    }
 
-    else if ( params.qual_filt & !params.host_filtering | params.adapter_trimming & !params.host_filtering) {
-      ch_multiqc_files = Channel.empty()
-      ch_multiqc_files = ch_multiqc_files.mix(QC_PRE_DATA_PROCESSING.out.read_counts.collect().ifEmpty([]))
-      ch_multiqc_files = ch_multiqc_files.mix(QC_POST_DATA_PROCESSING.out.read_counts.collect().ifEmpty([]))
-      QCREPORT(ch_multiqc_files.collect())
-    }
+//    else if ( params.qual_filt & !params.host_filtering | params.adapter_trimming & !params.host_filtering) {
+//      ch_multiqc_files = Channel.empty()
+//      ch_multiqc_files = ch_multiqc_files.mix(QC_PRE_DATA_PROCESSING.out.read_counts.collect().ifEmpty([]))
+//      ch_multiqc_files = ch_multiqc_files.mix(QC_POST_DATA_PROCESSING.out.read_counts.collect().ifEmpty([]))
+//      QCREPORT(ch_multiqc_files.collect())
+//    }
 
     if (!params.preprocessing_only) {
       
       if ( params.analysis_mode == 'clustering' ) {
         //Perform clustering using Rattle
         RATTLE ( final_fq )
-        FASTQ2FASTA( RATTLE.out.clusters )
-        contigs = FASTQ2FASTA.out.fasta 
+        FASTQ2FASTA( RATTLE.out.clusters2 )
+        //contigs = FASTQ2FASTA.out.fasta 
+
+        MINIMAP2_ALIGN ( FASTQ2FASTA.out.fasta )
+        SAMTOOLS_ALIGN ( MINIMAP2_ALIGN.out.aligned_sam )
+        MEDAKA_CONSENSUS ( SAMTOOLS_ALIGN.out.sorted_bam )
+        CONSENSUS_FILTER_VCF ( MEDAKA_CONSENSUS.out.unfilt_vcf )
 
         //limit blast homology search to a reference
         if (params.blast_vs_ref) {
-          BLASTN2REF ( contigs )
+          BLASTN2REF ( CONSENSUS_FILTER_VCF.out.fasta )
         }
         //blast to database
         else {
-        BLASTN ( contigs )
+        BLASTN ( CONSENSUS_FILTER_VCF.out.fasta )
         EXTRACT_BLAST_HITS ( BLASTN.out.blast_results )
         //EXTRACT_REF_FASTA (EXTRACT_BLAST_HITS.out.blast_results2)
 

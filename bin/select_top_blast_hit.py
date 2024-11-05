@@ -12,17 +12,17 @@ def main():
     parser.add_argument("--blastn_results", type=str)
     parser.add_argument("--sample_name", type=str)
     parser.add_argument("--mode", type=str)
-    parser.add_argument("--ids", type=str)
+#    parser.add_argument("--ids", type=str)
     args = parser.parse_args()
     
     blastn_results_path = args.blastn_results
     sample_name = args.sample_name
     mode = args.mode
-    ids = args.ids
+#    ids = args.ids
 
-    abundant_ids = pd.read_csv(ids, index_col=False, names=["qseqid"])
+#    abundant_ids = pd.read_csv(ids, index_col=False, names=["qseqid"])
     if mode == "ncbi":
-        blastn_results = pd.read_csv(blastn_results_path, sep="\t", index_col=False, names=["qseqid", "sgi", "sacc", "length", "nident", "pident", "mismatch", "gapopen", "qstart", "qend", "qlen", "sstart", "send", "slen", "sstrand", "evalue", "bitscore", "qcovhsp", "stitle", "staxids", "qseq", "sseq", "sseqid", "qcovs", "qframe", "sframe", "species"], dtype={"stitle": 'str', "staxids": 'str', "species": 'str'})
+        blastn_results = pd.read_csv(blastn_results_path, sep="\t", index_col=False, names=["qseqid", "sgi", "sacc", "length", "nident", "pident", "mismatch", "gapopen", "qstart", "qend", "qlen", "sstart", "send", "slen", "sstrand", "evalue", "bitscore", "qcovhsp", "stitle", "staxids", "qseq", "sseq", "sseqid", "qcovs", "qframe", "sframe", "species", "sskingdoms"], dtype={"stitle": 'str', "staxids": 'str', "species": 'str'})
         #remove synthetic construct hits
         blastn_results = blastn_results[~blastn_results["species"].str.contains("synthetic construct", na=False)]
 
@@ -34,15 +34,15 @@ def main():
         blastn_results['species'] = blastn_results['seq_desc'].str.split('|').str[1]
         blastn_results['species'] = blastn_results['species'].str.replace("Species:","")
         
-        blastn_results = blastn_results[["qseqid", "sgi", "sacc", "length", "pident", "mismatch", "gapopen", "qstart", "qend", "qlen", "sstart", "send", "slen", "sstrand", "evalue", "bitscore", "qcovhsp", "stitle", "staxids", "qseq", "sseq", "sseqid", "qcovs", "qframe", "sframe", "species"]]
+        blastn_results = blastn_results[["qseqid", "sacc", "length", "pident", "mismatch", "gapopen", "qstart", "qend", "qlen", "sstart", "send", "slen", "sstrand", "evalue", "bitscore", "qcovhsp", "stitle", "staxids", "qseq", "sseq", "sseqid", "qcovs", "qframe", "sframe", "species"]]
     #print(blastn_results.dtypes)
     #Fields: query acc., subject acc., subject title, evalue, q. start, q. end, s. start, s. end, bit score, alignment length, mismatches, % identity, identical, % query coverage per subject, subject seq, query seq
 
-    blastn_results_f = blastn_results[["qseqid", "sacc", "species", "stitle", "evalue", "qstart", "qend", "sstart", "send", "bitscore", "length", "mismatch",  "pident", "nident", "qcovs", "qseq", "sseq"]]
+#   blastn_results_f = blastn_results[["qseqid", "sacc", "species", "stitle", "evalue", "qstart", "qend", "sstart", "send", "bitscore", "length", "mismatch",  "pident", "nident", "qcovs", "qseq", "sseq"]]
     #dfs = (blastn_results_f, abundant_ids)
     #blastn_results_f_red = reduce(lambda left,right: pd.merge(left,right,on=["qseqid"],how='right'), dfs)
-    blastn_results_f_red = pd.merge(blastn_results_f, abundant_ids, how='right', on='qseqid')
-    blastn_results_f_red.to_csv(sample_name + "_blastn_report.txt", index=False, sep="\t")
+#    blastn_results_f_red = pd.merge(blastn_results_f, abundant_ids, how='right', on='qseqid')
+#    blastn_results_f_red.to_csv(sample_name + "_blastn_report.txt", index=False, sep="\t")
     blastn_top_hit = blastn_results.drop_duplicates(subset=["qseqid"], keep="first").copy()
     blastn_top_hit.to_csv(sample_name + "_blastn_top_hits.txt", index=False, sep="\t")
     
@@ -59,7 +59,7 @@ def main():
     spp = spp[["species", "sacc", "count", "qseqid"]].sort_values(["count"], ascending=[False])
     spp.to_csv(sample_name + "_queryid_list_with_spp_match.txt", index=False, sep="\t")
     
-    blastn_top_hit_f = blastn_top_hit[["qseqid", "qlen", "species", "sacc", "stitle", "slen", "length", "pident", "sstrand", "evalue", "bitscore", "qcovs"]]
+    blastn_top_hit_f = blastn_top_hit[["qseqid", "qlen", "species", "staxids", "sskingdoms", "sacc", "stitle", "slen", "length", "pident", "sstrand", "evalue", "bitscore", "qcovs"]]
     blastn_top_hit_spp = blastn_top_hit_f.sort_values(["evalue", "bitscore"], ascending=[True, False]).groupby("species", as_index=False).first().copy()
     blastn_top_hit_spp.to_csv(sample_name + "_blastn_top_spp_hits.txt", index=False, sep="\t")
     

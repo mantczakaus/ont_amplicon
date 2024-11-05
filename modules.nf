@@ -21,7 +21,6 @@ switch (workflow.containerEngine) {
     bindOptions = "";
 }
 
-
 process NANOPLOT {
   publishDir "${params.outdir}/${sampleid}/qc/nanoplot",  pattern: '{*NanoPlot-report.html}', mode: 'link'
   publishDir "${params.outdir}/${sampleid}/qc/nanoplot",  pattern: '{*NanoStats.txt}', mode: 'link'
