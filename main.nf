@@ -350,7 +350,7 @@ process EXTRACT_REF_FASTA {
 }
 
 process EXTRACT_BLAST_HITS {
-  publishDir "${params.outdir}/${sampleid}/clustering/megablast", mode: 'copy', pattern: '{*.txt,*.html}'
+  publishDir "${params.outdir}/${sampleid}/megablast", mode: 'copy', pattern: '{*.txt,*.html}'
   tag "${sampleid}"
   label "setting_2"
   containerOptions "${bindOptions}"
@@ -363,11 +363,12 @@ process EXTRACT_BLAST_HITS {
     file "${sampleid}*_queryid_list_with_spp_match.txt"
     file "${sampleid}*_spp_abundance*.txt"
     file "*report*html"
+    tuple val(sampleid), path("${sampleid}*_blastn_top_hits.txt"), emit: topblast, optional: true
+    tuple val(sampleid), path("${sampleid}*_blastn_top_hits.txt"), emit: topblast2, optional: true
 
   script:
     """
     select_top_blast_hit.py --sample_name ${sampleid} --blastn_results ${blast_results} --mode ${params.blast_mode}
-    
     """
 }
 
@@ -450,6 +451,49 @@ process CONSENSUS_FILTER_VCF {
         -o ${sampleid}_medaka.consensus.fasta
     """
 }
+
+process EXTRACT_TAXONOMY {
+  publishDir "${params.outdir}/${sampleid}/megablast", mode: 'copy', pattern: '{*.txt}'
+  tag "${sampleid}"
+  label 'setting_3'
+  containerOptions "${bindOptions}"
+
+  input:
+    tuple val(sampleid), path(blast_results)
+
+  output:
+    path("*taxonomy_file.txt"), optional: true
+    tuple val(sampleid), path("*taxonomy_file.txt"), emit: taxonomy, optional: true
+
+  script:
+    """
+    cut -f3 ${blast_results} | sed '1d' | sort | uniq > ids_to_retrieve.txt
+    if [ -s ids_to_retrieve.txt ]
+      then
+        for i in `cut -f1 ids_to_retrieve.txt`; do esearch -db nuccore -query "\${i}" | elink -target taxonomy | efetch -format native -mode xml | grep ScientificName | awk -F ">|<" 'BEGIN{ORS=", ";}{print \$3;}'  >> ${sampleid}_taxonomy_file.txt; printf "\t\$i" >> ${sampleid}_taxonomy_file.txt; printf "\n"  >> ${sampleid}_taxonomy_file.txt; done
+    fi
+    """
+}
+
+process FILTER_CONSENSUS {
+  publishDir "${params.outdir}/${sampleid}/megablast", mode: 'copy', pattern: '{*.txt}'
+  tag "${sampleid}"
+  label "setting_2"
+  containerOptions "${bindOptions}"
+
+  input:
+    tuple val(sampleid), val(spp_targets), val(gene_targets), val(size), path(taxonomy), path(blast_results)
+
+  output:
+    file "${sampleid}*blastn_top_hits_filtered.txt"
+
+  script:
+    """
+    filter_blast_results.py --sample_name ${sampleid} --acc_phylo_info ${taxonomy} --spp_targets ${spp_targets} --gene_targets ${gene_targets} --blastn_results ${blast_results} --mode ${params.blast_mode} --target_size ${size}
+    """
+}
+
+
 
 process FILTER_VCF {
   publishDir "${params.outdir}/${sampleid}/mapping", mode: 'copy'
@@ -757,7 +801,14 @@ workflow {
       .splitCsv(header:true)
       .map{ row-> tuple((row.sampleid), file(row.sample_files)) }
       .set{ ch_sample }
+    Channel
+      .fromPath(params.samplesheet, checkIfExists: true)
+      .splitCsv(header:true)
+      .map{ row-> tuple((row.sampleid), (row.spp_targets), (row.gene_targets), (row.target_size)) }
+      .set{ ch_targets }
+  
   } else { exit 1, "Input samplesheet file not specified!" }
+
 
   if ( params.analysis_mode == 'clustering') {
     if (!params.blast_vs_ref) {
@@ -873,6 +924,10 @@ workflow {
         else {
         BLASTN ( CONSENSUS_FILTER_VCF.out.fasta )
         EXTRACT_BLAST_HITS ( BLASTN.out.blast_results )
+        EXTRACT_TAXONOMY ( EXTRACT_BLAST_HITS.out.topblast )
+        ch_filter_for_targets = (ch_targets.join(EXTRACT_TAXONOMY.out.taxonomy))
+        ch_filter_for_targets = (ch_filter_for_targets.join(EXTRACT_BLAST_HITS.out.topblast2).view())
+        FILTER_CONSENSUS ( ch_filter_for_targets )
         //EXTRACT_REF_FASTA (EXTRACT_BLAST_HITS.out.blast_results2)
 
         //mapping_ch = EXTRACT_REF_FASTA.out.fasta_files.concat(REFORMAT.out.cov_derivation_ch).groupTuple().map { [it[0], it[1].flatten()] }
