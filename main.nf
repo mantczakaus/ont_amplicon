@@ -387,7 +387,7 @@ process EXTRACT_BLAST_HITS {
 
   script:
     """
-    select_top_blast_hit.py --sample_name ${sampleid} --blastn_results ${blast_results} --mode ${params.blast_mode}
+    select_top_blast_hit.py --sample_name ${sampleid} --blastn_results ${sampleid}_medaka.consensus_megablast_top_10_hits.txt --mode ${params.blast_mode}
     """
 }
 
