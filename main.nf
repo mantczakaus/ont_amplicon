@@ -96,6 +96,11 @@ if (params.blastn_db != null) {
     blastn_db_name = file(params.blastn_db).name
     blastn_db_dir = file(params.blastn_db).parent
 }
+if (params.blastn_16s != null) {
+    blastn_16s_name = file(params.blastn_16s).name
+    blastn_16s_dir = file(params.blastn_16s).parent
+}
+
 if (params.reference != null) {
     reference_name = file(params.reference).name
     reference_dir = file(params.reference).parent
@@ -114,6 +119,9 @@ switch (workflow.containerEngine) {
     if (params.blastn_db != null) {
       bindbuild = (bindbuild + "-B ${blastn_db_dir} ")
     }
+    if (params.blastn_16s != null) {
+      bindbuild = (bindbuild + "-B ${blastn_16s_dir} ")
+    }
     if (params.reference != null) {
       bindbuild = (bindbuild + "-B ${reference_dir} ")
     }
@@ -127,19 +135,20 @@ switch (workflow.containerEngine) {
 }
 
 process BLASTN {
-  publishDir "${params.outdir}/${sampleid}/clustering/megablast", mode: 'copy', pattern: '*_megablast*_top_10_hits.txt'
+  publishDir "${params.outdir}/${sampleid}/megablast", mode: 'copy', pattern: '*_megablast*_top_10_hits.txt'
   tag "${sampleid}"
   containerOptions "${bindOptions}"
   label "setting_10"
 
   input:
-    tuple val(sampleid), path(assembly)
+    tuple val(sampleid), path(assembly), val(gene_targets)
   output:
     path("${sampleid}*_megablast*_top_10_hits.txt")
-    tuple val(sampleid), path("${sampleid}*_megablast_top_10_hits.txt"), emit: blast_results
+    tuple val(sampleid), path("${sampleid}*_megablast*_top_10_hits.txt"), emit: blast_results
 
   script:
   def blast_output = assembly.getBaseName() + "_megablast_top_10_hits.txt"
+  def blast_output_16s = assembly.getBaseName() + "_megablast_16s_top_10_hits.txt"
   
   if (params.blast_mode == "ncbi") {
     """
@@ -153,9 +162,19 @@ process BLASTN {
       -outfmt '6 qseqid sgi sacc length nident pident mismatch gapopen qstart qend qlen sstart send slen sstrand evalue bitscore qcovhsp stitle staxids qseq sseq sseqid qcovs qframe sframe sscinames sskingdoms' \
       -max_target_seqs 10
 
+    if [ ${gene_targets} = "16s" ];
+    then
+      blastn -query ${assembly} \
+        -db ${params.blastn_16s} \
+        -out ${blast_output_16s} \
+        -evalue 1e-3 \
+        -num_threads ${params.blast_threads} \
+        -outfmt '6 qseqid sgi sacc length nident pident mismatch gapopen qstart qend qlen sstart send slen sstrand evalue bitscore qcovhsp stitle staxids qseq sseq sseqid qcovs qframe sframe sscinames sskingdoms' \
+        -max_target_seqs 10
+    fi
     """
   }
-  
+
   else if (params.blast_mode == "localdb") {
     """
     blastn -query ${assembly} \
@@ -704,7 +723,7 @@ process RATTLE {
   containerOptions "${bindOptions}"
 
   input:
-    tuple val(sampleid), path(fastq)
+    tuple val(sampleid), path(fastq), val(target_size)
 
   output:
     file("transcriptome.fq")
@@ -712,10 +731,18 @@ process RATTLE {
     tuple val(sampleid), path("${fastq}"), path("transcriptome.fq"), emit: clusters2
 
   script:
-  def rattle_polishing_options = (params.rattle_polishing_options) ? " ${params.rattle_polishing_options}" : ''
-  def rattle_clustering_options = (params.rattle_clustering_options) ? " ${params.rattle_clustering_options}" : ''
+  def rattle_clustering_options = params.rattle_clustering_options ?: ''
+  def rattle_polishing_options = params.rattle_polishing_options ?: ''
+  def rattle_clustering_min_length = params.rattle_clustering_min_length ?: ''
+  if (rattle_clustering_min_length == '') {
+    if (target_size.toInteger() < 300) {
+      rattle_clustering_min_length = '100'}
+    else {
+      rattle_clustering_min_length = '150'}
+  }
+
     """
-    rattle cluster -i ${fastq} -t ${task.cpus} ${rattle_clustering_options}  -o .
+    rattle cluster -i ${fastq} -t ${task.cpus} --lower-length ${rattle_clustering_min_length} ${rattle_clustering_options} -o .
     rattle cluster_summary -i ${fastq} -c clusters.out > ${sampleid}_cluster_summary.txt
     mkdir clusters
     rattle extract_clusters -i ${fastq} -c clusters.out -l ${sampleid} -o clusters --fastq
@@ -806,6 +833,17 @@ workflow {
       .splitCsv(header:true)
       .map{ row-> tuple((row.sampleid), (row.spp_targets), (row.gene_targets), (row.target_size)) }
       .set{ ch_targets }
+    Channel
+      .fromPath(params.samplesheet, checkIfExists: true)
+      .splitCsv(header:true)
+      .map{ row-> tuple((row.sampleid), (row.target_size)) }
+      .set{ ch_target_size }
+    Channel
+      .fromPath(params.samplesheet, checkIfExists: true)
+      .splitCsv(header:true)
+      .map{ row-> tuple((row.sampleid), (row.gene_targets)) }
+      .set{ ch_gene_targets }
+  
   
   } else { exit 1, "Input samplesheet file not specified!" }
 
@@ -907,7 +945,8 @@ workflow {
       
       if ( params.analysis_mode == 'clustering' ) {
         //Perform clustering using Rattle
-        RATTLE ( final_fq )
+        ch_fq_target_size = (final_fq.join(ch_target_size))//.view()
+        RATTLE ( ch_fq_target_size )
         FASTQ2FASTA( RATTLE.out.clusters2 )
         //contigs = FASTQ2FASTA.out.fasta 
 
@@ -922,11 +961,14 @@ workflow {
         }
         //blast to database
         else {
-        BLASTN ( CONSENSUS_FILTER_VCF.out.fasta )
+          
+        ch_gene_targets_for_blast = (CONSENSUS_FILTER_VCF.out.fasta.join(ch_gene_targets))
+        //BLASTN ( CONSENSUS_FILTER_VCF.out.fasta )
+        BLASTN ( ch_gene_targets_for_blast )
         EXTRACT_BLAST_HITS ( BLASTN.out.blast_results )
         EXTRACT_TAXONOMY ( EXTRACT_BLAST_HITS.out.topblast )
         ch_filter_for_targets = (ch_targets.join(EXTRACT_TAXONOMY.out.taxonomy))
-        ch_filter_for_targets = (ch_filter_for_targets.join(EXTRACT_BLAST_HITS.out.topblast2).view())
+        ch_filter_for_targets = (ch_filter_for_targets.join(EXTRACT_BLAST_HITS.out.topblast2))
         FILTER_CONSENSUS ( ch_filter_for_targets )
         //EXTRACT_REF_FASTA (EXTRACT_BLAST_HITS.out.blast_results2)
 
