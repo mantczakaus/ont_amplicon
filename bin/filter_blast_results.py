@@ -39,28 +39,48 @@ def main():
     phylo = pd.read_csv(acc_phylo_info, sep="\t", index_col=False, names=["phylogenetic_description", "sacc"])
     #blast_phylo = pd.merge(blast, phylo, how='left', on='sacc')
     #blast_phylo = blast.reset_index().merge(phylo,  how='left', on='sacc').set_index('qseqid')
-    blast_phylo = blast.reset_index().merge(phylo,  how='left', on='sacc')
-    blast_phylo = blast.merge(phylo,  how='left', on='sacc')
-    blast_phylo['stitle'] = blast_phylo['stitle'].str.replace(" ","_")
-    #blast_phylo['qlen'] = blast_phylo['qlen'].astype(int)
+
+    #blast_phylo = pd.DataFrame()
+    if len(phylo) > 0:
+        blast_phylo = blast.reset_index().merge(phylo,  how='left', on='sacc')
+        blast_phylo = blast.merge(phylo,  how='left', on='sacc')
+        blast_phylo['stitle'] = blast_phylo['stitle'].str.replace(" ","_")
+        #blast_phylo['qlen'] = blast_phylo['qlen'].astype(int)
+        #blast_phylo['phylogenetic_description'] = blast_phylo['phylogenetic_description'].str.replace(", ","_")
+        blast_phylo['sskingdoms_phylo'] = blast_phylo['sskingdoms'] + "_" + blast_phylo['phylogenetic_description']
+        blast_phylo['sskingdoms_phylo'] = blast_phylo['sskingdoms_phylo'].str.replace(", ","_").str.replace(" ","_")
+        print(blast_phylo)
+    else:
+        blast_phylo = blast
+        
+        blast_phylo.rename(columns={"sskingdoms": "sskingdoms_phylo"},inplace=True)
+        print(blast_phylo)
+
     blast_phylo['qlen'] = blast_phylo['qlen'].apply(pd.to_numeric, errors='coerce')
     #df['Age'] = df['Age'].apply(pd.to_numeric, errors='coerce')
-    blast_phylo['phylogenetic_description'] = blast_phylo['phylogenetic_description'].str.replace(", ","_")
-    print(blast_phylo)
+    
     #blast_phylo_f = blast_phylo[~blast_phylo["phylogenetic_description"].str.contains(spp_targets, na=False)]
     if gene_targets == "COI":
         gene_terms_to_search = ['mitochondrion', 'cytochrome_oxidase_subunit_1', 'cytochrome_c_oxidase_subunit_I', 'COX1', 'COI']
         #gene_terms_to_search[gene_terms_to_search.str.contains('|'.join(gene_terms_to_search))]
     elif gene_targets == "16s":
         gene_terms_to_search = ['chromosome']
-    if spp_targets == 'insect':
-        spp_terms_to_search = ('Insecta')
+    
+    
+        #blast_phylo["target_consensus"] = np.where((blast_phylo.stitle.str.contains("mitochondrion|cytochrome_oxidase_subunit_1|cytochrome_c_oxidase_subunit_I|(COX1)|(COI)")&(blast_phylo.phylogenetic_description.str.contains("Insecta"))), "Y", "N")
+    #blast_phylo["target_type_match"] = np.where((blast_phylo.stitle.str.contains('|'.join(gene_terms_to_search))&(blast_phylo.phylogenetic_description.str.contains(spp_terms_to_search))), "Y", "N")
+    blast_phylo["target_gene_match"] = np.where(blast_phylo.stitle.str.contains('|'.join(gene_terms_to_search)), "Y", "N")
+    
+    if spp_targets == 'Arthropoda':
+        spp_terms_to_search = ('Arthropoda')
     elif spp_targets == 'bacteria':
         spp_terms_to_search = ('Bacteria')
-        #blast_phylo["target_consensus"] = np.where((blast_phylo.stitle.str.contains("mitochondrion|cytochrome_oxidase_subunit_1|cytochrome_c_oxidase_subunit_I|(COX1)|(COI)")&(blast_phylo.phylogenetic_description.str.contains("Insecta"))), "Y", "N")
-    blast_phylo["target_type_match"] = np.where((blast_phylo.stitle.str.contains('|'.join(gene_terms_to_search))&(blast_phylo.phylogenetic_description.str.contains(spp_terms_to_search))), "Y", "N")
-    blast_phylo["target_size_match"] = np.where(abs(blast_phylo['qlen'] - (int(target_size))) < 50, "Y", "N")
+    blast_phylo["target_spp_match"] = np.where(blast_phylo.sskingdoms_phylo.str.contains(spp_terms_to_search), "Y", "N")
+        
+    #
+    #    blast_phylo["target_spp_match"] = np.where(blast_phylo.stitle.str.contains(blast_phylo.sskingdoms_phylo.str.contains(spp_terms_to_search)), "Y", "N")
     
+    blast_phylo["target_size_match"] = np.where(abs(blast_phylo['qlen'] - (int(target_size))) < 50, "Y", "N")
     #blastn_top_hit.to_csv(sample_name + "_blastn_top_hits.txt", index=False, sep="\t")
     #blast_phylo["real_orientation"] = np.where(blast_phylo.sstrand.str.contains("minus"), reverse_complement(blast_phylo.sstrand) , blast_phylo.sstrand)
     blast_phylo["real_orientation"] = blast_phylo.apply(lambda x: reverse_complement(x['sstrand'], x['qseq']), axis=1)

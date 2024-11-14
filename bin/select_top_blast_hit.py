@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import pandas as pd
 import argparse
+import os.path
 from functools import reduce
 
 
@@ -44,114 +45,114 @@ def main():
 #    blastn_results_f_red = pd.merge(blastn_results_f, abundant_ids, how='right', on='qseqid')
 #    blastn_results_f_red.to_csv(sample_name + "_blastn_report.txt", index=False, sep="\t")
     blastn_top_hit = blastn_results.drop_duplicates(subset=["qseqid"], keep="first").copy()
-    blastn_top_hit.to_csv(sample_name + "_blastn_top_hits.txt", index=False, sep="\t")
-    
+    #blastn_top_hit.to_csv(sample_name + "_blastn_top_hits.txt", index=False, sep="\t")
+    blastn_top_hit.to_csv(os.path.basename(blastn_results_path).replace("_top_10_hits.txt", "_blastn_top_hits.txt"), index=False, sep="\t")
     #derive read/contig count per spps
-    summary_per_spp = blastn_top_hit['species'].value_counts().rename_axis('species').reset_index(name='count')
-    summary_per_spp.to_csv(sample_name + "_spp_abundance.txt", index=False, sep="\t")
+    # summary_per_spp = blastn_top_hit['species'].value_counts().rename_axis('species').reset_index(name='count')
+    # summary_per_spp.to_csv(sample_name + "_spp_abundance.txt", index=False, sep="\t")
 
-    spp = blastn_top_hit[['sacc','species','qseqid']].copy()
-    spp['count'] = spp.groupby(['species', 'sacc'])['qseqid'].transform('size')
+    #spp = blastn_top_hit[['sacc','species','qseqid']].copy()
+    #spp['count'] = spp.groupby(['species', 'sacc'])['qseqid'].transform('size')
     #collapse all contigs to given accession number and species
-    f = lambda x: x.tolist() if len(x) > 1 else x
-    spp = spp.groupby(['species','sacc', 'count'])['qseqid'].agg(f).reset_index().reindex(spp.columns, axis=1)
+    #f = lambda x: x.tolist() if len(x) > 1 else x
+    #spp = spp.groupby(['species','sacc', 'count'])['qseqid'].agg(f).reset_index().reindex(spp.columns, axis=1)
     #reorder columns before saving
-    spp = spp[["species", "sacc", "count", "qseqid"]].sort_values(["count"], ascending=[False])
-    spp.to_csv(sample_name + "_queryid_list_with_spp_match.txt", index=False, sep="\t")
+    #spp = spp[["species", "sacc", "count", "qseqid"]].sort_values(["count"], ascending=[False])
+    #spp.to_csv(sample_name + "_queryid_list_with_spp_match.txt", index=False, sep="\t")
     
-    blastn_top_hit_f = blastn_top_hit[["qseqid", "qlen", "species", "staxids", "sskingdoms", "sacc", "stitle", "slen", "length", "pident", "sstrand", "evalue", "bitscore", "qcovs"]]
-    blastn_top_hit_spp = blastn_top_hit_f.sort_values(["evalue", "bitscore"], ascending=[True, False]).groupby("species", as_index=False).first().copy()
-    blastn_top_hit_spp.to_csv(sample_name + "_blastn_top_spp_hits.txt", index=False, sep="\t")
+    #blastn_top_hit_f = blastn_top_hit[["qseqid", "qlen", "species", "staxids", "sskingdoms", "sacc", "stitle", "slen", "length", "pident", "sstrand", "evalue", "bitscore", "qcovs"]]
+    #blastn_top_hit_spp = blastn_top_hit_f.sort_values(["evalue", "bitscore"], ascending=[True, False]).groupby("species", as_index=False).first().copy()
+    #blastn_top_hit_spp.to_csv(sample_name + "_blastn_top_spp_hits.txt", index=False, sep="\t")
     
-    summary_per_spp = summary_per_spp.to_html(index=False).replace('<table border="1" class="dataframe">','<table class="table table-striped">')
-    blastn_top_hit_spp = blastn_top_hit_spp.to_html(index=False).replace('<table border="1" class="dataframe">','<table class="table table-striped">')
-    spp = spp.to_html(index=False).replace('<table border="1" class="dataframe">','<table class="table table-striped">')
-    blastn_top_hit_f = blastn_top_hit_f.to_html(index=False).replace('<table border="1" class="dataframe">','<table class="table table-striped">')
-    html_string = '''
-    <html>
-        <head>
-            <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
-            <style>body{ margin:0 100; background:whitesmoke; }
-            .collapsible {
-            background-color: #777;
-            color: white;
-            cursor: pointer;
-            padding: 18px;
-            width: 100%;
-            border: none;
-            text-align: left;
-            outline: none;
-            font-size: 15px;
-            }
-            .active, .collapsible:hover {
-            background-color: #555;
-            }
-            .content {
-            padding: 0 18px;
-            display: none;
-            overflow: hidden;
-            background-color: #f1f1f1;
-            }
-            scroll-box {
-                        width: 1250px;
-                        height: 1250px;
-                        overflow: auto;
-                        border: 1px solid #ccc;
-            }
-            </style>
-        </head>
+    #summary_per_spp = summary_per_spp.to_html(index=False).replace('<table border="1" class="dataframe">','<table class="table table-striped">')
+    #blastn_top_hit_spp = blastn_top_hit_spp.to_html(index=False).replace('<table border="1" class="dataframe">','<table class="table table-striped">')
+    #spp = spp.to_html(index=False).replace('<table border="1" class="dataframe">','<table class="table table-striped">')
+    #blastn_top_hit_f = blastn_top_hit_f.to_html(index=False).replace('<table border="1" class="dataframe">','<table class="table table-striped">')
+    #html_string = '''
+    #<html>
+    #    <head>
+    #        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+    #        <style>body{ margin:0 100; background:whitesmoke; }
+    #        .collapsible {
+    #        background-color: #777;
+    #         color: white;
+    #         cursor: pointer;
+    #         padding: 18px;
+    #         width: 100%;
+    #         border: none;
+    #         text-align: left;
+    #         outline: none;
+    #         font-size: 15px;
+    #         }
+    #         .active, .collapsible:hover {
+    #         background-color: #555;
+    #         }
+    #         .content {
+    #         padding: 0 18px;
+    #         display: none;
+    #         overflow: hidden;
+    #         background-color: #f1f1f1;
+    #         }
+    #         scroll-box {
+    #                     width: 1250px;
+    #                     height: 1250px;
+    #                     overflow: auto;
+    #                     border: 1px solid #ccc;
+    #         }
+    #         </style>
+    #     </head>
 
-        <body>
-            <!-- Body Container -->
-            <div class="scroll-box">
-                <div class="container">
-                    <h1>Homology blast results</h1>
-                    <button type="button" class="collapsible"> All blast results</button>
-                    <div class="content">
-                        ''' + blastn_top_hit_f + '''
-                    </div>
+    #     <body>
+    #         <!-- Body Container -->
+    #         <div class="scroll-box">
+    #             <div class="container">
+    #                 <h1>Homology blast results</h1>
+    #                 <button type="button" class="collapsible"> All blast results</button>
+    #                 <div class="content">
+    #                     ''' + blastn_top_hit_f + '''
+    #                 </div>
 
-                    <button type="button" class="collapsible"> Total number of matches to a given species</button>
-                    <div class="content">
-                        ''' + summary_per_spp + '''
-                    </div>
+    #                 <button type="button" class="collapsible"> Total number of matches to a given species</button>
+    #                 <div class="content">
+    #                     ''' + summary_per_spp + '''
+    #                 </div>
 
-                    <button type="button" class="collapsible"> Total number of matches to specific accession number </h2></button>
-                    <div class="content">
-                        ''' + spp + '''
-                    </div>
+    #                 <button type="button" class="collapsible"> Total number of matches to specific accession number </h2></button>
+    #                 <div class="content">
+    #                     ''' + spp + '''
+    #                 </div>
 
-                    <button type="button" class="collapsible"> Top match per species based on evalue</h2></button>
-                    <div class="content">
-                        <p>If for a given species, more than one match share the same top evalue, then bitscore is considered next</p>
-                        ''' + blastn_top_hit_spp + '''
-                    </div>
-                </div>
-             </div>
+    #                 <button type="button" class="collapsible"> Top match per species based on evalue</h2></button>
+    #                 <div class="content">
+    #                     <p>If for a given species, more than one match share the same top evalue, then bitscore is considered next</p>
+    #                     ''' + blastn_top_hit_spp + '''
+    #                 </div>
+    #             </div>
+    #          </div>
 
-        <script>
-        var coll = document.getElementsByClassName("collapsible");
-        var i;
+    #     <script>
+    #     var coll = document.getElementsByClassName("collapsible");
+    #     var i;
 
-        for (i = 0; i < coll.length; i++) {
-        coll[i].addEventListener("click", function() {
-            this.classList.toggle("active");
-            var content = this.nextElementSibling;
-            if (content.style.display === "block") {
-            content.style.display = "none";
-            } else {
-            content.style.display = "block";
-            }
-        });
-        }
-        </script>
+    #     for (i = 0; i < coll.length; i++) {
+    #     coll[i].addEventListener("click", function() {
+    #         this.classList.toggle("active");
+    #         var content = this.nextElementSibling;
+    #         if (content.style.display === "block") {
+    #         content.style.display = "none";
+    #         } else {
+    #         content.style.display = "block";
+    #         }
+    #     });
+    #     }
+    #     </script>
 
-        </body>
-    </html>'''
+    #     </body>
+    # </html>'''
 
-    report = open(sample_name + "_blast_report.html", "w")
-    report.write(html_string)
-    report.close()
+    # report = open(sample_name + "_blast_report.html", "w")
+    # report.write(html_string)
+    # report.close()
 
 if __name__ == "__main__":
     main()

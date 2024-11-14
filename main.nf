@@ -144,7 +144,7 @@ process BLASTN {
     tuple val(sampleid), path(assembly), val(gene_targets)
   output:
     path("${sampleid}*_megablast*_top_10_hits.txt")
-    tuple val(sampleid), path("${sampleid}*_megablast*_top_10_hits.txt"), emit: blast_results
+    tuple val(sampleid), val(gene_targets), path("${sampleid}*_megablast*_top_10_hits.txt"), emit: blast_results
 
   script:
   def blast_output = assembly.getBaseName() + "_megablast_top_10_hits.txt"
@@ -375,19 +375,23 @@ process EXTRACT_BLAST_HITS {
   containerOptions "${bindOptions}"
 
   input:
-    tuple val(sampleid), path(blast_results)
+    tuple val(sampleid), val(gene_targets), path(blast_results)
 
   output:
     file "${sampleid}*_blastn_top_hits.txt"
-    file "${sampleid}*_queryid_list_with_spp_match.txt"
-    file "${sampleid}*_spp_abundance*.txt"
-    file "*report*html"
-    tuple val(sampleid), path("${sampleid}*_blastn_top_hits.txt"), emit: topblast, optional: true
-    tuple val(sampleid), path("${sampleid}*_blastn_top_hits.txt"), emit: topblast2, optional: true
+    //file "${sampleid}*_queryid_list_with_spp_match.txt"
+    //file "${sampleid}*_spp_abundance*.txt"
+    //file "*report*html"
+    tuple val(sampleid), path("${sampleid}*_megablast_blastn_top_hits.txt"), emit: topblast, optional: true
+    tuple val(sampleid), path("${sampleid}*_megablast_blastn_top_hits.txt"), emit: topblast2, optional: true
 
   script:
     """
     select_top_blast_hit.py --sample_name ${sampleid} --blastn_results ${sampleid}_medaka.consensus_megablast_top_10_hits.txt --mode ${params.blast_mode}
+    if [ ${gene_targets} = "16s" ];
+    then
+      select_top_blast_hit.py --sample_name ${sampleid} --blastn_results ${sampleid}_medaka.consensus_megablast_16s_top_10_hits.txt --mode ${params.blast_mode}
+    fi
     """
 }
 
@@ -486,10 +490,13 @@ process EXTRACT_TAXONOMY {
 
   script:
     """
-    cut -f3 ${blast_results} | sed '1d' | sort | uniq > ids_to_retrieve.txt
+    c1grep() { grep  "\$@" || test \$? = 1; }
+    c1grep "Eukaryota" ${blast_results} | cut -f3 | sort | uniq > ids_to_retrieve.txt
     if [ -s ids_to_retrieve.txt ]
       then
         for i in `cut -f1 ids_to_retrieve.txt`; do esearch -db nuccore -query "\${i}" | elink -target taxonomy | efetch -format native -mode xml | grep ScientificName | awk -F ">|<" 'BEGIN{ORS=", ";}{print \$3;}'  >> ${sampleid}_taxonomy_file.txt; printf "\t\$i" >> ${sampleid}_taxonomy_file.txt; printf "\n"  >> ${sampleid}_taxonomy_file.txt; done
+    else
+      touch ${sampleid}_taxonomy_file.txt
     fi
     """
 }
