@@ -46,7 +46,13 @@ def main():
 #    blastn_results_f_red.to_csv(sample_name + "_blastn_report.txt", index=False, sep="\t")
     blastn_top_hit = blastn_results.drop_duplicates(subset=["qseqid"], keep="first").copy()
     #blastn_top_hit.to_csv(sample_name + "_blastn_top_hits.txt", index=False, sep="\t")
+    blastn_top_hit['read_counts'] = blastn_top_hit['qseqid'].str.split('_').str[2]
+    blastn_top_hit['read_counts'] = blastn_top_hit['read_counts'].str.replace("RC","")
+    blastn_top_hit = blastn_top_hit.sort_values(["read_counts"], ascending=[False])
     blastn_top_hit.to_csv(os.path.basename(blastn_results_path).replace("_top_10_hits.txt", "_blastn_top_hits.txt"), index=False, sep="\t")
+    
+    #blastn_top_hit['consensus_trimmed'] = blastn_top_hit["qseqid"].str.cat(blastn_top_hit["qseq"], sep = "\n")
+    #print(blastn_top_hit)
     #derive read/contig count per spps
     # summary_per_spp = blastn_top_hit['species'].value_counts().rename_axis('species').reset_index(name='count')
     # summary_per_spp.to_csv(sample_name + "_spp_abundance.txt", index=False, sep="\t")
