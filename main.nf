@@ -101,6 +101,10 @@ if (params.blastn_COI != null) {
     blastn_COI_dir = file(params.blastn_COI).parent
 }
 
+if (params.taxdump != null) {
+    taxdump_dir = file(params.taxdump).parent
+}
+
 if (params.reference != null) {
     reference_name = file(params.reference).name
     reference_dir = file(params.reference).parent
@@ -121,6 +125,9 @@ switch (workflow.containerEngine) {
     }
     if (params.blastn_COI != null) {
       bindbuild = (bindbuild + "-B ${blastn_COI_dir} ")
+    }
+    if (params.taxdump != null) {
+      bindbuild = (bindbuild + "-B ${taxdump_dir} ")
     }
     if (params.reference != null) {
       bindbuild = (bindbuild + "-B ${reference_dir} ")
@@ -159,9 +166,11 @@ process BLASTN {
       -db ${params.blastn_db} \
       -out ${blast_output} \
       -evalue 1e-3 \
+      -word_size 28 \
       -num_threads ${params.blast_threads} \
       -outfmt '6 qseqid sgi sacc length nident pident mismatch gapopen qstart qend qlen sstart send slen sstrand evalue bitscore qcovhsp stitle staxids qseq sseq sseqid qcovs qframe sframe sscinames sskingdoms' \
       -max_target_seqs 10
+      
     """
   }
 }
@@ -369,6 +378,7 @@ process COVERM {
     fi
     """
 }
+
 /*
 process COVSTATS {
   tag "$sampleid"
@@ -503,6 +513,7 @@ process EXTRACT_BLAST_HITS {
   publishDir "${params.outdir}/${sampleid}/megablast", mode: 'copy', pattern: '{*.txt,*.html,*fasta}'
   tag "${sampleid}"
   label "setting_2"
+  containerOptions "${bindOptions}"
 
   input:
     tuple val(sampleid), path(blast_results)
@@ -524,10 +535,10 @@ process EXTRACT_BLAST_HITS {
     select_top_blast_hit.py --sample_name ${sampleid} --blastn_results ${sampleid}*_top_10_hits.txt --mode ${params.blast_mode}
 
     # extract segment of consensus sequence that align to reference
-    awk  -F  '\\t' 'NR>1 { printf ">%s\\n%s\\n",\$1,\$21 }' ${sampleid}*_top_hits.txt > ${sampleid}_final_polished_consensus_match.fasta
+    awk  -F  '\\t' 'NR>1 { printf ">%s\\n%s\\n",\$2,\$22 }' ${sampleid}*_top_hits.txt > ${sampleid}_final_polished_consensus_match.fasta
 
     # extract segment of reference that align to consensus sequence
-    awk  -F  '\\t' 'NR>1 { printf ">%s_%s\\n%s\\n",\$1,\$3,\$22 }' ${sampleid}*_top_hits.txt > ${sampleid}_reference_match.fasta
+    awk  -F  '\\t' 'NR>1 { printf ">%s_%s\\n%s\\n",\$2,\$4,\$23 }' ${sampleid}*_top_hits.txt > ${sampleid}_reference_match.fasta
     
     """
 
@@ -1096,18 +1107,23 @@ process RATTLE {
     tuple val(sampleid), path("${fastq}"), path("transcriptome.fq"), emit: clusters2
 
   script:
+
   def rattle_clustering_options = params.rattle_clustering_options ?: ''
   def rattle_polishing_options = params.rattle_polishing_options ?: ''
-  def rattle_clustering_min_length = params.rattle_clustering_min_length ?: ''
-  if (rattle_clustering_min_length == null) {
-    if (target_size.toInteger() < 300) {
-      rattle_clustering_min_length = '100'}
-    else {
-      rattle_clustering_min_length = '150'}
+  if (params.rattle_clustering_min_length != null) {
+    rattle_clustering_min_length_set = params.rattle_clustering_min_length
+  }
+  else {
+    if (target_size != null & target_size.toInteger() <= 300) {
+      rattle_clustering_min_length_set = '100'}
+    else if (target_size != null & target_size.toInteger() > 300) {
+      rattle_clustering_min_length_set = '150'}
+    else { 
+      rattle_clustering_min_length_set = '150'}
   }
 
     """
-    rattle cluster -i ${fastq} -t ${task.cpus} --lower-length ${rattle_clustering_min_length} ${rattle_clustering_options} -o .
+    rattle cluster -i ${fastq} -t ${task.cpus} --lower-length ${rattle_clustering_min_length_set} ${rattle_clustering_options} -v 0.1 -o .
     rattle cluster_summary -i ${fastq} -c clusters.out > ${sampleid}_cluster_summary.txt
     mkdir clusters
     rattle extract_clusters -i ${fastq} -c clusters.out -l ${sampleid} -o clusters --fastq
@@ -1241,7 +1257,6 @@ workflow {
       .map{ row-> tuple((row.sampleid), (row.gene_targets)) }
       .filter { sampleid, gene_targets -> gene_targets.contains("COI") }
       .set{ ch_coi }
-//    ch_coi.view()
     
     Channel
       .fromPath(params.samplesheet, checkIfExists: true)
@@ -1353,6 +1368,7 @@ workflow {
       if ( params.analysis_mode == 'clustering' ) {
         //Perform clustering using Rattle
         ch_fq_target_size = (final_fq.join(ch_target_size))//.view()
+
         RATTLE ( ch_fq_target_size )
         FASTQ2FASTA( RATTLE.out.clusters2 )
         //contigs = FASTQ2FASTA.out.fasta 
