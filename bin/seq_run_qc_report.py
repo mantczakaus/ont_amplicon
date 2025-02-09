@@ -4,6 +4,7 @@ import pandas as pd
 import glob
 import os
 import time
+import numpy as np
 
 def main():
     parser = argparse.ArgumentParser(description="Derive a qc report")
@@ -75,21 +76,27 @@ def main():
         run_data_df['percent_quality_filtered'] = run_data_df['percent_quality_filtered'].apply(lambda x: float("{:.2f}".format(x)))
         run_data_df['percent_host_filtered'] = run_data_df['percent_host_filtered'].apply(lambda x: float("{:.2f}".format(x)))
         run_data_df = run_data_df.sort_values("Sample")
-        run_data_df.to_csv("run_qc_report_" + timestr + ".txt", index = None, sep="\t")
+        #run_data_df.to_csv("run_qc_report_" + timestr + ".txt", index = None, sep="\t")
+        run_data_df['raw_reads_flag'] = np.where((run_data_df['raw_reads'] < 4000), "Less than 4000 raw reads", "")
+        run_data_df['qfiltered_flag'] = np.where((run_data_df['host_filtered_reads'] < 1000), "Less than 1000 processed reads", "")
     else:
         if adapter_trimming == "true" or quality_trimming == "true":
             run_data_df = pd.DataFrame([([k] + v) for k, v in summary_dict.items()], columns=['Sample','raw_reads','quality_filtered_reads'])
             run_data_df['percent_quality_filtered'] = run_data_df['quality_filtered_reads'] / run_data_df['raw_reads'] * 100
             run_data_df['percent_quality_filtered'] = run_data_df['percent_quality_filtered'].apply(lambda x: float("{:.2f}".format(x)))
             run_data_df = run_data_df.sort_values("Sample")
-            run_data_df.to_csv("run_qc_report_" + timestr + ".txt", index = None, sep="\t")
+            run_data_df['raw_reads_flag'] = np.where((run_data_df['raw_reads'] < 4000), "Less than 4000 raw reads", "")
+            run_data_df['qfiltered_flag'] = np.where((run_data_df['quality_filtered_reads'] < 1000), "Less than 1000 processed reads", "")
+            #run_data_df.to_csv("run_qc_report_" + timestr + ".txt", index = None, sep="\t")
         elif host_filtering == "true":
             run_data_df = pd.DataFrame([([k] + v) for k, v in summary_dict.items()], columns=['Sample','raw_reads','host_filtered_reads'])
             run_data_df['percent_host_filtered'] = run_data_df['host_filtered_reads'] / run_data_df['raw_reads'] * 100
             run_data_df['percent_host_filtered'] = run_data_df['percent_host_filtered'].apply(lambda x: float("{:.2f}".format(x)))
             run_data_df = run_data_df.sort_values("Sample")
-            run_data_df.to_csv("run_qc_report_" + timestr + ".txt", index = None, sep="\t")
-
+            run_data_df['raw_reads_flag'] = np.where((run_data_df['raw_reads'] < 4000), "Less than 4000 raw reads", "")
+            run_data_df['qfiltered_flag'] = np.where((run_data_df['host_filtered_reads'] < 1000), "Less than 1000 processed reads", "")
+            #run_data_df.to_csv("run_qc_report_" + timestr + ".txt", index = None, sep="\t")
+    run_data_df.to_csv("run_qc_report_" + timestr + ".txt", index = None, sep="\t")
 
     summary_table = run_data_df.to_html(index=False).replace('<table border="1" class="dataframe">','<table class="table table-striped">') # use bootstrap styling
     html_string = '''

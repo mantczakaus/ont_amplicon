@@ -4,6 +4,7 @@ import argparse
 import os.path
 from functools import reduce
 import pytaxonkit
+import numpy as np
 
 
 def main():
@@ -14,10 +15,12 @@ def main():
     parser.add_argument("--blastn_results", type=str)
     parser.add_argument("--sample_name", type=str)
     parser.add_argument("--mode", type=str)
+    parser.add_argument("--spp_targets", type=str)
     args = parser.parse_args()
     
     blastn_results_path = args.blastn_results
     sample_name = args.sample_name
+    spp_targets = args.spp_targets
     mode = args.mode
 
     if mode == "ncbi":
@@ -41,10 +44,10 @@ def main():
     blastn_top_hit['read_counts'] = blastn_top_hit['read_counts'].str.replace("RC","").astype(int)
     blastn_top_hit = blastn_top_hit.sort_values(["read_counts"], ascending=[False])
 
-
+    
 
     staxids_list = blastn_top_hit['staxids'].unique().tolist()
-    print(staxids_list)
+    #print(staxids_list)
     result = pytaxonkit.lineage(staxids_list)
     FullLineage_df = result[['TaxID', 'FullLineage']]
     
@@ -54,8 +57,26 @@ def main():
     blast_with_full_phylo_desc_df = blastn_top_hit.merge(FullLineage_df2,  how='right', on='staxids')
     blast_with_full_phylo_desc_df.insert(0, "Sample_name", sample_name)
     blast_with_full_phylo_desc_df = blast_with_full_phylo_desc_df[["Sample_name", "qseqid", "read_counts", "sgi", "sacc", "length", "nident", "pident", "mismatch", "gapopen", "qstart", "qend", "qlen", "sstart", "send", "slen", "sstrand", "evalue", "bitscore", "qcovhsp", "stitle", "staxids", "qseq", "sseq", "sseqid", "qcovs", "qframe", "sframe", "species", "sskingdoms", "FullLineage"]]
+    
+    blast_with_full_phylo_desc_df['FullLineage'] = blast_with_full_phylo_desc_df['FullLineage'].str.lower().replace(" ","_")
+    blast_with_full_phylo_desc_df['FullLineage'] = blast_with_full_phylo_desc_df['FullLineage'].str.replace(" ","_")
+
+    blast_with_full_phylo_desc_df['sskingdoms'] = blast_with_full_phylo_desc_df['sskingdoms'].str.lower()
     blast_with_full_phylo_desc_df = blast_with_full_phylo_desc_df.sort_values(["read_counts"], ascending = (False))
     print(blast_with_full_phylo_desc_df)
+    #if spp_targets == "virus":
+    print(spp_targets)
+    organism_target_lower = spp_targets.lower().replace(" ","_")
+
+    print(organism_target_lower)
+    blast_with_full_phylo_desc_df["target_organism_match"] = np.where((blast_with_full_phylo_desc_df.sskingdoms.str.contains(organism_target_lower) | (blast_with_full_phylo_desc_df.FullLineage.str.contains(organism_target_lower))), "Y", "N")
+    #elif spp_targets == "phytoplasma":
+    #    spp_terms_to_search = ['phytoplasma','Phytoplasma']
+    #    blast_with_full_phylo_desc_df["target_spp_match"] = np.where(blast_with_full_phylo_desc_df.FullLineage.str.contains('|'.join(spp_terms_to_search)), "Y", "N")
+    #elif spp_targets == "Fungi":
+    #    spp_terms_to_search = ['Fungi','fungi']
+    #    blast_with_full_phylo_desc_df["target_spp_match"] = np.where(blast_with_full_phylo_desc_df.FullLineage.str.contains('|'.join(spp_terms_to_search)), "Y", "N")
+
 
     blast_with_full_phylo_desc_df.to_csv(os.path.basename(blastn_results_path).replace("_top_10_hits.txt", "_blastn_top_hits.txt"), index=False, sep="\t")
 

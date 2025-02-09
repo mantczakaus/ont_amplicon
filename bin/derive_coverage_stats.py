@@ -12,7 +12,7 @@ def main():
     args = parser.parse_args()
     sample_name = args.sample
     
-    coverm_all = pd.DataFrame()
+    samtools_cov = pd.DataFrame()
     blast_df = pd.DataFrame()
     PCTs_all = pd.DataFrame()
 
@@ -25,60 +25,37 @@ def main():
             if ( l >= 0 ):
                 elements = a.split("\t")
                 raw_read_counts = int(float(elements[1].strip()))
+                print(raw_read_counts)
     f.close()
 
-    for blast_results in glob("*_blastn_top_viral_spp_hits.txt"):
-        blastn_results = pd.read_csv(blast_results, sep="\t", index_col=False)
-        blast_df = blastn_results[["species", "stitle", "qseqid", "sacc", "pident", "qlen", "sstrand", "evalue", "bitscore", "qcovs"]]
-        blast_df.columns = ["species", "reference_title", "query_id", "reference_accession", "pc_ident", "query_length", "orientation", "evalue", "bitscore", "query_coverage"]
-        sacc_list = blast_df["reference_accession"].tolist()
-        for sacc in sacc_list:
-            for coverm_results in glob("*_coverm_summary.txt"):
-                if sacc in str(coverm_results):
-                    coverm_results = pd.read_csv(coverm_results, sep="\t", index_col=False)
-                    coverm_results.columns = ["genome", "read_count", "mean_cov", "variance", "RPKM", "%_bases_cov", "reference_length"]
-                    coverm_results["reference_accession"] = sacc
-                    coverm_df=coverm_results[["reference_accession", "read_count", "mean_cov", "reference_length"]]
-                    rc = coverm_df['read_count'].iloc[0]
-                    rl = coverm_df['reference_length'].iloc[0]
-                    rpkm = round(int(rc)/(int(rl)/1000*int(raw_read_counts)/1000000))
-                    rpm = round(int(rc)*1000000/int(raw_read_counts))
-
-                    #coverm_df["RPKM"] = coverm_df["RPKM"].round(1)
-                    coverm_df["RPKM"] = rpkm
-                    coverm_df["RPM"] = rpm
-                    coverm_df["mean_cov"] = coverm_df["mean_cov"].round(1)
-                    
-                    coverm_all = pd.concat([coverm_all, coverm_df], axis = 0)
-                    print(coverm_all)
-
-            for mosdepth_results in glob("*mosdepth.global.dist.txt"):
-                if sacc in str(mosdepth_results):
-                    mosdepth_results = pd.read_csv(mosdepth_results, sep="\t", index_col=False)
-                    mosdepth_results.columns = ["genome", "pc_coverage", "depth"]
-                    PCT_5X = mosdepth_results.loc[(mosdepth_results['pc_coverage']==5) & (mosdepth_results['genome'].str.contains(sacc)), ['depth']].rename(columns={"depth": "PCT_5X"})
-                    PCT_5X["PCT_5X"] = PCT_5X["PCT_5X"].round(2)
-                    PCT_5X['reference_accession'] = sacc
-                    
-                    PCT_10X = mosdepth_results.loc[(mosdepth_results['pc_coverage']==10) & (mosdepth_results['genome'].str.contains(sacc)), ['depth']].rename(columns={"depth": "PCT_10X"})
-                    PCT_10X['reference_accession'] = sacc
-                    PCT_10X["PCT_10X"] = PCT_10X["PCT_10X"].round(2)
-                    PCT_20X = mosdepth_results.loc[(mosdepth_results['pc_coverage']==20) & (mosdepth_results['genome'].str.contains(sacc)), ['depth']].rename(columns={"depth": "PCT_20X"})
-                    PCT_20X['reference_accession'] = sacc
-                    PCT_20X["PCT_20X"] = PCT_20X["PCT_20X"].round(2)
-                    dfs = (PCT_5X, PCT_10X, PCT_20X)
-
-                    PCTs = reduce(lambda left,right: pd.merge(left,right,on=["reference_accession"],how='outer'), dfs)
-                    PCTs_all = pd.concat([PCTs_all, PCTs], axis = 0)
-                    print(PCTs_all)
-
-        summary_dfs = (blast_df, coverm_all, PCTs_all)
-        blast_df = reduce(lambda left,right: pd.merge(left,right,on=["reference_accession"],how='outer').fillna(0), summary_dfs)
-        blast_df = blast_df[["species", "reference_title", "reference_accession", "reference_length", "query_id", "query_length", "pc_ident", "orientation", "evalue", "bitscore", "query_coverage", "read_count", "mean_cov", "RPKM", "RPM", "PCT_5X", "PCT_10X", "PCT_20X"]]
-        blast_df.insert(0, "sample", sample_name)
-
-        print(blast_df)
-        blast_df.to_csv(str(sample_name) + "_top_blast_with_cov_stats.txt", index=None, sep="\t")
+    #for blast_results in glob("*_blastn_top_hits.txt"):
+    blastn_results = pd.read_csv(sample_name + "_final_polished_consensus_megablast_blastn_top_hits.txt", sep="\t", header=0)
+    blast_df = blastn_results[["Sample_name", "qseqid", "stitle", "sacc", "length", "pident", "evalue", "bitscore", "qcovs", "sstrand", "species", "sskingdoms", "FullLineage", "target_organism_match"]]
+    blast_df.columns = ["Sample_name", "qseqid", "reference_title", "reference_accession", "reference_length", "pc_ident", "evalue", "bitscore", "query_coverage", "orientation", "species", "kingdom", "full_lineage", "target_organism_match"]
+    print(blast_df)
         
+    samtools_cov = pd.read_csv(sample_name + "_coverage.txt", sep="\t", usecols=["#rname", "endpos", "numreads"], header=0)
+    #samtools_cov.drop(["startpos", "covbases", "coverage", "meandepth", "meanbaseq", "meanmapq"] , axis=1, inplace=True)
+    samtools_cov2 = samtools_cov.copy()
+    samtools_cov2.rename(columns={"#rname": "qseqid", "endpos": "length", "numreads": "read_aligning"}, inplace=True)
+    samtools_cov2['PCR'] = samtools_cov2['read_aligning'] / raw_read_counts * 100
+    print(samtools_cov2)
+
+    mosdepth = pd.read_csv(sample_name + ".regions.bed", sep="\t", header=None)
+    mosdepth.columns = ["qseqid", "start", "end", "pc_depth_30X"]
+    mosdepth_final = mosdepth[["qseqid", "pc_depth_30X"]]
+
+    
+    
+    summary_dfs = (blast_df, samtools_cov2, mosdepth_final)
+    blast_df_final = reduce(lambda left,right: pd.merge(left,right,on=["qseqid"],how='outer').fillna(0), summary_dfs)
+    blast_df_final.to_csv(str(sample_name) + "_top_blast_with_cov_stats.txt", index=None, sep="\t")
+    print(blast_df_final)
+
+    
+
+
+
+            
 if __name__ == "__main__":
     main()

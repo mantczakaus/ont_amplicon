@@ -355,52 +355,43 @@ process CHOPPER {
 process COVERM {
   tag "$sampleid"
   label "setting_3"
-  publishDir "${params.outdir}/${sampleid}/alignments", mode: 'copy', pattern: '*coverage_histogram.txt'
+  publishDir "${params.outdir}/${sampleid}/mapping_to_consensus", mode: 'copy', pattern: '*coverage_histogram.txt'
 
   input:
-    tuple val(sampleid), path("*")
+    tuple val(sampleid), path(consensus), path(bam), path(bai)
 
   output:
     path("*coverage_histogram.txt"), optional: true
+    path("*coverage_summary.txt"), optional: true
     tuple val(sampleid), path("*_coverm_summary.txt"), emit: coverm_results, optional: true
 
   script:
     """
-    if compgen -G "*.bam" > /dev/null;
-      then
-        for i in *bam;
-        do
-          echo \${i%.sorted.bam}
-          filen=`echo "\${i%.sorted.bam}"`
-          coverm genome --genome-fasta-files \${filen}.fasta --bam-files \${i} --threads ${task.cpus} --output-file \${filen}_coverm_summary.txt -m count mean variance rpkm covered_bases length --min-covered-fraction 0;
-          coverm genome --genome-fasta-files \${filen}.fasta --bam-files \${i} --threads ${task.cpus} --output-file \${filen}_coverage_histogram.txt -m coverage_histogram --min-covered-fraction 0;
-        done
-    fi
+    coverm contig --bam-files $bam --threads ${task.cpus} --output-file ${sampleid}_coverm_summary.txt -m count mean variance rpkm covered_bases length --min-covered-fraction 0;
+    coverm contig --bam-files $bam --threads ${task.cpus} --output-file ${sampleid}_coverage_histogram.txt -m coverage_histogram --min-covered-fraction 0;
     """
 }
 
-/*
 process COVSTATS {
   tag "$sampleid"
   label "setting_2"
-  publishDir "${params.outdir}/${sampleid}/alignments", mode: 'copy'
+  publishDir "${params.outdir}/${sampleid}/mapping_to_consensus", mode: 'copy'
 
   input:
     tuple val(sampleid), path("*")
-
   output:
     path("*top_blast_with_cov_stats.txt"), optional: true
     path("*top_blast_with_cov_stats.txt"), emit: detections_summary, optional: true
 
   script:
     """
-    if compgen -G "*coverm_summary.txt" > /dev/null;
+    if compgen -G "*_coverage.txt" > /dev/null;
       then
         derive_coverage_stats.py --sample ${sampleid}
     fi
     """
 }
-
+/*
 process DETECTION_REPORT {
   label "local"
     publishDir "${params.outdir}/detection_summary", mode: 'copy', overwrite: true
@@ -516,30 +507,26 @@ process EXTRACT_BLAST_HITS {
   containerOptions "${bindOptions}"
 
   input:
-    tuple val(sampleid), path(blast_results)
+    tuple val(sampleid), path(blast_results), val(spp_targets), val(gene_targets), val(target_size)
 
   output:
     file "${sampleid}*_blastn_top_hits.txt"
     file "${sampleid}_final_polished_consensus_match.fasta"
     file "${sampleid}_reference_match.fasta"
 
-    //file "${sampleid}*_queryid_list_with_spp_match.txt"
-    //file "${sampleid}*_spp_abundance*.txt"
-    //file "*report*html"
     tuple val(sampleid), path("${sampleid}*_megablast_blastn_top_hits.txt"), emit: topblast, optional: true
-    tuple val(sampleid), path("${sampleid}*_megablast_blastn_top_hits.txt"), emit: topblast2, optional: true
-    tuple val(sampleid), path("${sampleid}_reference_match.fasta"), emit: fasta_files, optional: true
+    tuple val(sampleid), path("${sampleid}_reference_match.fasta"), emit: reference_fasta_files, optional: true
+    tuple val(sampleid), path("${sampleid}_final_polished_consensus_match.fasta"), emit: consensus_fasta_files, optional: true
 
   script:
     """
-    select_top_blast_hit.py --sample_name ${sampleid} --blastn_results ${sampleid}*_top_10_hits.txt --mode ${params.blast_mode}
+    select_top_blast_hit.py --sample_name ${sampleid} --blastn_results ${sampleid}*_top_10_hits.txt --mode ${params.blast_mode} --spp_targets ${spp_targets}
 
     # extract segment of consensus sequence that align to reference
-    awk  -F  '\\t' 'NR>1 { printf ">%s\\n%s\\n",\$2,\$22 }' ${sampleid}*_top_hits.txt > ${sampleid}_final_polished_consensus_match.fasta
+    awk  -F  '\\t' 'NR>1 { printf ">%s\\n%s\\n",\$2,\$23 }' ${sampleid}*_top_hits.txt | sed 's/-//g' > ${sampleid}_final_polished_consensus_match.fasta
 
     # extract segment of reference that align to consensus sequence
-    awk  -F  '\\t' 'NR>1 { printf ">%s_%s\\n%s\\n",\$2,\$4,\$23 }' ${sampleid}*_top_hits.txt > ${sampleid}_reference_match.fasta
-    
+    awk  -F  '\\t' 'NR>1 { printf ">%s_%s\\n%s\\n",\$2,\$4,\$24 }' ${sampleid}*_top_hits.txt | sed 's/-//g' > ${sampleid}_reference_match.fasta
     """
 
 }
@@ -928,52 +915,6 @@ process MEDAKA2 {
     """
 }
 
-
-/*
-awk 'BEGIN {RS = ">" ; FS = "\n" ; ORS = ""} \$2 {print ">"\$0}' ${sampleid}_samtools_consensus_temp.fasta > ${sampleid}_samtools_consensus.fasta
-original command
-samtools consensus -f fasta -A -d 5 -H 0.5 ${sampleid}_medaka_consensus.bam -o ${sampleid}_samtools_consensus.fasta -X r10.4_sup
-
-process MEDAKA_CONSENSUS_REF {
-  publishDir "${params.outdir}/${sampleid}/mapping_back_to_ref", mode: 'copy'
-  tag "${sampleid}"
-  label 'setting_3'
-  containerOptions "${bindOptions}"
-
-  input:
-   tuple val(sampleid), path(ref), path(fastq)
-  output:
-   tuple val(sampleid), path("${sampleid}_medaka_consensus.fasta"), path("${sampleid}_medaka_consensus.bam"), path("${sampleid}_medaka_consensus.bam.bai")
-   tuple val(sampleid), path("${sampleid}_medaka_consensus.fasta"), path("${sampleid}_medaka_consensus.bam"), path("${sampleid}_medaka_consensus.bam.bai"), emit: consensus1
-   tuple val(sampleid), path("${sampleid}_medaka_consensus.fasta"), emit: consensus2
-
-  script:
-  def medaka_consensus_options = (params.medaka_consensus_options) ? " ${params.medaka_consensus_options}" : ''
-    """
-    medaka_consensus -i ${fastq} -d ${ref} -t ${task.cpus} -o ${sampleid}
-    mv ${sampleid}/calls_to_draft.bam ${sampleid}_medaka_consensus.bam
-    mv ${sampleid}/calls_to_draft.bam.bai ${sampleid}_medaka_consensus.bam.bai
-    mv ${sampleid}/consensus.fasta ${sampleid}_medaka_consensus.fasta
-    """
-}
-
-//medaka_consensus -i ${fastq} -d ${assembly} -t ${task.cpus} -o ${sampleid} --bacteria
-process MINIMAP2_ALIGN {
-  tag "${sampleid}"
-  label "setting_8"
-  containerOptions "${bindOptions}"
-
-  input:
-  tuple val(sampleid), path(fastq), path(assembly)
-  output:
-  tuple val(sampleid), path("${sampleid}.sam"), path(assembly), emit: aligned_sam
-
-  script:
-    """
-    minimap2 -ax map-ont --sam-hit-only ${assembly} ${fastq} -t ${task.cpus} > ${sampleid}.sam
-    """
-}
-*/
 process MINIMAP2_RACON {
   tag "${sampleid}"
   label "setting_8"
@@ -989,24 +930,7 @@ process MINIMAP2_RACON {
     minimap2 -L -x ava-ont -t ${task.cpus} ${assembly} ${fastq} > ${sampleid}_pre-racon.paf
     """
 }
-/*
-process MINIMAP2_REF {
-  tag "${sampleid}"
-  label 'setting_2'
-  containerOptions "${bindOptions}"
 
-  input:
-    tuple val(sampleid), path(sample)
-
-  output:
-    tuple val(sampleid), file("${sampleid}_aln.sam"), emit: aligned_sample
-
-  script:
-    """
-    minimap2 -ax map-ont --MD --sam-hit-only ${reference_dir}/${reference_name} ${sample} > ${sampleid}_aln.sam
-    """
-}
-*/
 process MINIMAP2_REF {
   tag "${sampleid}"
   label 'setting_2'
@@ -1024,32 +948,64 @@ process MINIMAP2_REF {
     """
 }
 
-process MOSDEPTH {
-  tag "$sampleid"
-  label "setting_3"
-  publishDir "${params.outdir}/${sampleid}/alignments", mode: 'copy'
+process MINIMAP2_CONSENSUS {
+  tag "${sampleid}"
+  label 'setting_2'
+  containerOptions "${bindOptions}"
 
   input:
-    tuple val(sampleid), path("*")
+    tuple val(sampleid), path(consensus), path(fastq)
 
   output:
-    path("*.mosdepth.global.dist.txt"), optional: true
-    path("*.per-base.bed.gz*"), optional: true
-    tuple val(sampleid), path("*mosdepth.global.dist.txt"), emit: mosdepth_results, optional: true
+    tuple val(sampleid), path(consensus), file("${sampleid}_aln.sam"), emit: aligned_sample
 
   script:
     """
-    if compgen -G "*.bam" > /dev/null;
-      then
-        for i in *bam;
-        do
-          echo \${i%.sorted.bam}
-          filen=`echo "\${i%.sorted.bam}"`
-          mosdepth \${filen} \${i};
-        done
-    fi
+    minimap2 -ax map-ont --MD --sam-hit-only ${consensus} ${fastq} > ${sampleid}_aln.sam
     """
 }
+
+process MOSDEPTH {
+  tag "$sampleid"
+  label "setting_3"
+  publishDir "${params.outdir}/${sampleid}/mapping_to_consensus", mode: 'copy'
+
+  input:
+    tuple val(sampleid), path(consensus), path(bam), path(bai), path(bed)
+
+  output:
+    path("*.mosdepth.global.dist.txt"), optional: true
+    path("*.per-base.bed"), optional: true
+    path("*regions.bed"), optional: true
+    tuple val(sampleid), path("${sampleid}.regions.bed"), emit: mosdepth_results, optional: true
+
+  script:
+    """
+    mosdepth --by ${bed} -t ${task.cpus} ${sampleid} ${bam}  --thresholds 30
+
+    gunzip *regions.bed.gz
+    
+    gunzip *.per-base.bed.gz
+    """
+}
+
+process PYFAIDX {
+  tag "$sampleid"
+  label "setting_3"
+  publishDir "${params.outdir}/${sampleid}/mapping_to_consensus", mode: 'copy'
+
+  input:
+    tuple val(sampleid), path(fasta)
+
+  output:
+    tuple val(sampleid), path("${sampleid}.bed"), emit: bed, optional: true
+
+  script:
+    """
+    faidx --transform bed ${fasta} > ${sampleid}.bed
+    """
+}
+
 
 process PORECHOP_ABI {
   tag "${sampleid}"
@@ -1150,33 +1106,9 @@ process REFORMAT {
     reformat.sh in=${fastq} out=${sampleid}_preprocessed.fastq.gz trd qin=33
     """
 }
-/*
+
 process SAMTOOLS {
-  publishDir "${params.outdir}/${sampleid}/mapping", mode: 'copy'
-  tag "${sampleid}"
-  label 'setting_2'
-
-  input:
-    tuple val(sampleid), path(sample)
-
-  output:
-    path "${sampleid}_aln.sorted.bam"
-    path "${sampleid}_aln.sorted.bam.bai"
-    path "${sampleid}_coverage.txt"
-    path "${sampleid}_histogram"
-    tuple val(sampleid), path("${sampleid}_aln.sorted.bam"), path("${sampleid}_aln.sorted.bam.bai"), emit: sorted_sample
-
-  script:
-    """
-    samtools view -Sb -F 4 ${sample} | samtools sort -o ${sampleid}_aln.sorted.bam
-    samtools index ${sampleid}_aln.sorted.bam
-    samtools coverage ${sampleid}_aln.sorted.bam > ${sampleid}_histogram.txt  > ${sampleid}_coverage.txt
-    samtools coverage -A -w 50 ${sampleid}_aln.sorted.bam > ${sampleid}_histogram
-    """
-}
-*/
-process SAMTOOLS {
-  publishDir "${params.outdir}/${sampleid}/mapping_back_to_ref", mode: 'copy'
+  publishDir "${params.outdir}/${sampleid}/mapping_to_ref", mode: 'copy'
   tag "${sampleid}"
   label 'setting_2'
 
@@ -1187,7 +1119,7 @@ process SAMTOOLS {
     path "${sampleid}_aln.sorted.bam"
     path "${sampleid}_aln.sorted.bam.bai"
     path "${sampleid}_coverage.txt"
-    path "${sampleid}_histogram"
+    path "${sampleid}_histogram.txt"
     path "${sampleid}_samtools_consensus_from_ref.fasta"
     tuple val(sampleid), path(ref), path("${sampleid}_aln.sorted.bam"), path("${sampleid}_aln.sorted.bam.bai"), emit: sorted_sample
 
@@ -1195,36 +1127,36 @@ process SAMTOOLS {
     """
     samtools view -Sb -F 4 ${sample} | samtools sort -o ${sampleid}_aln.sorted.bam
     samtools index ${sampleid}_aln.sorted.bam
-    samtools coverage ${sampleid}_aln.sorted.bam > ${sampleid}_histogram.txt  > ${sampleid}_coverage.txt
-    samtools coverage -A -w 50 ${sampleid}_aln.sorted.bam > ${sampleid}_histogram
+    samtools coverage ${sampleid}_aln.sorted.bam > ${sampleid}_coverage.txt
+    samtools coverage -A -w 50 ${sampleid}_aln.sorted.bam > ${sampleid}_histogram.txt
     samtools consensus -f fasta -a -A ${sampleid}_aln.sorted.bam --call-fract 0.5 -H 0.5 -o ${sampleid}_samtools_consensus_from_ref.fasta
     """
 }
-/*
-process SAMTOOLS_ALIGN {
-  publishDir "${params.outdir}/${sampleid}/mapping", mode: 'copy'
+
+process SAMTOOLS_CONSENSUS {
+  publishDir "${params.outdir}/${sampleid}/mapping_to_consensus", mode: 'copy'
   tag "${sampleid}"
   label 'setting_2'
 
   input:
-    tuple val(sampleid), path(sam), path(assembly)
+    tuple val(sampleid), path(consensus), path(sample)
 
   output:
     path "${sampleid}_aln.sorted.bam"
     path "${sampleid}_aln.sorted.bam.bai"
     path "${sampleid}_coverage.txt"
-    path "${sampleid}_histogram"
-    tuple val(sampleid), path("${sampleid}_aln.sorted.bam"), path("${sampleid}_aln.sorted.bam.bai"), path(assembly), emit: sorted_bam
-
+    path "${sampleid}_histogram.txt"
+    tuple val(sampleid), path(consensus), path("${sampleid}_aln.sorted.bam"), path("${sampleid}_aln.sorted.bam.bai"), emit: sorted_bams
+    tuple val(sampleid), path("${sampleid}_coverage.txt"), emit: coverage
   script:
     """
-    samtools view -Sb -F 4 ${sam} | samtools sort -@ $task.cpus -o ${sampleid}_aln.sorted.bam
+    samtools view -Sb -F 4 ${sample} | samtools sort -o ${sampleid}_aln.sorted.bam
     samtools index ${sampleid}_aln.sorted.bam
-    samtools coverage ${sampleid}_aln.sorted.bam > ${sampleid}_histogram.txt  > ${sampleid}_coverage.txt
-    samtools coverage -A -w 50 ${sampleid}_aln.sorted.bam > ${sampleid}_histogram
+    samtools coverage ${sampleid}_aln.sorted.bam  > ${sampleid}_coverage.txt
+    samtools coverage -A -w 50 ${sampleid}_aln.sorted.bam > ${sampleid}_histogram.txt
     """
 }
-*/
+
 include { NANOPLOT as QC_PRE_DATA_PROCESSING } from './modules.nf'
 include { NANOPLOT as QC_POST_DATA_PROCESSING } from './modules.nf'
 
@@ -1349,19 +1281,6 @@ workflow {
       QCREPORT(ch_multiqc_files.collect())
     }
 
-//    else if ( params.host_filtering & !params.adapter_trimming & !params.qual_filt ) {
-//      ch_multiqc_files = Channel.empty()
-//      ch_multiqc_files = ch_multiqc_files.mix(QC_PRE_DATA_PROCESSING.out.read_counts.collect().ifEmpty([]))
-//      ch_multiqc_files = ch_multiqc_files.mix(EXTRACT_READS.out.read_counts.collect().ifEmpty([]))
-//     QCREPORT(ch_multiqc_files.collect())
-//    }
-
-//    else if ( params.qual_filt & !params.host_filtering | params.adapter_trimming & !params.host_filtering) {
-//      ch_multiqc_files = Channel.empty()
-//      ch_multiqc_files = ch_multiqc_files.mix(QC_PRE_DATA_PROCESSING.out.read_counts.collect().ifEmpty([]))
-//      ch_multiqc_files = ch_multiqc_files.mix(QC_POST_DATA_PROCESSING.out.read_counts.collect().ifEmpty([]))
-//      QCREPORT(ch_multiqc_files.collect())
-//    }
 
     if (!params.preprocessing_only) {
       
@@ -1371,19 +1290,13 @@ workflow {
 
         RATTLE ( ch_fq_target_size )
         FASTQ2FASTA( RATTLE.out.clusters2 )
-        //contigs = FASTQ2FASTA.out.fasta 
 
-        //MINIMAP2_ALIGN ( FASTQ2FASTA.out.fasta )
-        //SAMTOOLS_ALIGN ( MINIMAP2_ALIGN.out.aligned_sam )
-        //MEDAKA_CONSENSUS ( SAMTOOLS_ALIGN.out.sorted_bam )
         MINIMAP2_RACON ( FASTQ2FASTA.out.fasta )
         RACON ( MINIMAP2_RACON.out.draft_mapping)
         MEDAKA2 ( RACON.out.polished )
         CUTADAPT ( MEDAKA2.out.consensus2 )
-        //CONSENSUS_FILTER_VCF ( MEDAKA_CONSENSUS.out.unfilt_vcf )
-       //CLAIR3  ( MEDAKA_CONSENSUS.out.consensus1 )
-        //limit blast homology search to a reference
 
+        //limit blast homology search to a reference
         if (params.blast_vs_ref) {
           //BLASTN2REF ( CONSENSUS_FILTER_VCF.out.fasta )
           BLASTN2REF ( CUTADAPT.out.trimmed )
@@ -1391,51 +1304,32 @@ workflow {
         //blast to database
         else {
           
-        //ch_gene_targets_for_blast = (CONSENSUS_FILTER_VCF.out.fasta.join(ch_gene_targets))
-        //ch_gene_targets_for_blast = (CUTADAPT.out.trimmed.join(ch_gene_targets))
-        //BLASTN ( CONSENSUS_FILTER_VCF.out.fasta )
-
-//       ch_coi = ch_gene_targets
-//        ch_gene_targets.filter { sampleid, gene_targets -> gene_targets.contains("COI").set { ch_coi } }
         ch_coi_for_blast = (CUTADAPT.out.trimmed.join(ch_coi))
         BLASTN_COI(ch_coi_for_blast)
         ch_revcomp = (CUTADAPT.out.trimmed.join(BLASTN_COI.out.coi_blast_results))
         REVCOMP ( ch_revcomp )
         BLASTN ( REVCOMP.out.revcomp )
        
-//        if ( params.gene_targets == "COI") {
- //         BLASTN_COI ( ch_gene_targets_for_blast )
-//        ch_gene_targets.filter { sampleid, gene_targets -> !gene_targets.contains("COI").set { ch_other } }
-//        ch_other = ch_gene_targets
-//          | filter { sampleid, gene_targets -> !gene_targets.contains("COI") }
         ch_other_for_blast = (CUTADAPT.out.trimmed.join(ch_other))
 
         BLASTN2 ( ch_other_for_blast )
         ch_blast_merged = BLASTN.out.blast_results.mix(BLASTN2.out.blast_results.ifEmpty([]))
-        EXTRACT_BLAST_HITS ( ch_blast_merged )
-//        EXTRACT_TAXONOMY ( EXTRACT_BLAST_HITS.out.topblast )
-//        ch_filter_for_targets = (ch_targets.join(EXTRACT_TAXONOMY.out.taxonomy))
-//        ch_filter_for_targets = (ch_filter_for_targets.join(EXTRACT_BLAST_HITS.out.topblast2))
-        //FILTER_CONSENSUS ( ch_filter_for_targets )
-        //EXTRACT_REF_FASTA (EXTRACT_BLAST_HITS.out.topblast2)
 
-        //mapping_ch = EXTRACT_REF_FASTA.out.fasta_files.concat(REFORMAT.out.cov_derivation_ch).groupTuple().map { [it[0], it[1].flatten()] }
-        mapping_ch = (EXTRACT_BLAST_HITS.out.fasta_files.join(REFORMAT.out.cov_derivation_ch))
+        EXTRACT_BLAST_HITS ( ch_blast_merged.join(ch_targets) )
+        mapping_ch = (EXTRACT_BLAST_HITS.out.reference_fasta_files.join(REFORMAT.out.cov_derivation_ch))
+        mapping2consensus_ch = (EXTRACT_BLAST_HITS.out.consensus_fasta_files.join(REFORMAT.out.cov_derivation_ch))
         
-//        MEDAKA_CONSENSUS_REF ( mapping_ch )
         MINIMAP2_REF ( mapping_ch )
         SAMTOOLS ( MINIMAP2_REF.out.aligned_sample )
-        //MEDAKA1 ( SAMTOOLS.out.sorted_sample )
-        //FILTER_VCF ( MEDAKA1.out.unfilt_vcf )
-        //DERIVE_MASKED_CONSENSUS ( MEDAKA1.out.unfilt_vcf )
         
-        //DERIVE_MASKED_CONSENSUS ( MEDAKA1.out.unfilt_vcf )
-        //FILTER_VCF ( DERIVE_MASKED_CONSENSUS.out.masked_fasta )
-        //bamf_ch = MAPPING_BACK_TO_REF.out.bam_files.concat(MAPPING_BACK_TO_REF.out.bai_files, EXTRACT_REF_FASTA.out.fasta_files).groupTuple().map { [it[0], it[1].flatten()] }
-        //MOSDEPTH (bamf_ch)
-        //COVERM (bamf_ch)
-        //cov_stats_summary_ch = MOSDEPTH.out.mosdepth_results.concat(COVERM.out.coverm_results, EXTRACT_REF_FASTA.out.fasta_files, EXTRACT_BLAST_HITS.out.blast_results2, QC_PRE_DATA_PROCESSING.out.stats).groupTuple().map { [it[0], it[1].flatten()] }
-        //COVSTATS(cov_stats_summary_ch)
+        MINIMAP2_CONSENSUS ( mapping2consensus_ch )
+        SAMTOOLS_CONSENSUS ( MINIMAP2_CONSENSUS.out.aligned_sample )
+        PYFAIDX ( EXTRACT_BLAST_HITS.out.consensus_fasta_files )
+        MOSDEPTH (SAMTOOLS_CONSENSUS.out.sorted_bams.join(PYFAIDX.out.bed))
+//        COVERM (SAMTOOLS_CONSENSUS.out.sorted_bams)
+        cov_stats_summary_ch = MOSDEPTH.out.mosdepth_results.concat(EXTRACT_BLAST_HITS.out.consensus_fasta_files, SAMTOOLS_CONSENSUS.out.coverage, EXTRACT_BLAST_HITS.out.topblast, QC_PRE_DATA_PROCESSING.out.stats).groupTuple().map { [it[0], it[1].flatten()] }
+        cov_stats_summary_ch.view()
+        COVSTATS(cov_stats_summary_ch)
 
         //DETECTION_REPORT(COVSTATS.out.detections_summary.collect().ifEmpty([]))
         }
