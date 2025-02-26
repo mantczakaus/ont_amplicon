@@ -168,45 +168,12 @@ process BLASTN {
       -evalue 1e-3 \
       -word_size 28 \
       -num_threads ${params.blast_threads} \
-      -outfmt '6 qseqid sgi sacc length nident pident mismatch gapopen qstart qend qlen sstart send slen sstrand evalue bitscore qcovhsp stitle staxids qseq sseq sseqid qcovs qframe sframe sscinames sskingdoms' \
+      -outfmt '6 qseqid sgi sacc length nident pident mismatch gaps gapopen qstart qend qlen sstart send slen sstrand evalue bitscore qcovhsp stitle staxids qseq sseq sseqid qcovs qframe sframe sscinames sskingdoms' \
       -max_target_seqs 10
       
     """
   }
 }
-
-process BLASTN2 {
-  publishDir "${params.outdir}/${sampleid}/megablast", mode: 'copy', pattern: '*_megablast*.txt'
-  tag "${sampleid}"
-  containerOptions "${bindOptions}"
-  label "setting_10"
-
-  input:
-    tuple val(sampleid), path(assembly), val(gene_target)
-  output:
-    path("${sampleid}*_megablast*.txt")
-    tuple val(sampleid), path("${sampleid}*_megablast_top_10_hits.txt"), emit: blast_results
-    tuple val(sampleid), path("${sampleid}_ids_to_reverse_complement.txt"), path("${sampleid}*__megablast_COI_top_hit.txt"), emit: coi_blast_results, optional: true
-
-  script:
-  def blast_output = assembly.getBaseName() + "_megablast_top_10_hits.txt"
-  def blast_output_COI = assembly.getBaseName() + "_megablast_COI_top_hit.txt"
-  
-  if (params.blast_mode == "ncbi") {
-    """
-    cp ${blastn_db_dir}/taxdb.btd .
-    cp ${blastn_db_dir}/taxdb.bti .
-    blastn -query ${assembly} \
-      -db ${params.blastn_db} \
-      -out ${blast_output} \
-      -evalue 1e-3 \
-      -num_threads ${params.blast_threads} \
-      -outfmt '6 qseqid sgi sacc length nident pident mismatch gapopen qstart qend qlen sstart send slen sstrand evalue bitscore qcovhsp stitle staxids qseq sseq sseqid qcovs qframe sframe sscinames sskingdoms' \
-      -max_target_seqs 10
-    """
-  }
-}
-
 
 process BLASTN_COI {
   publishDir "${params.outdir}/${sampleid}/megablast", mode: 'copy', pattern: '*_megablast*.txt'
@@ -235,102 +202,36 @@ process BLASTN_COI {
     """
 }
 
-process REVCOMP {
-  publishDir "${params.outdir}/${sampleid}/megablast", mode: 'copy', pattern: '{*fasta}'
+process BLASTN2 {
+  publishDir "${params.outdir}/${sampleid}/megablast", mode: 'copy', pattern: '*_megablast*.txt'
   tag "${sampleid}"
-  label "setting_2"
   containerOptions "${bindOptions}"
+  label "setting_10"
 
   input:
-    tuple val(sampleid), path(contigs), path(ids_to_revcomp)
-
-
+    tuple val(sampleid), path(assembly), val(gene_target)
   output:
-    file "${sampleid}_final_polished_consensus_rc.fasta"
-    tuple val(sampleid), path("${sampleid}_final_polished_consensus_rc.fasta"), emit: revcomp, optional: true
+    path("${sampleid}*_megablast*.txt")
+    tuple val(sampleid), path("${sampleid}*_megablast_top_10_hits.txt"), emit: blast_results
+    tuple val(sampleid), path("${sampleid}_ids_to_reverse_complement.txt"), path("${sampleid}*__megablast_COI_top_hit.txt"), emit: coi_blast_results, optional: true
 
   script:
+  def blast_output = assembly.getBaseName() + "_megablast_top_10_hits.txt"
+  def blast_output_COI = assembly.getBaseName() + "_megablast_COI_top_hit.txt"
+  
+  if (params.blast_mode == "ncbi") {
     """
-    reverse_complement.py --sample ${sampleid} --ids_to_rc ${ids_to_revcomp} --fasta ${contigs}
-    
-    """
-
-}
-
-
-/*
-if [ ${gene_targets} = "16s" ];
-    then
-      blastn -query ${assembly} \
-        -db ${params.blastn_16s} \
-        -out ${blast_output_16s} \
-        -evalue 1e-3 \
-        -num_threads ${params.blast_threads} \
-        -outfmt '6 qseqid sgi sacc length nident pident mismatch gapopen qstart qend qlen sstart send slen sstrand evalue bitscore qcovhsp stitle staxids qseq sseq sseqid qcovs qframe sframe sscinames sskingdoms' \
-        -max_target_seqs 10
-
-
-  else if (params.blast_mode == "localdb") {
-    """
+    cp ${blastn_db_dir}/taxdb.btd .
+    cp ${blastn_db_dir}/taxdb.bti .
     blastn -query ${assembly} \
       -db ${params.blastn_db} \
-      -out ${blastoutput} \
+      -out ${blast_output} \
       -evalue 1e-3 \
       -num_threads ${params.blast_threads} \
-      -outfmt '6 qseqid sgi sacc length pident mismatch gapopen qstart qend qlen sstart send slen sstrand evalue bitscore qcovhsp stitle staxids qseq sseq sseqid qcovs qframe sframe' \
+      -outfmt '6 qseqid sgi sacc length nident pident mismatch gaps gapopen qstart qend qlen sstart send slen sstrand evalue bitscore qcovhsp stitle staxids qseq sseq sseqid qcovs qframe sframe sscinames sskingdoms' \
       -max_target_seqs 10
     """
   }
-}
-*/
-process BLASTN2REF {
-  publishDir "${params.outdir}/${sampleid}", mode: 'copy', pattern: '*/*/*txt'
-  tag "${sampleid}"
-  label 'setting_1'
-  containerOptions "${bindOptions}"
-
-  input:
-    tuple val(sampleid), path(assembly)
-
-  output:
-    path "*/*/${sampleid}_blastn_reference_vs_*.txt"
-
-  script:
-    """
-    if [[ ${assembly} == *_assembly*.fa* ]] ;
-    then
-      if [[ ${assembly} == *canu_assembly*.fa* ]] ;
-      then
-        mkdir -p assembly/blast_to_ref
-        blastn -query ${assembly} -subject ${reference_dir}/${reference_name} -evalue 1e-3 -out ${sampleid}_blastn_reference_vs_canu_assembly_tmp.txt \
-        -outfmt '6 qseqid sacc length pident mismatch gapopen qstart qend qlen sstart send slen evalue bitscore qcovhsp qcovs' -max_target_seqs 5
-
-        echo "qseqid\tsacc\tlength\tpident\tmismatch\tgapopen\tqstart\tqend\tqlen\tsstart\tsend\tslen\tevalue\tbitscore\tqcovhsp\tqcovs" > header
-
-        cat header ${sampleid}_blastn_reference_vs_canu_assembly_tmp.txt >  assembly/blast_to_ref/${sampleid}_blastn_reference_vs_canu_assembly.txt
-      elif [[ ${assembly} == *flye_assembly*.fasta ]] ;
-      then
-        mkdir -p assembly/blast_to_ref
-
-        blastn -query ${assembly} -subject ${reference_dir}/${reference_name} -evalue 1e-3 -out ${sampleid}_blastn_reference_vs_flye_assembly_tmp.txt \
-        -outfmt '6 qseqid sacc length pident mismatch gapopen qstart qend qlen sstart send slen evalue bitscore qcovhsp qcovs' -max_target_seqs 5
-
-        echo "qseqid\tsacc\tlength\tpident\tmismatch\tgapopen\tqstart\tqend\tqlen\tsstart\tsend\tslen\tevalue\tbitscore\tqcovhsp\tqcovs" > header
-
-        cat header ${sampleid}_blastn_reference_vs_flye_assembly_tmp.txt > assembly/blast_to_ref/${sampleid}_blastn_reference_vs_flye_assembly.txt
-      fi
-    elif [[ ${assembly} == *clustering.fasta ]] ;
-    then
-      mkdir -p clustering/blast_to_ref
-
-      blastn -query ${assembly} -subject ${reference_dir}/${reference_name} -evalue 1e-3 -out ${sampleid}_blastn_reference_vs_clustering_tmp.txt \
-      -outfmt '6 qseqid sacc length pident mismatch gapopen qstart qend qlen sstart send slen evalue bitscore qcovhsp qcovs' -max_target_seqs 5
-
-      echo "qseqid\tsacc\tlength\tpident\tmismatch\tgapopen\tqstart\tqend\tqlen\tsstart\tsend\tslen\tevalue\tbitscore\tqcovhsp\tqcovs" > header
-
-      cat header ${sampleid}_blastn_reference_vs_clustering_tmp.txt > clustering/blast_to_ref/${sampleid}_blastn_reference_vs_clustering_assembly.txt
-    fi
-    """
 }
 
 process CHOPPER {
@@ -351,26 +252,35 @@ process CHOPPER {
     gunzip -c ${sample} | chopper ${chopper_options} 2> ${sampleid}_chopper.log | gzip > ${sampleid}_filtered.fastq.gz
     """
 }
-
-process COVERM {
-  tag "$sampleid"
-  label "setting_3"
-  publishDir "${params.outdir}/${sampleid}/mapping_to_consensus", mode: 'copy', pattern: '*coverage_histogram.txt'
+process FASTPLONG {
+  publishDir "${params.outdir}/${sampleid}/preprocessing/chopper", pattern: '*_chopper.log', mode: 'link'
+  tag "${sampleid}"
+  label 'setting_3'
 
   input:
-    tuple val(sampleid), path(consensus), path(bam), path(bai)
+    tuple val(sampleid), path(sample), val(fwd_primer), val(rev_primer)
 
   output:
-    path("*coverage_histogram.txt"), optional: true
-    path("*coverage_summary.txt"), optional: true
-    tuple val(sampleid), path("*_coverm_summary.txt"), emit: coverm_results, optional: true
+    path("${sampleid}_fastp.log")
+    path("${sampleid}_fastp.report.html")
+    tuple val(sampleid), path("${sampleid}_filtered.fastq.gz"), emit: fastp_filtered_fq
 
   script:
+// if (fwd_primer != null & rev_primer != null) {
+///    adapter_trimming_options = '-s ${fwd_primer} -e ${rev_primer}'
+ // }
+// else {
+ //   adapter_trimming_options = '-A'
+// }
     """
-    coverm contig --bam-files $bam --threads ${task.cpus} --output-file ${sampleid}_coverm_summary.txt -m count mean variance rpkm covered_bases length --min-covered-fraction 0;
-    coverm contig --bam-files $bam --threads ${task.cpus} --output-file ${sampleid}_coverage_histogram.txt -m coverage_histogram --min-covered-fraction 0;
+    if [[ -z ${fwd_primer} && -z ${rev_primer} ]]; then 
+      fastplong -i ${sample} -o ${sampleid}_filtered.fastq.gz -V -x --cut_front --cut_tail --cut_mean_quality ${params.fastplong_min_quality} -m ${params.fastplong_min_quality} -l ${params.fastplong_min_length} -y -h ${sampleid}_fastp.report.html -R '${sampleid}_fastp_report.html' -w ${task.cpus} -s ${fwd_primer} -e ${rev_primer} > ${sampleid}_fastp.log
+    else 
+      fastplong -i ${sample} -o ${sampleid}_filtered.fastq.gz -V -x --cut_front --cut_tail --cut_mean_quality ${params.fastplong_min_quality} -m ${params.fastplong_min_quality} -l ${params.fastplong_min_length} -y -h ${sampleid}_fastp.report.html -R '${sampleid}_fastp_report.html' -w ${task.cpus} -A > ${sampleid}_fastp.log
+    fi
     """
 }
+
 
 process COVSTATS {
   tag "$sampleid"
@@ -431,29 +341,6 @@ process EXTRACT_READS {
   echo \$n_lines > ${sampleid}_unaligned_reads_count.txt
   """
 }
-
-process EXTRACT_REF_FASTA {
-  tag "$sampleid"
-  label "setting_1"
-  publishDir "${params.outdir}/${sampleid}/mapping_back_to_ref", mode: 'copy', pattern: '*fasta'
-  containerOptions "${bindOptions}"
-
-  input:
-    tuple val(sampleid), path(blast_results)
-
-  output:
-    path("*fasta"), optional: true
-    tuple val(sampleid), path("*fasta"), emit: fasta_files, optional: true
-  
-  script:
-    """
-    cut -f1,3 ${blast_results} | sed '1d' | sed 's/ /_/g' > ids_to_retrieve.txt
-    if [ -s ids_to_retrieve.txt ]
-      then
-        for i in `cut -f2  ids_to_retrieve.txt`; do j=`grep \${i} ids_to_retrieve.txt | cut -f1`; efetch -db nucleotide  -id \${i} -format fasta > ${sampleid}_\${i}_\${j}.fasta ; done
-    fi
-    """
-}
 */
 
 process CUTADAPT {
@@ -462,9 +349,10 @@ process CUTADAPT {
   publishDir "${params.outdir}/${sampleid}/polishing", pattern: '{*.fasta,*_cutadapt.log}', mode: 'copy'
   tag "${sampleid}"
   label 'setting_2'
+  
 
   input:
-    tuple val(sampleid), path(consensus)
+    tuple val(sampleid), path(consensus), val(fwd_primer), val(rev_primer)
 
   output:
     file("${sampleid}_cutadapt.log")
@@ -472,11 +360,50 @@ process CUTADAPT {
     tuple val(sampleid), path("${sampleid}_final_polished_consensus.fasta"), emit: trimmed
 
   script:
+//  String fwd_primer_trimmed = fwd_primer[-10..-1]
+//  String rev_primer_trimmed = rev_primer[0..9]
     """
-    cutadapt -j ${task.cpus} --trim-n -o ${sampleid}_final_polished_consensus.fasta ${consensus} > ${sampleid}_cutadapt.log
+    cutadapt -n 2 -j ${task.cpus} -g "${fwd_primer};max_error_rate=0.1" -a "${rev_primer};max_error_rate=0.1" --trim-n -o ${sampleid}_final_polished_consensus.fasta ${consensus} > ${sampleid}_cutadapt.log
     """
-
 }
+
+//cutadapt -n 2 -j ${task.cpus} -g "${fwd_primer_trimmed};max_error_rate=0.1;min_overlap=10" -a "${rev_primer_trimmed};max_error_rate=0.1;min_overlap=10" --trim-n -o ${sampleid}_final_polished_consensus.fasta ${consensus} > ${sampleid}_cutadapt.log
+process EXTRACT_BLAST_HITS {
+  publishDir "${params.outdir}/${sampleid}/megablast", mode: 'copy', pattern: '{*fasta}'
+  tag "${sampleid}"
+  label "setting_2"
+  containerOptions "${bindOptions}"
+
+  input:
+    tuple val(sampleid), path(blast_results), val(spp_targets), val(gene_targets), val(target_size)
+
+  output:
+    file "${sampleid}_final_polished_consensus_match.fasta"
+    file "${sampleid}_reference_match.fasta"
+
+    tuple val(sampleid), path("${sampleid}*_megablast_top_hits_tmp.txt"), emit: topblast, optional: true
+    tuple val(sampleid), path("${sampleid}_reference_match.fasta"), emit: reference_fasta_files, optional: true
+    tuple val(sampleid), path("${sampleid}_final_polished_consensus_match.fasta"), emit: consensus_fasta_files, optional: true
+
+  script:
+    """
+    select_top_blast_hit.py --sample_name ${sampleid} --blastn_results ${sampleid}*_top_10_hits.txt --mode ${params.blast_mode} --spp_targets ${spp_targets}
+
+    # extract segment of consensus sequence that align to reference
+    awk  -F  '\\t' 'NR>1 { printf ">%s\\n%s\\n",\$2,\$24 }' ${sampleid}*_top_hits_tmp.txt | sed 's/-//g' > ${sampleid}_final_polished_consensus_match.fasta
+
+    # extract segment of reference that align to consensus sequence
+    awk  -F  '\\t' 'NR>1 { printf ">%s_%s\\n%s\\n",\$2,\$4,\$25 }' ${sampleid}*_top_hits_tmp.txt | sed 's/-//g' > ${sampleid}_reference_match.fasta
+    """
+}
+
+/*
+echo "# BLASTN 2.13.0+" > template.txt
+    echo "# Query: ${sampleid}" >> template.txt
+    echo "# Database: /scratch/datasets/blast_db/20240730/nt" >> template.txt
+    echo "# Fields: query acc., subject acc., subject title, evalue, q. start, q. end, s. start, s. end, bit score, alignment length, mismatches, % identity, identical, % query coverage per subject, subject seq, query seq" >> template.txt
+    echo "Top 10 hits reported" >> template.txt
+    cat  template.txt ${sampleid}_blastn_report.txt > ${sampleid}_blastn_report_ed.txt
 
 process EXTRACT_REF_FASTA {
   tag "$sampleid"
@@ -498,54 +425,6 @@ process EXTRACT_REF_FASTA {
     cat seq_name.txt sequence.txt > reference.fasta
     """
 }
-
-
-process EXTRACT_BLAST_HITS {
-  publishDir "${params.outdir}/${sampleid}/megablast", mode: 'copy', pattern: '{*.txt,*.html,*fasta}'
-  tag "${sampleid}"
-  label "setting_2"
-  containerOptions "${bindOptions}"
-
-  input:
-    tuple val(sampleid), path(blast_results), val(spp_targets), val(gene_targets), val(target_size)
-
-  output:
-    file "${sampleid}*_blastn_top_hits.txt"
-    file "${sampleid}_final_polished_consensus_match.fasta"
-    file "${sampleid}_reference_match.fasta"
-
-    tuple val(sampleid), path("${sampleid}*_megablast_blastn_top_hits.txt"), emit: topblast, optional: true
-    tuple val(sampleid), path("${sampleid}_reference_match.fasta"), emit: reference_fasta_files, optional: true
-    tuple val(sampleid), path("${sampleid}_final_polished_consensus_match.fasta"), emit: consensus_fasta_files, optional: true
-
-  script:
-    """
-    select_top_blast_hit.py --sample_name ${sampleid} --blastn_results ${sampleid}*_top_10_hits.txt --mode ${params.blast_mode} --spp_targets ${spp_targets}
-
-    # extract segment of consensus sequence that align to reference
-    awk  -F  '\\t' 'NR>1 { printf ">%s\\n%s\\n",\$2,\$23 }' ${sampleid}*_top_hits.txt | sed 's/-//g' > ${sampleid}_final_polished_consensus_match.fasta
-
-    # extract segment of reference that align to consensus sequence
-    awk  -F  '\\t' 'NR>1 { printf ">%s_%s\\n%s\\n",\$2,\$4,\$24 }' ${sampleid}*_top_hits.txt | sed 's/-//g' > ${sampleid}_reference_match.fasta
-    """
-
-}
-
-/*
-    if [ ${gene_targets} = "16s" ];
-    then
-      select_top_blast_hit.py --sample_name ${sampleid} --blastn_results ${sampleid}_medaka_consensus_megablast_16s_top_10_hits.txt --mode ${params.blast_mode}
-    fi
-    """
-}
-
-/*
-echo "# BLASTN 2.13.0+" > template.txt
-    echo "# Query: ${sampleid}" >> template.txt
-    echo "# Database: /scratch/datasets/blast_db/20240730/nt" >> template.txt
-    echo "# Fields: query acc., subject acc., subject title, evalue, q. start, q. end, s. start, s. end, bit score, alignment length, mismatches, % identity, identical, % query coverage per subject, subject seq, query seq" >> template.txt
-    echo "Top 10 hits reported" >> template.txt
-    cat  template.txt ${sampleid}_blastn_report.txt > ${sampleid}_blastn_report_ed.txt
 */
 
 process FASTCAT {
@@ -581,6 +460,7 @@ process FASTQ2FASTA {
   tuple val(sampleid), path(fastq), path(assembly)
   output:
   tuple val(sampleid), path(fastq), path("${sampleid}_rattle.fasta"), emit: fasta
+  tuple val(sampleid), path("${sampleid}_rattle.fasta"), emit: fasta2
 
   script:
   """
@@ -588,37 +468,7 @@ process FASTQ2FASTA {
   seqtk seq -A -C ${sampleid}_tmp.fastq > ${sampleid}_rattle.fasta
   """
 }
-//grep '@cluster' transcriptome.fq  | cut -f1,3 -d ' '  | sed 's/total_reads=//' | sort -k2,2 -rn | sed 's/ /_RC/' | sed 's/@//' | head -n 10 > ${sampleid}_most_abundant_clusters_ids.txt
 /*
-process CONSENSUS_FILTER_VCF {
-  publishDir "${params.outdir}/${sampleid}/mapping", mode: 'copy'
-  tag "${sampleid}"
-  label 'setting_3'
-  containerOptions "${bindOptions}"
-
-  input:
-   tuple val(sampleid), path(vcf), path(assembly)
-
-  output:
-    path("${sampleid}_medaka.consensus.fasta")
-    path("${sampleid}_medaka.annotated.vcf.gz")
-    tuple val(sampleid), path("${sampleid}_medaka.consensus.fasta"), emit: fasta
-  script:
-    """
-    bcftools reheader ${vcf} -s <(echo '${sampleid}') \
-    | bcftools filter \
-        -e 'INFO/DP < ${params.bcftools_min_coverage}' \
-        -s LOW_DEPTH \
-        -Oz -o ${sampleid}_medaka.annotated.vcf.gz
-
-    # create consensus
-    bcftools index ${sampleid}_medaka.annotated.vcf.gz
-    bcftools consensus -f ${assembly} ${sampleid}_medaka.annotated.vcf.gz \
-        -i 'FILTER="PASS"' \
-        -o ${sampleid}_medaka.consensus.fasta
-    """
-}
-*/
 process EXTRACT_TAXONOMY {
   publishDir "${params.outdir}/${sampleid}/megablast", mode: 'copy', pattern: '{*.txt}'
   tag "${sampleid}"
@@ -644,7 +494,24 @@ process EXTRACT_TAXONOMY {
     fi
     """
 }
+*/
+process FASTA2TABLE {
+  tag "$sampleid"
+  label "setting_3"
+  publishDir "${params.outdir}/${sampleid}/megablast", mode: 'copy'
 
+  input:
+    tuple val(sampleid), path(tophits), path(fasta)
+  output:
+    file("${sampleid}*_megablast_top_hits.txt")
+    tuple val(sampleid), file("${sampleid}*_megablast_top_hits.txt"), emit: blast_results, optional: true
+
+  script:
+    """
+    fasta2table.py --fasta ${fasta} --sample ${sampleid} --tophits ${tophits}
+    """
+}
+/*
 process FILTER_CONSENSUS {
   publishDir "${params.outdir}/${sampleid}/megablast", mode: 'copy', pattern: '{*.txt}'
   tag "${sampleid}"
@@ -662,36 +529,7 @@ process FILTER_CONSENSUS {
     filter_blast_results.py --sample_name ${sampleid} --acc_phylo_info ${taxonomy} --spp_targets ${spp_targets} --gene_targets ${gene_targets} --blastn_results ${blast_results} --mode ${params.blast_mode} --target_size ${size}
     """
 }
-/*
-process FILTER_VCF {
-  publishDir "${params.outdir}/${sampleid}/mapping", mode: 'copy'
-  tag "${sampleid}"
-  label 'setting_3'
-  containerOptions "${bindOptions}"
 
-  input:
-   tuple val(sampleid), path(vcf)
-
-  output:
-    path("${sampleid}_medaka.consensus.fasta")
-    path("${sampleid}_medaka.annotated.vcf.gz")
-
-  script:
-    """
-    bcftools reheader ${vcf} -s <(echo '${sampleid}') \
-    | bcftools filter \
-        -e 'INFO/DP < ${params.bcftools_min_coverage}' \
-        -s LOW_DEPTH \
-        -Oz -o ${sampleid}_medaka.annotated.vcf.gz
-
-    # create consensus
-    bcftools index ${sampleid}_medaka.annotated.vcf.gz
-    bcftools consensus -f ${reference_dir}/${reference_name} ${sampleid}_medaka.annotated.vcf.gz \
-        -i 'FILTER="PASS"' \
-        -o ${sampleid}_medaka.consensus.fasta
-    """
-}
-*/
 process DERIVE_MASKED_CONSENSUS {
   publishDir "${params.outdir}/${sampleid}/mapping_back_to_ref", mode: 'copy'
   tag "${sampleid}"
@@ -720,7 +558,6 @@ process FILTER_VCF {
 
   input:
    tuple val(sampleid), path(ref), path(bam), path(bai), path(vcf)
-   
 
   output:
     path("${sampleid}_medaka.consensus.fasta")
@@ -739,34 +576,6 @@ process FILTER_VCF {
     bcftools consensus -f ${ref} -i 'FILTER="PASS"' ${sampleid}_medaka.annotated.vcf.gz --iupac-codes -H I -o ${sampleid}_medaka.consensus.fasta
     """
 }
-/*
-process FILTER_VCF_BACKUP {
-  publishDir "${params.outdir}/${sampleid}/mapping_back_to_ref", mode: 'copy'
-  tag "${sampleid}"
-  label 'setting_3'
-
-  input:
-   tuple val(sampleid), path(masked), path(bam), path(bai), path(vcf)
-   
-
-  output:
-    path("${sampleid}_medaka.consensus.fasta")
-    path("${sampleid}_medaka.annotated.vcf.gz")
-
-  script:
-    """
-    bcftools reheader ${vcf} -s <(echo '${sampleid}') \
-    | bcftools filter \
-        -e 'INFO/DP < ${params.bcftools_min_coverage}' \
-        -s LOW_DEPTH \
-        -Oz -o ${sampleid}_medaka.annotated.vcf.gz
-
-    # create consensus
-    bcftools index ${sampleid}_medaka.annotated.vcf.gz
-    bcftools consensus -f ${masked} -i 'FILTER="PASS"' ${sampleid}_medaka.annotated.vcf.gz --iupac-codes -H I -o ${sampleid}_medaka.consensus.fasta
-    """
-}
-*/
 
 process MAPPING_BACK_TO_REF {
   tag "$sampleid"
@@ -791,34 +600,6 @@ process MAPPING_BACK_TO_REF {
     fi
     """
 }
-/*
-process MEDAKA {
-  publishDir "${params.outdir}/${sampleid}/mapping", mode: 'copy'
-  tag "${sampleid}"
-  label 'setting_3'
-  containerOptions "${bindOptions}"
-
-  input:
-   tuple val(sampleid), path(bam), path(bai)
-
-  output:
-    tuple val(sampleid), path("${sampleid}_medaka.annotated.unfiltered.vcf"), emit: unfilt_vcf
-
-  script:
-  def medaka_consensus_options = (params.medaka_consensus_options) ? " ${params.medaka_consensus_options}" : ''
-    """
-    medaka consensus ${bam} ${sampleid}_medaka_consensus_probs.hdf \
-      ${medaka_consensus_options} --threads ${task.cpus}
-
-    medaka variant ${reference_dir}/${reference_name} ${sampleid}_medaka_consensus_probs.hdf ${sampleid}_medaka.vcf
-    medaka tools annotate --dpsp ${sampleid}_medaka.vcf ${reference_dir}/${reference_name} ${bam} \
-          ${sampleid}_medaka.annotated.unfiltered.vcf
-    """
-}
-*/
-
-
-
 
 process MEDAKA1 {
   tag "${sampleid}"
@@ -842,52 +623,7 @@ process MEDAKA1 {
     cat ${sampleid}_medaka.annotated.unfiltered.vcf | awk '\$1 ~ /^#/ {print \$0;next} {print \$0 | "sort -k1,1 -k2,2n"}' > ${sampleid}_medaka.annotated.unfiltered_sorted.vcf
     """
 }
-
-/*
-process MEDAKA_CONSENSUS {
-  publishDir "${params.outdir}/${sampleid}/mapping", mode: 'copy'
-  tag "${sampleid}"
-  label 'setting_3'
-  containerOptions "${bindOptions}"
-
-  input:
-   tuple val(sampleid), path(bam), path(bai), path(assembly)
-
-  output:
-    tuple val(sampleid), path("${sampleid}_medaka.annotated.unfiltered.vcf"), path(assembly), emit: unfilt_vcf
-
-  script:
-  def medaka_consensus_options = (params.medaka_consensus_options) ? " ${params.medaka_consensus_options}" : ''
-    """
-    medaka consensus ${bam} ${sampleid}_medaka_consensus_probs.hdf \
-      --threads ${task.cpus} ${medaka_consensus_options} 
-
-    medaka variant ${assembly} ${sampleid}_medaka_consensus_probs.hdf ${sampleid}_medaka.vcf
-    medaka tools annotate --dpsp ${sampleid}_medaka.vcf ${assembly} ${bam} \
-          ${sampleid}_medaka.annotated.unfiltered.vcf
-    """
-}
 */
-process RACON {
-  publishDir "${params.outdir}/${sampleid}/polishing", mode: 'copy'
-  tag "${sampleid}"
-  label 'setting_3'
-  containerOptions "${bindOptions}"
-
-  input:
-   tuple val(sampleid), path(fastq), path(assembly), path(paf)
-  output:
-   tuple val(sampleid), path(fastq), path("${sampleid}_racon_polished.fasta")
-   tuple val(sampleid), path(fastq), path("${sampleid}_racon_polished.fasta"), emit: polished
-
-  script:
-    """
-    racon -m 8 -x -6 -g -8 -w 500 -t $task.cpus -q -1 --no-trimming -u \
-        ${fastq} ${paf} ${assembly} \
-        > ${sampleid}_racon_polished_tmp.fasta
-    cut -f1 -d ' ' ${sampleid}_racon_polished_tmp.fasta > ${sampleid}_racon_polished.fasta
-    """
-}
 
 process MEDAKA2 {
   publishDir "${params.outdir}/${sampleid}/polishing", mode: 'copy'
@@ -897,6 +633,7 @@ process MEDAKA2 {
 
   input:
    tuple val(sampleid), path(fastq), path(assembly)
+
   output:
    tuple val(sampleid), path("${sampleid}_medaka_consensus.fasta"), path("${sampleid}_medaka_consensus.bam"), path("${sampleid}_medaka_consensus.bam.bai"), path("${sampleid}_samtools_consensus.fasta")
    tuple val(sampleid), path("${sampleid}_medaka_consensus.fasta"), path("${sampleid}_medaka_consensus.bam"), path("${sampleid}_medaka_consensus.bam.bai"), emit: consensus1
@@ -911,7 +648,23 @@ process MEDAKA2 {
     mv ${sampleid}/calls_to_draft.bam.bai ${sampleid}_medaka_consensus.bam.bai
     mv ${sampleid}/consensus.fasta ${sampleid}_medaka_consensus.fasta
     samtools consensus -f fasta -a -A ${sampleid}_medaka_consensus.bam --call-fract 0.5 -H 0.5 -o ${sampleid}_samtools_consensus.fasta
-    
+    """
+}
+
+process MINIMAP2_CONSENSUS {
+  tag "${sampleid}"
+  label 'setting_2'
+  containerOptions "${bindOptions}"
+
+  input:
+    tuple val(sampleid), path(consensus), path(fastq)
+
+  output:
+    tuple val(sampleid), path(consensus), file("${sampleid}_aln.sam"), emit: aligned_sample
+
+  script:
+    """
+    minimap2 -ax map-ont --MD --sam-hit-only ${consensus} ${fastq} > ${sampleid}_aln.sam
     """
 }
 
@@ -922,6 +675,7 @@ process MINIMAP2_RACON {
 
   input:
   tuple val(sampleid), path(fastq), path(assembly)
+
   output:
   tuple val(sampleid), path(fastq), path(assembly), path("${sampleid}_pre-racon.paf"), emit: draft_mapping
 
@@ -948,23 +702,6 @@ process MINIMAP2_REF {
     """
 }
 
-process MINIMAP2_CONSENSUS {
-  tag "${sampleid}"
-  label 'setting_2'
-  containerOptions "${bindOptions}"
-
-  input:
-    tuple val(sampleid), path(consensus), path(fastq)
-
-  output:
-    tuple val(sampleid), path(consensus), file("${sampleid}_aln.sam"), emit: aligned_sample
-
-  script:
-    """
-    minimap2 -ax map-ont --MD --sam-hit-only ${consensus} ${fastq} > ${sampleid}_aln.sam
-    """
-}
-
 process MOSDEPTH {
   tag "$sampleid"
   label "setting_3"
@@ -977,15 +714,14 @@ process MOSDEPTH {
     path("*.mosdepth.global.dist.txt"), optional: true
     path("*.per-base.bed"), optional: true
     path("*regions.bed"), optional: true
-    tuple val(sampleid), path("${sampleid}.regions.bed"), emit: mosdepth_results, optional: true
+    tuple val(sampleid), path("${sampleid}.thresholds.bed"), emit: mosdepth_results, optional: true
 
   script:
     """
-    mosdepth --by ${bed} -t ${task.cpus} ${sampleid} ${bam}  --thresholds 30
-
+    mosdepth --by ${bed} --thresholds 30 -t ${task.cpus} ${sampleid} ${bam}
     gunzip *regions.bed.gz
-    
     gunzip *.per-base.bed.gz
+    gunzip *.thresholds.bed.gz
     """
 }
 
@@ -1010,7 +746,7 @@ process PYFAIDX {
 process PORECHOP_ABI {
   tag "${sampleid}"
   publishDir "$params.outdir/${sampleid}/preprocessing/porechop",  mode: 'link', pattern: '*_porechop.log'
-  label "setting_9"
+  label "setting_2"
   containerOptions "${bindOptions}"
 
   input:
@@ -1049,6 +785,28 @@ process QCREPORT {
     """
 }
 
+process RACON {
+  publishDir "${params.outdir}/${sampleid}/polishing", mode: 'copy'
+  tag "${sampleid}"
+  label 'setting_3'
+  containerOptions "${bindOptions}"
+
+  input:
+   tuple val(sampleid), path(fastq), path(assembly), path(paf)
+
+  output:
+   tuple val(sampleid), path(fastq), path("${sampleid}_racon_polished.fasta")
+   tuple val(sampleid), path(fastq), path("${sampleid}_racon_polished.fasta"), emit: polished
+
+  script:
+    """
+    racon -m 8 -x -6 -g -8 -w 500 -t $task.cpus -q -1 --no-trimming -u \
+        ${fastq} ${paf} ${assembly} \
+        > ${sampleid}_racon_polished_tmp.fasta
+    cut -f1 -d ' ' ${sampleid}_racon_polished_tmp.fasta > ${sampleid}_racon_polished.fasta
+    """
+}
+
 process RATTLE {
   tag "${sampleid}"
   label 'setting_7'
@@ -1063,7 +821,6 @@ process RATTLE {
     tuple val(sampleid), path("${fastq}"), path("transcriptome.fq"), emit: clusters2
 
   script:
-
   def rattle_clustering_options = params.rattle_clustering_options ?: ''
   def rattle_polishing_options = params.rattle_polishing_options ?: ''
   if (params.rattle_clustering_min_length != null) {
@@ -1077,9 +834,8 @@ process RATTLE {
     else { 
       rattle_clustering_min_length_set = '150'}
   }
-
     """
-    rattle cluster -i ${fastq} -t ${task.cpus} --lower-length ${rattle_clustering_min_length_set} ${rattle_clustering_options} -v 0.1 -o .
+    rattle cluster -i ${fastq} -t ${task.cpus} --lower-length ${rattle_clustering_min_length_set} ${rattle_clustering_options} -v 100 -o .
     rattle cluster_summary -i ${fastq} -c clusters.out > ${sampleid}_cluster_summary.txt
     mkdir clusters
     rattle extract_clusters -i ${fastq} -c clusters.out -l ${sampleid} -o clusters --fastq
@@ -1088,7 +844,8 @@ process RATTLE {
     """
 }
 
-//trims fastq read names after the first whitespace
+//grep '@cluster' transcriptome.fq  | cut -f1,3 -d ' '  | sed 's/total_reads=//' | sort -k2,2 -rn | sed 's/ /_RC/' | sed 's/@//' | head -n 10 > ${sampleid}_most_abundant_clusters_ids.txt
+
 process REFORMAT {
   tag "${sampleid}"
   label "setting_3"
@@ -1104,6 +861,27 @@ process REFORMAT {
   script:
     """
     reformat.sh in=${fastq} out=${sampleid}_preprocessed.fastq.gz trd qin=33
+    """
+}
+
+process REVCOMP {
+  publishDir "${params.outdir}/${sampleid}/megablast", mode: 'copy', pattern: '{*fasta}'
+  tag "${sampleid}"
+  label "setting_2"
+  containerOptions "${bindOptions}"
+
+  input:
+    tuple val(sampleid), path(contigs), path(ids_to_revcomp)
+
+
+  output:
+    file "${sampleid}_final_polished_consensus_rc.fasta"
+    tuple val(sampleid), path("${sampleid}_final_polished_consensus_rc.fasta"), emit: revcomp, optional: true
+
+  script:
+    """
+    reverse_complement.py --sample ${sampleid} --ids_to_rc ${ids_to_revcomp} --fasta ${contigs}
+    
     """
 }
 
@@ -1182,6 +960,12 @@ workflow {
       .splitCsv(header:true)
       .map{ row-> tuple((row.sampleid), (row.gene_targets)) }
       .set{ ch_gene_targets }
+
+    Channel
+      .fromPath(params.samplesheet, checkIfExists: true)
+      .splitCsv(header:true)
+      .map{ row-> tuple((row.sampleid), (row.fwd_primer), (row.rev_primer)) }
+      .set{ ch_primers }
     
     Channel
       .fromPath(params.samplesheet, checkIfExists: true)
@@ -1196,8 +980,6 @@ workflow {
       .map{ row-> tuple((row.sampleid), (row.gene_targets)) }
       .filter { sampleid, gene_targets -> !gene_targets.contains("COI") }
       .set{ ch_other }
-
-  
   
   } else { exit 1, "Input samplesheet file not specified!" }
 
@@ -1221,7 +1003,9 @@ workflow {
   }
 
   if (params.merge) {
+    //Merge split fastq.gz files
     FASTCAT ( ch_sample )
+    //Run Nanoplot on merged raw fastq files before data processing
     QC_PRE_DATA_PROCESSING ( FASTCAT.out.merged )
     fq = FASTCAT.out.merged
   }
@@ -1237,25 +1021,30 @@ workflow {
       PORECHOP_ABI ( fq )
       trimmed_fq = PORECHOP_ABI.out.porechopabi_trimmed_fq
     }
-
     else {
       trimmed_fq = fq
     }
 
-    // Quality filtering of reads using chopper
+    // Perform quality filtering of reads using chopper
     if (params.qual_filt) {
       CHOPPER ( trimmed_fq)
       filtered_fq = CHOPPER.out.chopper_filtered_fq
+//      FASTPLONG ( trimmed_fq.join(ch_primers))
+ //     filtered_fq = FASTPLONG.out.fastp_filtered_fq
     }
     else { filtered_fq = trimmed_fq
     }
 
+    //Reformat fastq read names after the first whitespace
     REFORMAT( filtered_fq )
 
+    //Run Nanoplot on merged raw fastq files after data processing
     if ( params.qual_filt & params.adapter_trimming | !params.qual_filt & params.adapter_trimming | params.qual_filt & !params.adapter_trimming) {
       QC_POST_DATA_PROCESSING ( filtered_fq )
     }
+    
 /*
+    //Legacy code from ontvisc to filter host sequences, consider removing if not needed
     if (params.host_filtering) {
       if ( params.host_fasta == null) {
         error("Please provide the path to a fasta file of host sequences that need to be filtered with the parameter --host_fasta.")
@@ -1272,67 +1061,88 @@ workflow {
 */
 
     final_fq = REFORMAT.out.reformatted_fq
+    //Derive QC report if any preprocessing steps were performed
     //if ( params.qual_filt & params.host_filtering | params.adapter_trimming & params.host_filtering ) {
     if ( params.qual_filt | params.adapter_trimming ) {
       ch_multiqc_files = Channel.empty()
       ch_multiqc_files = ch_multiqc_files.mix(QC_PRE_DATA_PROCESSING.out.read_counts.collect().ifEmpty([]))
-//     ch_multiqc_files = ch_multiqc_files.mix(EXTRACT_READS.out.read_counts.collect().ifEmpty([]))
       ch_multiqc_files = ch_multiqc_files.mix(QC_POST_DATA_PROCESSING.out.read_counts.collect().ifEmpty([]))
       QCREPORT(ch_multiqc_files.collect())
     }
 
 
     if (!params.preprocessing_only) {
-      
+      //Currently only one analysis mode in ont_amplicon, this is legacy from ontvisc, consider removing if no other mode is added to this pipeline
       if ( params.analysis_mode == 'clustering' ) {
-        //Perform clustering using Rattle
-        ch_fq_target_size = (final_fq.join(ch_target_size))//.view()
-
+        //Perform clustering using Rattle and convert to fasta file
+        ch_fq_target_size = (final_fq.join(ch_target_size))
         RATTLE ( ch_fq_target_size )
         FASTQ2FASTA( RATTLE.out.clusters2 )
 
-        MINIMAP2_RACON ( FASTQ2FASTA.out.fasta )
-        RACON ( MINIMAP2_RACON.out.draft_mapping)
-        MEDAKA2 ( RACON.out.polished )
-        CUTADAPT ( MEDAKA2.out.consensus2 )
-
-        //limit blast homology search to a reference
-        if (params.blast_vs_ref) {
-          //BLASTN2REF ( CONSENSUS_FILTER_VCF.out.fasta )
-          BLASTN2REF ( CUTADAPT.out.trimmed )
+        //Polish consensus sequence using Racon followed by Medaka
+        if (params.polishing) {
+          MINIMAP2_RACON ( FASTQ2FASTA.out.fasta )
+          RACON ( MINIMAP2_RACON.out.draft_mapping)
+          MEDAKA2 ( RACON.out.polished )
+          //Remove trailing Ns and primer sequences from consensus sequence
+          CUTADAPT ( MEDAKA2.out.consensus2.join(ch_primers) )
+          consensus = CUTADAPT.out.trimmed
         }
-        //blast to database
+        //If no polishing is skipped, directly use the clusters generated by Rattle for blast search
         else {
-          
-        ch_coi_for_blast = (CUTADAPT.out.trimmed.join(ch_coi))
-        BLASTN_COI(ch_coi_for_blast)
-        ch_revcomp = (CUTADAPT.out.trimmed.join(BLASTN_COI.out.coi_blast_results))
-        REVCOMP ( ch_revcomp )
-        BLASTN ( REVCOMP.out.revcomp )
-       
-        ch_other_for_blast = (CUTADAPT.out.trimmed.join(ch_other))
+          consensus = FASTQ2FASTA.out.fasta2
+        }
 
+        //Limit blast homology search to a reference (legacy from ontvisc, placeholder at this stage, not tested in ont_amplicon)
+        //if (params.blast_vs_ref) {
+        //  BLASTN2REF ( consensus )
+        //}
+
+        //else {
+        //Blast steps for samples targetting COI
+        ch_coi_for_blast = (consensus.join(ch_coi))
+        //Blast to COI database
+        BLASTN_COI(ch_coi_for_blast)
+        //Identify consensus that are in the wrong orientation and reverse complement them
+        ch_revcomp = (consensus.join(BLASTN_COI.out.coi_blast_results))
+        REVCOMP ( ch_revcomp )
+        //Blast to NCBI nt database
+        BLASTN ( REVCOMP.out.revcomp )
+
+        //Directly blast to NCBI nt database all other samples
+        ch_other_for_blast = (consensus.join(ch_other))
         BLASTN2 ( ch_other_for_blast )
+
+        //Merge blast results from all samples
         ch_blast_merged = BLASTN.out.blast_results.mix(BLASTN2.out.blast_results.ifEmpty([]))
 
+        //Extract top blast hit, assign taxonomy information to identify consensus that match target organism
         EXTRACT_BLAST_HITS ( ch_blast_merged.join(ch_targets) )
+        //Add consensus sequence to blast results summary table
+        FASTA2TABLE ( EXTRACT_BLAST_HITS.out.topblast.join(consensus) )
+        
+        //MAPPING BACK TO REFERENCE
         mapping_ch = (EXTRACT_BLAST_HITS.out.reference_fasta_files.join(REFORMAT.out.cov_derivation_ch))
-        mapping2consensus_ch = (EXTRACT_BLAST_HITS.out.consensus_fasta_files.join(REFORMAT.out.cov_derivation_ch))
-        
+        //Map filtered reads back to the reference sequence which was retrieved from blast search
         MINIMAP2_REF ( mapping_ch )
+        //Derive bam file and consensus fasta file
         SAMTOOLS ( MINIMAP2_REF.out.aligned_sample )
-        
+
+        //MAPPING BACK TO CONSENSUS
+        mapping2consensus_ch = (EXTRACT_BLAST_HITS.out.consensus_fasta_files.join(REFORMAT.out.cov_derivation_ch))
+        //Map filtered reads back to the portion of sequence which returned a blast hit
         MINIMAP2_CONSENSUS ( mapping2consensus_ch )
+        //Derive bam file and coverage statistics
         SAMTOOLS_CONSENSUS ( MINIMAP2_CONSENSUS.out.aligned_sample )
+        //Derive bed file for mosdepth to run coverage statistics
         PYFAIDX ( EXTRACT_BLAST_HITS.out.consensus_fasta_files )
         MOSDEPTH (SAMTOOLS_CONSENSUS.out.sorted_bams.join(PYFAIDX.out.bed))
-//        COVERM (SAMTOOLS_CONSENSUS.out.sorted_bams)
-        cov_stats_summary_ch = MOSDEPTH.out.mosdepth_results.concat(EXTRACT_BLAST_HITS.out.consensus_fasta_files, SAMTOOLS_CONSENSUS.out.coverage, EXTRACT_BLAST_HITS.out.topblast, QC_PRE_DATA_PROCESSING.out.stats).groupTuple().map { [it[0], it[1].flatten()] }
-        cov_stats_summary_ch.view()
+        //Derive summary file presenting coverage statistics alongside blast results
+        cov_stats_summary_ch = MOSDEPTH.out.mosdepth_results.concat(EXTRACT_BLAST_HITS.out.consensus_fasta_files, SAMTOOLS_CONSENSUS.out.coverage, FASTA2TABLE.out.blast_results, QC_POST_DATA_PROCESSING.out.stats).groupTuple().map { [it[0], it[1].flatten()] }
         COVSTATS(cov_stats_summary_ch)
 
-        //DETECTION_REPORT(COVSTATS.out.detections_summary.collect().ifEmpty([]))
-        }
+      //DETECTION_REPORT(COVSTATS.out.detections_summary.collect().ifEmpty([]))
+//        }
       }
 /*
       //Perform direct alignment to a reference
@@ -1344,7 +1154,7 @@ workflow {
       }
 */
       else {
-        error("Analysis mode (clustering, map2ref) not specified with e.g. '--analysis_mode clustering' or via a detectable config file.")
+        error("Analysis mode (clustering) not specified with e.g. '--analysis_mode clustering' or via a detectable config file.")
       }
     }
   }
