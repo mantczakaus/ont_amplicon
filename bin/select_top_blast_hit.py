@@ -39,11 +39,9 @@ def main():
  
     blastn_top_hit = blastn_results.drop_duplicates(subset=["qseqid"], keep="first").copy()
     blastn_top_hit["staxids"] = blastn_top_hit["staxids"].str.split(";").str[0].astype(int)
-    blastn_top_hit['n_read_cont_cluster'] = blastn_top_hit['qseqid'].str.split('_').str[2]
-    blastn_top_hit['n_read_cont_cluster'] = blastn_top_hit['n_read_cont_cluster'].str.replace("RC","").astype(int)
-    blastn_top_hit = blastn_top_hit.sort_values(["n_read_cont_cluster"], ascending=[False])
-
-    
+#    blastn_top_hit['n_read_cont_cluster'] = blastn_top_hit['qseqid'].str.split('_').str[2]
+#    blastn_top_hit['n_read_cont_cluster'] = blastn_top_hit['n_read_cont_cluster'].str.replace("RC","").astype(int)
+#    blastn_top_hit = blastn_top_hit.sort_values(["n_read_cont_cluster"], ascending=[False])
 
     staxids_list = blastn_top_hit['staxids'].unique().tolist()
     #print(staxids_list)
@@ -55,20 +53,21 @@ def main():
     FullLineage_df2['staxids']=FullLineage_df2['staxids'].astype(int)
     blast_with_full_phylo_desc_df = blastn_top_hit.merge(FullLineage_df2,  how='right', on='staxids')
     blast_with_full_phylo_desc_df.insert(0, "sample_name", sample_name)
-    blast_with_full_phylo_desc_df = blast_with_full_phylo_desc_df[["sample_name", "qseqid", "n_read_cont_cluster", "sgi", "sacc", "length", "nident", "pident", "mismatch", "gaps", "gapopen", "qstart", "qend", "qlen", "sstart", "send", "slen", "sstrand", "evalue", "bitscore", "qcovhsp", "stitle", "staxids", "qseq", "sseq", "sseqid", "qcovs", "qframe", "sframe", "species", "sskingdoms", "FullLineage"]]
+    blast_with_full_phylo_desc_df = blast_with_full_phylo_desc_df[["sample_name", "qseqid", "sgi", "sacc", "length", "nident", "pident", "mismatch", "gaps", "gapopen", "qstart", "qend", "qlen", "sstart", "send", "slen", "sstrand", "evalue", "bitscore", "qcovhsp", "stitle", "staxids", "qseq", "sseq", "sseqid", "qcovs", "qframe", "sframe", "species", "sskingdoms", "FullLineage"]]
     
     blast_with_full_phylo_desc_df['FullLineage'] = blast_with_full_phylo_desc_df['FullLineage'].str.lower().replace(" ","_")
     blast_with_full_phylo_desc_df['FullLineage'] = blast_with_full_phylo_desc_df['FullLineage'].str.replace(" ","_")
 
     blast_with_full_phylo_desc_df['sskingdoms'] = blast_with_full_phylo_desc_df['sskingdoms'].str.lower()
-    blast_with_full_phylo_desc_df = blast_with_full_phylo_desc_df.sort_values(["n_read_cont_cluster"], ascending = (False))
-    print(blast_with_full_phylo_desc_df)
+    #blast_with_full_phylo_desc_df = blast_with_full_phylo_desc_df.sort_values(["n_read_cont_cluster"], ascending = (False))
+    #print(blast_with_full_phylo_desc_df)
     #if spp_targets == "virus":
-    print(spp_targets)
+    #print(spp_targets)
     organism_target_lower = spp_targets.lower().replace(" ","_")
 
-    print(organism_target_lower)
+    #print(organism_target_lower)
     blast_with_full_phylo_desc_df["target_organism_match"] = np.where((blast_with_full_phylo_desc_df.sskingdoms.str.contains(organism_target_lower) | (blast_with_full_phylo_desc_df.FullLineage.str.contains(organism_target_lower))), "Y", "N")
+    #blast_with_full_phylo_desc_df["target_organism_match"] = np.where((blast_with_full_phylo_desc_df.sskingdoms.str.contains(organism_target_lower) | (blast_with_full_phylo_desc_df.FullLineage.str.contains(organism_target_lower))), "Y", "N")
     #elif spp_targets == "phytoplasma":
     #    spp_terms_to_search = ['phytoplasma','Phytoplasma']
     #    blast_with_full_phylo_desc_df["target_spp_match"] = np.where(blast_with_full_phylo_desc_df.FullLineage.str.contains('|'.join(spp_terms_to_search)), "Y", "N")

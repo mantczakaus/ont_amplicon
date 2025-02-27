@@ -281,14 +281,13 @@ process FASTPLONG {
     """
 }
 
-
 process COVSTATS {
   tag "$sampleid"
   label "setting_2"
   publishDir "${params.outdir}/${sampleid}/mapping_to_consensus", mode: 'copy'
 
   input:
-    tuple val(sampleid), path("*")
+    tuple val(sampleid), path(bed), path(consensus), path(coverage), path(top_hits), path(nanostats), val(target_size)
   output:
     path("*top_blast_with_cov_stats.txt"), optional: true
     path("*top_blast_with_cov_stats.txt"), emit: detections_summary, optional: true
@@ -297,7 +296,7 @@ process COVSTATS {
     """
     if compgen -G "*_coverage.txt" > /dev/null;
       then
-        derive_coverage_stats.py --sample ${sampleid}
+        derive_coverage_stats.py --sample ${sampleid} --blastn_results ${top_hits} --nanostat ${nanostats} --coverage ${coverage} --bed ${bed} --target_size ${target_size}
     fi
     """
 }
@@ -835,7 +834,7 @@ process RATTLE {
       rattle_clustering_min_length_set = '150'}
   }
     """
-    rattle cluster -i ${fastq} -t ${task.cpus} --lower-length ${rattle_clustering_min_length_set} ${rattle_clustering_options} -v 100 -o .
+    rattle cluster -i ${fastq} -t ${task.cpus} --lower-length ${rattle_clustering_min_length_set} ${rattle_clustering_options} -v 10000 -o .
     rattle cluster_summary -i ${fastq} -c clusters.out > ${sampleid}_cluster_summary.txt
     mkdir clusters
     rattle extract_clusters -i ${fastq} -c clusters.out -l ${sampleid} -o clusters --fastq
@@ -1138,7 +1137,16 @@ workflow {
         PYFAIDX ( EXTRACT_BLAST_HITS.out.consensus_fasta_files )
         MOSDEPTH (SAMTOOLS_CONSENSUS.out.sorted_bams.join(PYFAIDX.out.bed))
         //Derive summary file presenting coverage statistics alongside blast results
-        cov_stats_summary_ch = MOSDEPTH.out.mosdepth_results.concat(EXTRACT_BLAST_HITS.out.consensus_fasta_files, SAMTOOLS_CONSENSUS.out.coverage, FASTA2TABLE.out.blast_results, QC_POST_DATA_PROCESSING.out.stats).groupTuple().map { [it[0], it[1].flatten()] }
+        cov_stats_summary_ch = MOSDEPTH.out.mosdepth_results.join(EXTRACT_BLAST_HITS.out.consensus_fasta_files)
+                                                             .join(SAMTOOLS_CONSENSUS.out.coverage)
+                                                             .join(FASTA2TABLE.out.blast_results)
+                                                             .join(QC_POST_DATA_PROCESSING.out.stats)
+                                                             .join(ch_target_size)
+                                                             
+                                                             //.groupTuple().map {  [it[0], it[1].flatten()] }
+        //cov_stats_summary_ch = MOSDEPTH.out.mosdepth_results.join(EXTRACT_BLAST_HITS.out.consensus_fasta_files, SAMTOOLS_CONSENSUS.out.coverage, FASTA2TABLE.out.blast_results, QC_POST_DATA_PROCESSING.out.stats, ch_target_size)
+        //cov_stats_summary_ch = MOSDEPTH.out.mosdepth_results.concat(EXTRACT_BLAST_HITS.out.consensus_fasta_files, SAMTOOLS_CONSENSUS.out.coverage, FASTA2TABLE.out.blast_results, QC_POST_DATA_PROCESSING.out.stats).groupTuple().view()
+//       cov_stats_summary_ch.view()
         COVSTATS(cov_stats_summary_ch)
 
       //DETECTION_REPORT(COVSTATS.out.detections_summary.collect().ifEmpty([]))
