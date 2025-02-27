@@ -1,0 +1,11 @@
+{
+    "configurations": [
+        {
+            "type": "debugpy",
+            "request": "launch",
+            "name": "Workflow report",
+            "module": "report.report",
+            "cwd": "${workspaceFolder}/bin"
+        }
+    ]
+}
