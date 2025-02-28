@@ -170,7 +170,6 @@ process BLASTN {
       -num_threads ${params.blast_threads} \
       -outfmt '6 qseqid sgi sacc length nident pident mismatch gaps gapopen qstart qend qlen sstart send slen sstrand evalue bitscore qcovhsp stitle staxids qseq sseq sseqid qcovs qframe sframe sscinames sskingdoms' \
       -max_target_seqs 10
-      
     """
   }
 }

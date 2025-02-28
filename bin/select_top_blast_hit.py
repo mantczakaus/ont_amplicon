@@ -28,23 +28,19 @@ def main():
         #remove synthetic construct hits
         blastn_results = blastn_results[~blastn_results["species"].str.contains("synthetic construct", na=False)]
 
-    elif mode == "localdb":
+    #elif mode == "localdb":
         #retrieve spp name and accession from local db fasta header
         #rearrange column so it matches the one for NCBI
-        blastn_results = pd.read_csv(blastn_results_path, sep="\t", index_col=False, names=["qseqid", "sgi", "seq_desc", "length", "pident", "mismatch", "gaps", "gapopen", "qstart", "qend", "qlen", "sstart", "send", "slen", "sstrand", "evalue", "bitscore", "qcovhsp", "stitle", "staxids", "qseq", "sseq", "sseqid", "qcovs", "qframe", "sframe"], dtype={"stitle": 'str', "staxids": 'int'})
-        blastn_results['sacc'] = blastn_results['seq_desc'].str.split('|').str[0]
-        blastn_results['species'] = blastn_results['seq_desc'].str.split('|').str[1]
-        blastn_results['species'] = blastn_results['species'].str.replace("Species:","")
-        blastn_results = blastn_results[["qseqid", "sacc", "length", "pident", "mismatch", "gaps", "gapopen", "qstart", "qend", "qlen", "sstart", "send", "slen", "sstrand", "evalue", "bitscore", "qcovhsp", "stitle", "staxids", "qseq", "sseq", "sseqid", "qcovs", "qframe", "sframe", "species"]]
+    #    blastn_results = pd.read_csv(blastn_results_path, sep="\t", index_col=False, names=["qseqid", "sgi", "seq_desc", "length", "pident", "mismatch", "gaps", "gapopen", "qstart", "qend", "qlen", "sstart", "send", "slen", "sstrand", "evalue", "bitscore", "qcovhsp", "stitle", "staxids", "qseq", "sseq", "sseqid", "qcovs", "qframe", "sframe"], dtype={"stitle": 'str', "staxids": 'int'})
+    #    blastn_results['sacc'] = blastn_results['seq_desc'].str.split('|').str[0]
+    #    blastn_results['species'] = blastn_results['seq_desc'].str.split('|').str[1]
+    #    blastn_results['species'] = blastn_results['species'].str.replace("Species:","")
+    #    blastn_results = blastn_results[["qseqid", "sacc", "length", "pident", "mismatch", "gaps", "gapopen", "qstart", "qend", "qlen", "sstart", "send", "slen", "sstrand", "evalue", "bitscore", "qcovhsp", "stitle", "staxids", "qseq", "sseq", "sseqid", "qcovs", "qframe", "sframe", "species"]]
  
     blastn_top_hit = blastn_results.drop_duplicates(subset=["qseqid"], keep="first").copy()
     blastn_top_hit["staxids"] = blastn_top_hit["staxids"].str.split(";").str[0].astype(int)
-#    blastn_top_hit['n_read_cont_cluster'] = blastn_top_hit['qseqid'].str.split('_').str[2]
-#    blastn_top_hit['n_read_cont_cluster'] = blastn_top_hit['n_read_cont_cluster'].str.replace("RC","").astype(int)
-#    blastn_top_hit = blastn_top_hit.sort_values(["n_read_cont_cluster"], ascending=[False])
 
     staxids_list = blastn_top_hit['staxids'].unique().tolist()
-    #print(staxids_list)
     result = pytaxonkit.lineage(staxids_list)
     FullLineage_df = result[['TaxID', 'FullLineage']]
     
@@ -59,23 +55,8 @@ def main():
     blast_with_full_phylo_desc_df['FullLineage'] = blast_with_full_phylo_desc_df['FullLineage'].str.replace(" ","_")
 
     blast_with_full_phylo_desc_df['sskingdoms'] = blast_with_full_phylo_desc_df['sskingdoms'].str.lower()
-    #blast_with_full_phylo_desc_df = blast_with_full_phylo_desc_df.sort_values(["n_read_cont_cluster"], ascending = (False))
-    #print(blast_with_full_phylo_desc_df)
-    #if spp_targets == "virus":
-    #print(spp_targets)
     organism_target_lower = spp_targets.lower().replace(" ","_")
-
-    #print(organism_target_lower)
     blast_with_full_phylo_desc_df["target_organism_match"] = np.where((blast_with_full_phylo_desc_df.sskingdoms.str.contains(organism_target_lower) | (blast_with_full_phylo_desc_df.FullLineage.str.contains(organism_target_lower))), "Y", "N")
-    #blast_with_full_phylo_desc_df["target_organism_match"] = np.where((blast_with_full_phylo_desc_df.sskingdoms.str.contains(organism_target_lower) | (blast_with_full_phylo_desc_df.FullLineage.str.contains(organism_target_lower))), "Y", "N")
-    #elif spp_targets == "phytoplasma":
-    #    spp_terms_to_search = ['phytoplasma','Phytoplasma']
-    #    blast_with_full_phylo_desc_df["target_spp_match"] = np.where(blast_with_full_phylo_desc_df.FullLineage.str.contains('|'.join(spp_terms_to_search)), "Y", "N")
-    #elif spp_targets == "Fungi":
-    #    spp_terms_to_search = ['Fungi','fungi']
-    #    blast_with_full_phylo_desc_df["target_spp_match"] = np.where(blast_with_full_phylo_desc_df.FullLineage.str.contains('|'.join(spp_terms_to_search)), "Y", "N")
-
-
     blast_with_full_phylo_desc_df.to_csv(os.path.basename(blastn_results_path).replace("_top_10_hits.txt", "_top_hits_tmp.txt"), index=False, sep="\t")
 
 if __name__ == "__main__":

@@ -28,8 +28,6 @@ def main():
     samtools_cov = pd.DataFrame()
     blast_df = pd.DataFrame()
 
-    #nanostatfile = (sample_name + "_filtered_NanoStats.txt")
-    #with open(nanostatfile) as f:
     with open(nanostat) as f:
         a = " "
         while(a):
@@ -40,8 +38,6 @@ def main():
                 filtered_read_counts = int(float(elements[1].strip()))
                 print(filtered_read_counts)
     f.close()
-
-    #for blast in glob("*_megablast_top_hits.txt"):
     
     blastn_results = pd.read_csv(blast, sep="\t", header=0)
     blast_df = blastn_results.copy()
@@ -56,14 +52,16 @@ def main():
     samtools_cov = pd.read_csv(coverage, sep="\t", usecols=["#rname", "endpos", "numreads", "meandepth"], header=0)
     #samtools_cov.drop(["startpos", "covbases", "coverage", "meandepth", "meanbaseq", "meanmapq"] , axis=1, inplace=True)
     samtools_cov2 = samtools_cov.copy()
-    samtools_cov2.rename(columns={"#rname": "qseqid", "endpos": "query_match_length", "numreads": "qseq_mapping_read_count", "meandepth": "qseq_mean_depth"}, inplace=True)
+    samtools_cov2.rename(columns={"#rname": "qseqid", 
+                                  "endpos": "query_match_length", 
+                                  "numreads": "qseq_mapping_read_count", 
+                                  "meandepth": "qseq_mean_depth"}, inplace=True)
     samtools_cov2['qseq_pc_mapping_read'] = samtools_cov2['qseq_mapping_read_count'] / filtered_read_counts * 100
     print(samtools_cov2)
     #sum_aligned_read_counts = samtools_cov2['read_count'].sum()
     #sum_unaligned= filtered_read_counts - sum_aligned_read_counts
     #sum_unaligned_pc = sum_unaligned / filtered_read_counts * 100
 
-    #mosdepth = pd.read_csv(sample_name + ".thresholds.bed", sep="\t", header=0)
     mosdepth = pd.read_csv(bed, sep="\t", header=0)
     
     mosdepth.columns = ["qseqid", "start", "end", "region", "base_counts_at_depth_30X"]
@@ -81,26 +79,55 @@ def main():
     blast_df_final['30X_DEPTH_FLAG'] = np.where((blast_df_final['sgi'] != 0) & (blast_df_final['qseq_pc_depth_30X'] >= 90), "GREEN",
                                    np.where((blast_df_final['sgi'] != 0) & (blast_df_final['qseq_pc_depth_30X'] >= 75) & (blast_df_final['qseq_pc_depth_30X'] < 90), "ORANGE",
                                    np.where((blast_df_final['sgi'] != 0) & (blast_df_final['qseq_pc_depth_30X'] < 75), "RED",
-                                   np.where((blast_df_final['sgi'] == 0) & (blast_df_final['qseq_pc_depth_30X'] == 0), "WHITE", ""))))
+                                   np.where((blast_df_final['sgi'] == 0) & (blast_df_final['qseq_pc_depth_30X'] == 0), "GREY", ""))))
     
     blast_df_final['MAPPED_READ_COUNT_FLAG'] = np.where((blast_df_final['sgi'] != 0) & (blast_df_final['qseq_mapping_read_count'] >= 200), "GREEN", 
                                    np.where((blast_df_final['sgi'] != 0) & (blast_df_final['qseq_mapping_read_count'] >= 100) & (blast_df_final['qseq_mapping_read_count'] < 200), "ORANGE",
                                    np.where((blast_df_final['sgi'] != 0) & (blast_df_final['qseq_mapping_read_count'] < 100), "RED",
-                                   np.where((blast_df_final['sgi'] == 0) & (blast_df_final['qseq_mapping_read_count'] == 0), "WHITE", ""))))
+                                   np.where((blast_df_final['sgi'] == 0) & (blast_df_final['qseq_mapping_read_count'] == 0), "GREY", ""))))
     
     blast_df_final["TARGET_ORGANISM_FLAG"] = np.where((blast_df_final['sgi'] != 0) & (blast_df_final.target_organism_match.str.match("Y")), "GREEN",
                                              np.where((blast_df_final['sgi'] != 0) & (blast_df_final.target_organism_match.str.match("N")), "RED",
-                                             np.where((blast_df_final['sgi'] == 0), "WHITE", "")))
-       #Unmapped = {"sample_name" : sample_name, "qseqid" : "Unmapped", "consensus_seq" : "NA", "read_counts" : "NA", "sgi" : "NA", "sacc" : "NA", "length": "NA", "nident": "NA", "pident": "NA", "mismatch" : "NA", "gapopen" : "NA", "qstart" : "NA", "qend": "NA", "qlen" : "NA", "sstart": "NA", "send": "NA", "slen": "NA", "sstrand": "NA", "evalue": "NA", "bitscore": "NA", "query_coverage": "NA", "orientation": "NA", "species" : "NA", "kingdom": "NA", "full_lineage": "NA", "query_match_seq" : "NA", "query_match_length" : "NA", "read_count": sum_unaligned, "pc_read" : sum_unaligned_pc, "mean_depth" : "NA", "pc_depth_30X": "NA", "target_organism_match": "NA"}
-    #blast_df_final.loc[len(blast_df_final)] = Unmapped
-    #blast_df_final = blast_df_final.reset_index(drop=True)
-    blast_df_final["TARGET_SIZE_FLAG"] = np.where((blast_df_final['query_match_length'] <= float(target_size) + (0.1 * float(target_size))) & (blast_df_final['query_match_length'] >= float(target_size) - (0.1 * float(target_size))), "GREEN", "ORANGE")
+                                             np.where((blast_df_final['sgi'] == 0), "GREY", "")))
+    #######TARGET_SIZE_FLAG
+    #Conditions:
+    #GREEN: If sgi != 0 and the query_match_length is within ±20% of the target_size.
+    #ORANGE: If sgi != 0 and the query_match_length is between:
+    #    Target size + 20% to 40%, OR
+    #    Target size - 20% to -40%.
+    #RED: If sgi != 0 and the query_match_length is outside the range of ±40% of the target_size.
+    #GREY: If sgi == 0.
     
+    
+    blast_df_final["TARGET_SIZE_FLAG"] = np.where(
+        (blast_df_final['sgi'] != 0) &
+        (blast_df_final['query_match_length'] <= float(target_size) + (0.2 * float(target_size))) &
+        (blast_df_final['query_match_length'] >= float(target_size) - (0.2 * float(target_size))),
+        "GREEN",
+         np.where(
+            ((blast_df_final['sgi'] != 0) &
+            (blast_df_final['query_match_length'] > float(target_size) + (0.2 * float(target_size))) &
+            (blast_df_final['query_match_length'] <= float(target_size) + (0.4 * float(target_size)))) |
+            ((blast_df_final['sgi'] != 0) &
+            (blast_df_final['query_match_length'] < float(target_size) - (0.2 * float(target_size))) &
+            (blast_df_final['query_match_length'] >= float(target_size) - (0.4 * float(target_size)))),
+            "ORANGE",
+            np.where(
+                (blast_df_final['sgi'] != 0) &
+                ((blast_df_final['query_match_length'] < float(target_size) - (0.4 * float(target_size))) |
+                (blast_df_final['query_match_length'] > float(target_size) + (0.4 * float(target_size)))),
+                "RED",
+                np.where(
+                    blast_df_final['sgi'] == 0,
+                    "GREY",
+                    ""
+                )
+            )
+        )
+    )
+
     blast_df_final['qseq_pc_mapping_read'] = blast_df_final['qseq_pc_mapping_read'].apply(lambda x: float("{:.1f}".format(x)))
     blast_df_final.to_csv(str(sample_name) + "_top_blast_with_cov_stats.txt", index=None, sep="\t")
-
     print(blast_df_final)
-
-
 if __name__ == "__main__":
     main()
