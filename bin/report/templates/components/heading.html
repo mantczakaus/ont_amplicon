@@ -2,8 +2,10 @@
   <div class="row mt-5 mb-2 align-items-center">
     <div class="col-9 mr-3">
       <h1>{{ title }}</h1>
-      <h3>Sample ID: {{ sample_id }}</h3>
-      <p class="lead">{{ subtitle_html|safe }}</p>
+      <p class="lead">
+        Sample ID: <code>{{ sample_id }}</code>
+      </p>
+      <p>{{ subtitle_html|safe }}</p>
     </div>
     <div class="col-3">
       <img
