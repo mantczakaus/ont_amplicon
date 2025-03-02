@@ -4,8 +4,8 @@
             "type": "debugpy",
             "request": "launch",
             "name": "Workflow report",
-            "module": "report.report",
-            "cwd": "${workspaceFolder}/bin"
+            "program": "bin/build_report.py",
+            "args": ["results"],
         }
     ]
 }

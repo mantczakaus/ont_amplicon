@@ -144,8 +144,3 @@ def _get_run_qc() -> dict:
             if row['Sample'] == config.sample_id:
                 return RunQC(row)
     return {}
-
-
-if __name__ == '__main__':
-    result_dir = Path('../results')
-    render(result_dir)
