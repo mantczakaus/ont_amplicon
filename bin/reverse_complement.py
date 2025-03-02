@@ -50,7 +50,37 @@ def main():
 
 def reverse_complement(seq):
     alt_map = {'N':'0'}
-    complement = {'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A'} 
+    complement = {'A': 'T',
+                  'T': 'A',
+                  'C': 'G', 
+                  'G': 'C', 
+                  'N': 'N',
+                  'R': 'Y',
+                  'Y': 'R',
+                  'K': 'M',
+                  'M': 'K',
+                  'B': 'V',
+                  'V': 'B',
+                  'H': 'D',
+                  'D': 'H',
+                  'S': 'S',
+                  'W': 'W',
+                  'a': 't',
+                  't': 'a',
+                  'c': 'g',
+                  'g': 'c',
+                  'n': 'n',
+                  'r': 'y',
+                  'y': 'r',
+                  'k': 'm',
+                  'm': 'k',
+                  'b': 'v',
+                  'v': 'b',
+                  'h': 'd',
+                  'd': 'h',
+                  's': 's',
+                  'w': 'w'}
+        
     for k,v in alt_map.items():
         seq = seq.replace(k,v)
     bases = list(seq) 

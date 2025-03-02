@@ -26,7 +26,7 @@ process NANOPLOT {
   publishDir "${params.outdir}/${sampleid}/qc/nanoplot",  pattern: '{*NanoStats.txt}', mode: 'link'
   publishDir "${params.outdir}/${sampleid}/qc/nanoplot",  pattern: '{*LengthvsQualityScatterPlot_dot.html}', mode: 'link'
   tag "${sampleid}"
-  label "setting_10"
+  label "setting_2"
 
   input:
     tuple val(sampleid), path(sample)
@@ -35,7 +35,7 @@ process NANOPLOT {
     path("*NanoStats.txt")
     path("*LengthvsQualityScatterPlot_dot.html")
     path("*NanoStats.txt"), emit: read_counts
-    tuple val(sampleid), path("${sampleid}_raw_NanoStats.txt"), emit: stats, optional: true
+    tuple val(sampleid), path("${sampleid}_filtered_NanoStats.txt"), emit: stats, optional: true
 
   
   script:
