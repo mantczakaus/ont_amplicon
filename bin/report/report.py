@@ -138,7 +138,7 @@ def _get_run_qc() -> dict:
     - raw_reads_flag
     - qfiltered_flag
     """
-    with config.run_stats_path.open() as f:
+    with config.run_qc_path.open() as f:
         reader = csv.DictReader(f, delimiter='\t')
         for row in reader:
             if row['Sample'] == config.sample_id:

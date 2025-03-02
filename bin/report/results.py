@@ -1,7 +1,8 @@
 """Define specific results from the analysis."""
 
-from .config import Config
+import base64
 
+from .config import Config
 
 config = Config()
 
@@ -69,8 +70,18 @@ class RunQC(AbstractDataRow):
         return FLAGS.DANGER
 
     @property
+    def nanoplot_raw_html_base64(self):
+        content_bytes = config.nanoplot_raw_html_path.read_bytes()
+        return base64.b64encode(content_bytes).decode()
+
+    @property
+    def nanoplot_filtered_html_base64(self):
+        content_bytes = config.nanoplot_filtered_html_path.read_bytes()
+        return base64.b64encode(content_bytes).decode()
+
+    @property
     def html_file(self):
-        return config.run_qc_html_file
+        return config.run_qc_html_file + '1'
 
 
 class AbstractResultRows:

@@ -48,12 +48,26 @@ class Config:
         return self.result_dir / self.PARAMS_FILE  # TODO: not available yet
 
     @property
-    def run_stats_path(self) -> Path:
+    def run_qc_path(self) -> Path:
         return list(self.result_dir.glob('run_qc_report_*.txt'))[0]
 
     @property
     def run_qc_html_file(self) -> Path:
         return list(self.result_dir.glob('run_qc_report_*.html'))[0].name
+
+    @property
+    def nanoplot_raw_html_path(self) -> Path:
+        return list(self.result_dir.glob(
+            '*raw_nanoplot-report.html',
+            case_sensitive=False,
+        ))[0]
+
+    @property
+    def nanoplot_filtered_html_path(self) -> Path:
+        return list(self.result_dir.glob(
+            '*filtered_nanoplot-report.html',
+            case_sensitive=False,
+        ))[0]
 
     def _get_sample_id(self, result_dir: Path):
         """Return the sample ID from the result directory."""
