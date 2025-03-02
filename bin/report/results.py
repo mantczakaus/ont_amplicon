@@ -81,7 +81,7 @@ class RunQC(AbstractDataRow):
 
     @property
     def html_file(self):
-        return config.run_qc_html_file + '1'
+        return config.run_qc_html_file
 
 
 class AbstractResultRows:
