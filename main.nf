@@ -944,7 +944,7 @@ process SAMTOOLS_CONSENSUS {
 
 process TIMESTAMP_START {
     publishDir "${params.outdir}/logs", mode: 'copy', overwrite: true
-    
+    cache false
     output:
     path "*nextflow_start_timestamp.txt"
 
@@ -954,10 +954,10 @@ process TIMESTAMP_START {
     echo "\$START_TIMESTAMP" > "\${START_TIMESTAMP}_nextflow_start_timestamp.txt"
     """
 }
-
+/*
 process TIMESTAMP_END {
     publishDir "${params.outdir}/logs", mode: 'copy', overwrite: true
-    
+    cache false
     output:
     path "*nextflow_end_timestamp.txt"
 
@@ -967,6 +967,7 @@ process TIMESTAMP_END {
     echo "\$END_TIMESTAMP" > "\${END_TIMESTAMP}_nextflow_end_timestamp.txt"
     """
 }
+*/
 include { NANOPLOT as QC_PRE_DATA_PROCESSING } from './modules.nf'
 include { NANOPLOT as QC_POST_DATA_PROCESSING } from './modules.nf'
 
@@ -1203,5 +1204,5 @@ workflow {
       
     }
   }
-  TIMESTAMP_END ()
+//  TIMESTAMP_END ()
 }
