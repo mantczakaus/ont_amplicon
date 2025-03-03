@@ -12,15 +12,15 @@ echo "$START_TIMESTAMP" > "${START_TIMESTAMP}_nextflow_start_timestamp.log"
 
 
 nextflow run ~/code/github/dev/ont_amplicon/main.nf  -profile singularity -resume  -with-report $(date +"%Y%m%d%H%M%S"_nextflow_report.html) \
-	 --analysis_mode clustering \
-	 --merge \
-	 --adapter_trimming \
-	 --qual_filt \
-	 --chopper_options '-q 8 -l 100' \
-	 --blast_threads 8 \
-	 --blastn_db /scratch/datasets/blast_db/20240730/nt \
-         --blastn_COI /work/hia_mt18005/diagnostics/2024/20240419_24_30_MTDT/MetaCOXI/MetaCOXI_Seqs.fasta \
-	 --taxdump ~/.taxonkit
+	--analysis_mode clustering \
+	--merge \
+	--adapter_trimming \
+	--qual_filt \
+	--chopper_options '-q 8 -l 100' \
+	--blast_threads 8 \
+	--blastn_db /scratch/datasets/blast_db/20240730/nt \
+	--blastn_COI /work/hia_mt18005/diagnostics/2024/20240419_24_30_MTDT/MetaCOXI/MetaCOXI_Seqs.fasta \
+	--taxdump ~/.taxonkit
 
 END_TIMESTAMP=`date "+%Y%m%d%H%M%S"`
 echo "$END_TIMESTAMP" > "${END_TIMESTAMP}_nextflow_end_timestamp.log"

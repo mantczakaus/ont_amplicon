@@ -155,6 +155,7 @@ process BLASTN {
 //    tuple val(sampleid), path("${sampleid}_ids_to_reverse_complement.txt"), path("${sampleid}*__megablast_COI_top_hit.txt"), emit: coi_blast_results, optional: true
 
   script:
+  def tmp_blast_output = assembly.getBaseName() + "_megablast_top_10_hits_temp.txt"
   def blast_output = assembly.getBaseName() + "_megablast_top_10_hits.txt"
 //  def blast_output_COI = assembly.getBaseName() + "_megablast_COI_top_hit.txt"
   
@@ -164,12 +165,14 @@ process BLASTN {
     cp ${blastn_db_dir}/taxdb.bti .
     blastn -query ${assembly} \
       -db ${params.blastn_db} \
-      -out ${blast_output} \
+      -out ${tmp_blast_output} \
       -evalue 1e-3 \
       -word_size 28 \
       -num_threads ${params.blast_threads} \
       -outfmt '6 qseqid sgi sacc length nident pident mismatch gaps gapopen qstart qend qlen sstart send slen sstrand evalue bitscore qcovhsp stitle staxids qseq sseq sseqid qcovs qframe sframe sscinames sskingdoms' \
       -max_target_seqs 10
+    
+    cat <(printf "qseqid\tsgi\tsacc\tlength\tnident\tpident\tmismatch\tgaps\tgapopen\tqstart\tqlen\tqend\tsstart\tsend\tslen\tsstrand\tevalue\tbitscore\tqcovhsp\tstitle\tstaxids\tqseq\tsseq\tsseqid\tqcovs\tqframe\tsframe\tspecies\tsskingdoms\n") ${tmp_blast_output} > ${blast_output}
     """
   }
 }
@@ -215,8 +218,8 @@ process BLASTN2 {
     tuple val(sampleid), path("${sampleid}_ids_to_reverse_complement.txt"), path("${sampleid}*__megablast_COI_top_hit.txt"), emit: coi_blast_results, optional: true
 
   script:
+  def tmp_blast_output = assembly.getBaseName() + "_megablast_top_10_hits_temp.txt"
   def blast_output = assembly.getBaseName() + "_megablast_top_10_hits.txt"
-  def blast_output_COI = assembly.getBaseName() + "_megablast_COI_top_hit.txt"
   
   if (params.blast_mode == "ncbi") {
     """
@@ -224,11 +227,13 @@ process BLASTN2 {
     cp ${blastn_db_dir}/taxdb.bti .
     blastn -query ${assembly} \
       -db ${params.blastn_db} \
-      -out ${blast_output} \
+      -out ${tmp_blast_output} \
       -evalue 1e-3 \
       -num_threads ${params.blast_threads} \
       -outfmt '6 qseqid sgi sacc length nident pident mismatch gaps gapopen qstart qend qlen sstart send slen sstrand evalue bitscore qcovhsp stitle staxids qseq sseq sseqid qcovs qframe sframe sscinames sskingdoms' \
       -max_target_seqs 10
+      
+    cat <(printf "qseqid\tsgi\tsacc\tlength\tnident\tpident\tmismatch\tgaps\tgapopen\tqstart\tqlen\tqend\tsstart\tsend\tslen\tsstrand\tevalue\tbitscore\tqcovhsp\tstitle\tstaxids\tqseq\tsseq\tsseqid\tqcovs\tqframe\tsframe\tspecies\tsskingdoms\n") ${tmp_blast_output} > ${blast_output}
     """
   }
 }
@@ -379,8 +384,10 @@ process EXTRACT_BLAST_HITS {
   output:
     file "${sampleid}_final_polished_consensus_match.fasta"
     file "${sampleid}_reference_match.fasta"
+    path("${sampleid}*_megablast_top_hits_tmp.txt")
 
     tuple val(sampleid), path("${sampleid}*_megablast_top_hits_tmp.txt"), emit: topblast, optional: true
+//    tuple val(sampleid), file("${sampleid}*_megablast_top_hits.txt"), emit: blast_results, optional: true
     tuple val(sampleid), path("${sampleid}_reference_match.fasta"), emit: reference_fasta_files, optional: true
     tuple val(sampleid), path("${sampleid}_final_polished_consensus_match.fasta"), emit: consensus_fasta_files, optional: true
 
@@ -935,10 +942,36 @@ process SAMTOOLS_CONSENSUS {
     """
 }
 
+process TIMESTAMP_START {
+    publishDir "${params.outdir}/logs", mode: 'copy', overwrite: true
+    
+    output:
+    path "*nextflow_start_timestamp.txt"
+
+    script:
+    """
+    START_TIMESTAMP=\$(date "+%Y%m%d%H%M%S")
+    echo "\$START_TIMESTAMP" > "\${START_TIMESTAMP}_nextflow_start_timestamp.txt"
+    """
+}
+
+process TIMESTAMP_END {
+    publishDir "${params.outdir}/logs", mode: 'copy', overwrite: true
+    
+    output:
+    path "*nextflow_end_timestamp.txt"
+
+    script:
+    """
+    END_TIMESTAMP=\$(date "+%Y%m%d%H%M%S")
+    echo "\$END_TIMESTAMP" > "\${END_TIMESTAMP}_nextflow_end_timestamp.txt"
+    """
+}
 include { NANOPLOT as QC_PRE_DATA_PROCESSING } from './modules.nf'
 include { NANOPLOT as QC_POST_DATA_PROCESSING } from './modules.nf'
 
 workflow {
+  TIMESTAMP_START ()
   if (params.samplesheet) {
     Channel
       .fromPath(params.samplesheet, checkIfExists: true)
@@ -1001,7 +1034,7 @@ workflow {
       error("Please provide the path to a reference fasta file with the parameter --reference.")
       }
   }
-
+  
   if (params.merge) {
     //Merge split fastq.gz files
     FASTCAT ( ch_sample )
@@ -1150,6 +1183,8 @@ workflow {
 //       cov_stats_summary_ch.view()
         COVSTATS(cov_stats_summary_ch)
 
+      
+
       //DETECTION_REPORT(COVSTATS.out.detections_summary.collect().ifEmpty([]))
 //        }
       }
@@ -1161,10 +1196,12 @@ workflow {
         MEDAKA ( SAMTOOLS.out.sorted_sample )
         FILTER_VCF ( MEDAKA.out.unfilt_vcf )
       }
-*/
+*/    
       else {
         error("Analysis mode (clustering) not specified with e.g. '--analysis_mode clustering' or via a detectable config file.")
       }
+      
     }
   }
+  TIMESTAMP_END ()
 }
