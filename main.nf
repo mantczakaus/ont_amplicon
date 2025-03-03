@@ -251,6 +251,7 @@ process CHOPPER {
     gunzip -c ${sample} | chopper ${chopper_options} 2> ${sampleid}_chopper.log | gzip > ${sampleid}_filtered.fastq.gz
     """
 }
+/*
 process FASTPLONG {
   publishDir "${params.outdir}/${sampleid}/preprocessing/chopper", pattern: '*_chopper.log', mode: 'link'
   tag "${sampleid}"
@@ -279,7 +280,7 @@ process FASTPLONG {
     fi
     """
 }
-
+*/
 process COVSTATS {
   tag "$sampleid"
   label "setting_2"
@@ -495,7 +496,7 @@ process EXTRACT_TAXONOMY {
 */
 process FASTA2TABLE {
   tag "$sampleid"
-  label "setting_3"
+  label "setting_2"
   publishDir "${params.outdir}/${sampleid}/megablast", mode: 'copy'
 
   input:
@@ -642,9 +643,9 @@ process MEDAKA2 {
     """
     medaka_consensus -i ${fastq} -d ${assembly} -t ${task.cpus} -o ${sampleid}
     
-    mv ${sampleid}/calls_to_draft.bam ${sampleid}_medaka_consensus.bam
-    mv ${sampleid}/calls_to_draft.bam.bai ${sampleid}_medaka_consensus.bam.bai
-    mv ${sampleid}/consensus.fasta ${sampleid}_medaka_consensus.fasta
+    cp ${sampleid}/calls_to_draft.bam ${sampleid}_medaka_consensus.bam
+    cp ${sampleid}/calls_to_draft.bam.bai ${sampleid}_medaka_consensus.bam.bai
+    cp ${sampleid}/consensus.fasta ${sampleid}_medaka_consensus.fasta
     samtools consensus -f fasta -a -A ${sampleid}_medaka_consensus.bam --call-fract 0.5 -H 0.5 -o ${sampleid}_samtools_consensus.fasta
     """
 }
@@ -739,7 +740,6 @@ process PYFAIDX {
     faidx --transform bed ${fasta} > ${sampleid}.bed
     """
 }
-
 
 process PORECHOP_ABI {
   tag "${sampleid}"
@@ -924,8 +924,10 @@ process SAMTOOLS_CONSENSUS {
     path "${sampleid}_histogram.txt"
     tuple val(sampleid), path(consensus), path("${sampleid}_aln.sorted.bam"), path("${sampleid}_aln.sorted.bam.bai"), emit: sorted_bams
     tuple val(sampleid), path("${sampleid}_coverage.txt"), emit: coverage
+    tuple val(sampleid), path("${sampleid}_aligning_ids.txt"), emit: seqids
   script:
     """
+    samtools view -S -F 4 ${sample} | cut -f1 > ${sampleid}_aligning_ids.txt
     samtools view -Sb -F 4 ${sample} | samtools sort -o ${sampleid}_aln.sorted.bam
     samtools index ${sampleid}_aln.sorted.bam
     samtools coverage ${sampleid}_aln.sorted.bam  > ${sampleid}_coverage.txt

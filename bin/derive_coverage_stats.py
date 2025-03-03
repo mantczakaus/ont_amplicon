@@ -76,20 +76,78 @@ def main():
     blast_df_final = reduce(lambda left,right: pd.merge(left,right,on=["qseqid"],how='outer').fillna(0), summary_dfs)    
 
     blast_df_final = blast_df_final.sort_values(["qseq_pc_mapping_read", "target_organism_match"], ascending = (False, False))
-    blast_df_final['30X_DEPTH_FLAG'] = np.where((blast_df_final['sgi'] != 0) & (blast_df_final['qseq_pc_depth_30X'] >= 90), "GREEN",
-                                   np.where((blast_df_final['sgi'] != 0) & (blast_df_final['qseq_pc_depth_30X'] >= 75) & (blast_df_final['qseq_pc_depth_30X'] < 90), "ORANGE",
-                                   np.where((blast_df_final['sgi'] != 0) & (blast_df_final['qseq_pc_depth_30X'] < 75), "RED",
-                                   np.where((blast_df_final['sgi'] == 0) & (blast_df_final['qseq_pc_depth_30X'] == 0), "GREY", ""))))
+    #######30X_DEPTH_FLAG#######
+    #Conditions:
+    #GREEN: If sgi != 0 and the qseq_pc_depth_30X is >=90
+    #ORANGE: If sgi != 0 and the query_match_length is between 75 and 90.
+    #RED: If sgi != 0 and the query_match_length is <75.
+    #GREY: If sgi == 0.
+
+    blast_df_final['30X_DEPTH_FLAG'] = np.where(
+        (blast_df_final['sgi'] != 0) & 
+        (blast_df_final['qseq_pc_depth_30X'] >= 90), 
+        "GREEN",
+        np.where((blast_df_final['sgi'] != 0) & 
+            (blast_df_final['qseq_pc_depth_30X'] >= 75) & 
+            (blast_df_final['qseq_pc_depth_30X'] < 90), 
+            "ORANGE",
+            np.where((blast_df_final['sgi'] != 0) & 
+                (blast_df_final['qseq_pc_depth_30X'] < 75), 
+                "RED",
+                np.where((blast_df_final['sgi'] == 0) & 
+                    (blast_df_final['qseq_pc_depth_30X'] == 0), 
+                    "GREY", 
+                    ""
+                )
+            )
+        )
+    )
+    #######MAPPED_READ_COUNT_FLAG#######
+    #Conditions:
+    #GREEN: If sgi != 0 and the qseq_mapping_read_count is >=200
+    #ORANGE: If sgi != 0 and the query_match_length is between 100 and 200.
+    #RED: If sgi != 0 and the query_match_length is <100.
+    #GREY: If sgi == 0.
     
-    blast_df_final['MAPPED_READ_COUNT_FLAG'] = np.where((blast_df_final['sgi'] != 0) & (blast_df_final['qseq_mapping_read_count'] >= 200), "GREEN", 
-                                   np.where((blast_df_final['sgi'] != 0) & (blast_df_final['qseq_mapping_read_count'] >= 100) & (blast_df_final['qseq_mapping_read_count'] < 200), "ORANGE",
-                                   np.where((blast_df_final['sgi'] != 0) & (blast_df_final['qseq_mapping_read_count'] < 100), "RED",
-                                   np.where((blast_df_final['sgi'] == 0) & (blast_df_final['qseq_mapping_read_count'] == 0), "GREY", ""))))
-    
-    blast_df_final["TARGET_ORGANISM_FLAG"] = np.where((blast_df_final['sgi'] != 0) & (blast_df_final.target_organism_match.str.match("Y")), "GREEN",
-                                             np.where((blast_df_final['sgi'] != 0) & (blast_df_final.target_organism_match.str.match("N")), "RED",
-                                             np.where((blast_df_final['sgi'] == 0), "GREY", "")))
-    #######TARGET_SIZE_FLAG
+    blast_df_final['MAPPED_READ_COUNT_FLAG'] = np.where(
+        (blast_df_final['sgi'] != 0) & 
+        (blast_df_final['qseq_mapping_read_count'] >= 200), 
+        "GREEN",
+        np.where((blast_df_final['sgi'] != 0) & 
+            (blast_df_final['qseq_mapping_read_count'] >= 100) & 
+            (blast_df_final['qseq_mapping_read_count'] < 200), 
+            "ORANGE",
+            np.where((blast_df_final['sgi'] != 0) & 
+                (blast_df_final['qseq_mapping_read_count'] < 100), 
+                "RED",
+                np.where((blast_df_final['sgi'] == 0) & 
+                    (blast_df_final['qseq_mapping_read_count'] == 0), 
+                    "GREY", 
+                    ""
+                )
+            )
+        )
+    )
+    #######TARGET_ORGANISM_FLAG#######
+    #Conditions:
+    #GREEN: If sgi != 0 and the target_organism_match is Y
+    #RED: If sgi != 0 and the target_organism_match is N
+    #GREY: If sgi == 0.
+
+    blast_df_final["TARGET_ORGANISM_FLAG"] = np.where(
+        (blast_df_final['sgi'] != 0) & 
+        (blast_df_final.target_organism_match.str.match("Y")), 
+        "GREEN",
+        np.where((blast_df_final['sgi'] != 0) & 
+            (blast_df_final.target_organism_match.str.match("N")), 
+            "RED",
+            np.where((blast_df_final['sgi'] == 0), 
+                "GREY",
+                ""
+            )
+        )
+    )
+    #######TARGET_SIZE_FLAG#######
     #Conditions:
     #GREEN: If sgi != 0 and the query_match_length is within ±20% of the target_size.
     #ORANGE: If sgi != 0 and the query_match_length is between:
@@ -97,7 +155,6 @@ def main():
     #    Target size - 20% to -40%.
     #RED: If sgi != 0 and the query_match_length is outside the range of ±40% of the target_size.
     #GREY: If sgi == 0.
-    
     
     blast_df_final["TARGET_SIZE_FLAG"] = np.where(
         (blast_df_final['sgi'] != 0) &
