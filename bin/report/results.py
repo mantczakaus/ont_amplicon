@@ -1,6 +1,7 @@
 """Define specific results from the analysis."""
 
 import base64
+from Bio import SeqIO
 
 from .config import Config
 
@@ -111,32 +112,103 @@ class AbstractResultRows:
 
 
 class BlastHits(AbstractResultRows):
-    COLUMNS = [
-        'Sample_name',
-        'qseqid',
-        'consensus_sequence',
-        'length',
-        'reference_title',
-        'reference_accession',
-        'reference_length',
-        'pc_ident',
-        'evalue',
-        'bitscore',
-        'query_coverage',
-        'orientation',
-        'species',
-        'kingdom',
-        'full_lineage',
-        'read_count',
-        'pc_read',
-        'pc_depth_30X',
-        'target_organism_match',
-        'status',
+    COLUMN_LABELS = [
+        ('sample_name', 'Sample ID'),
+        ('qseqid', 'Query ID'),
+        ('consensus_seq', None),
+        ('sgi', None),
+        ('sacc', 'Hit accession'),
+        ('alignment_length', 'Alignment length'),
+        ('nident', None),
+        ('pident', 'Identity %'),
+        ('mismatch', None),
+        ('gaps', 'Gaps'),
+        ('gapopen', None),
+        ('qstart', 'Query start'),
+        ('qend', 'Query end'),
+        ('qlen', None),
+        ('sstart', 'Subject start'),
+        ('send', 'Subject end'),
+        ('slen', 'Subject length'),
+        ('sstrand', None),
+        ('evalue', 'E-value'),
+        ('bitscore', 'Bitscore'),
+        ('qcovhsp', None),
+        ('stitle', 'Subject title'),
+        ('staxids', None),
+        ('qseq', None),
+        ('sseq', None),
+        ('sseqid', 'Subject ID'),
+        ('qcovs', None),
+        ('qframe', None),
+        ('sframe', None),
+        ('species', None),
+        ('sskingdoms', 'Kingdom'),
+        ('FullLineage', None),
+        ('target_organism_match', 'Target organism match'),
+        ('n_read_cont_cluster', None),
+        ('query_match_length', None),
+        ('qseq_mapping_read_count', 'Reads mapped'),
+        ('qseq_mean_depth', 'Read depth'),
+        ('qseq_pc_mapping_read', 'Reads mapped (%)'),
+        ('qseq_pc_depth_30X', '30X depth coverage (%)'),
+        ('30X_DEPTH_FLAG', None),
+        ('MAPPED_READ_COUNT_FLAG', None),
+        ('TARGET_ORGANISM_FLAG', None),
+        ('TARGET_SIZE_FLAG', None),
     ]
+    COLUMNS = [c for c, _ in COLUMN_LABELS]
+    COLUMNS_TO_DISPLAY = [c for c in COLUMN_LABELS if c[1] is not None]
 
 
 class BlastHitsPolished(AbstractResultRows):
     COLUMNS = [
-        'Sample_name',
-        '?',
+        'qseqid',
+        'sgi',
+        'sacc',
+        'length',
+        'nident',
+        'pident',
+        'mismatch',
+        'gaps',
+        'gapopen',
+        'qstart',
+        'qlen',
+        'qend',
+        'sstart',
+        'send',
+        'slen',
+        'sstrand',
+        'evalue',
+        'bitscore',
+        'qcovhsp',
+        'stitle',
+        'staxids',
+        'qseq',
+        'sseq',
+        'sseqid',
+        'qcovs',
+        'qframe',
+        'sframe',
+        'species',
+        'sskingdoms',
     ]
+
+
+class ConsensusFASTA:
+
+    def __init__(self, fasta_path):
+        self.fasta_path = fasta_path
+        self.records = list(SeqIO.parse(fasta_path, 'fasta'))
+
+    def __len__(self):
+        return len(self.records)
+
+    def __iter__(self):
+        return iter(self.records)
+
+    def to_json(self):
+        return {
+            seq.id: str(seq.seq)
+            for seq in self.records
+        }

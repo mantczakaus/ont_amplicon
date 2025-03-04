@@ -1,4 +1,4 @@
-"""Entrypoint for rendering a workflow report."""
+"""Render a workflow report from output files."""
 
 import base64
 import json
@@ -10,11 +10,17 @@ from jinja2 import Environment, FileSystemLoader
 from pathlib import Path
 
 from . import config
-from .results import Metadata, RunQC
+from .results import (
+    BlastHits,
+    ConsensusFASTA,
+    Metadata,
+    RunQC,
+)
 from .utils import serialize
-
+from .bam import render_bam_html
 
 logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 config = config.Config()
 
 TEMPLATE_DIR = Path(__file__).parent / 'templates'
@@ -23,15 +29,16 @@ STATIC_DIR = Path(__file__).parent / 'static'
 
 def render(result_dir: Path):
     """Render to HTML report to the configured output directory."""
+    config.load(result_dir)
+    render_bam_html()
     j2 = Environment(loader=FileSystemLoader(TEMPLATE_DIR))
     template = j2.get_template('index.html')
-    config.load_results(result_dir)
     context = _get_report_context()
 
     # ! TODO: Remove this
     path = config.result_dir / 'example_report_context.json'
     with path.open('w') as f:
-        print(f"Writing report context to {path}")
+        logger.info(f"Writing report context to {path}")
         json.dump(context, f, indent=2, default=serialize)
     # ! ~~~
 
@@ -77,19 +84,34 @@ def _get_img_src(path):
 
 def _get_report_context() -> dict:
     """Build the context for the report template."""
+    blast_hits = _get_blast_hits()
+    consensus_fasta = ConsensusFASTA(config.consensus_fasta_path)
     return {
         'title': config.REPORT.TITLE,
         'subtitle_html': config.REPORT.SUBTITLE,
         'sample_id': config.sample_id,
         'facility': "Hogwarts",  # ! TODO
         'analyst_name': "John Doe",  # ! TODO
-        'start_time': config.start_time.strftime("%Y-%m-%d %H:%M:%S"),
+        'start_time': _get_start_time(),
         'end_time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         'wall_time': _get_walltime(),
         'metadata': _get_metadata(),
         'parameters': {},  # _get_parameters(),  # TODO: doesn't exist yet
         'run_qc': _get_run_qc(),
+        'bam_html_file': config.bam_html_output_path.name,
+        'consensus_blast_hits': blast_hits,
+        'consensus_blast_stats': {
+            'percent': round(100 * len(blast_hits) / len(consensus_fasta)),
+            'count': len(blast_hits),
+        },
+        'consensus_fasta': consensus_fasta,
     }
+
+
+def _get_start_time():
+    if not config.start_time:
+        return None
+    return config.start_time.strftime("%Y-%m-%d %H:%M:%S")
 
 
 def _get_walltime():
@@ -144,3 +166,10 @@ def _get_run_qc() -> dict:
             if row['Sample'] == config.sample_id:
                 return RunQC(row)
     return {}
+
+
+def _get_blast_hits() -> BlastHits:
+    """Return the blast hits as a dict."""
+    with config.blast_hits_path.open() as f:
+        reader = csv.DictReader(f, delimiter='\t')
+        return BlastHits(reader)

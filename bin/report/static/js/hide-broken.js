@@ -17,17 +17,8 @@ function hideBrokenLinks() {
 }
 
 function hideIfLinkBroken(element, url) {
-  console.log("Testing element:" + element);
-  console.log("Testing href:" + url);
-  let testImg = new Image();
-  testImg.src = url;
-  testImg.onload = () => {
-      // Do nothing, link is valid
-  };
-  testImg.onerror = () => {
-      element.style.display = "none";
-      console.log("Hiding element with broken link: " + url);
-  };
+  // Unfortunately, this can't be determined with an offline file:// HTML page
+  return false;
 }
 
 document.addEventListener('DOMContentLoaded', hideBrokenLinks);

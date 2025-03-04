@@ -15,6 +15,7 @@
     <td class="fw-bold">Analysis completed</td>
     <td>{{ end_time }}</td>
   </tr>
+  {% if wall_time.hours %}
   <tr>
     <td class="fw-bold">Wall time</td>
     <td>
@@ -22,4 +23,5 @@
       hours
     </td>
   </tr>
+  {% endif %}
 </table>

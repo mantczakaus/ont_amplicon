@@ -1,0 +1,47 @@
+<div
+  class="modal fade"
+  id="consensusBlastModal"
+  tabindex="-1"
+  aria-labelledby="consensusBlastModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="consensusBlastModalLabel">
+          Consensus sequence statistics
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <p>
+          This table shows BLAST hit and read mapping statistics for the assembled consensus sequences.
+        </p>
+
+        <table class="table table-striped tight">
+          <thead>
+            <tr>
+              {% for col_id, colname in consensus_blast_hits.COLUMNS_TO_DISPLAY %}
+              <th>{{ colname }}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in consensus_blast_hits %}
+            <tr>
+              {% for col_id, colname in consensus_blast_hits.COLUMNS_TO_DISPLAY %}
+              <td>{{ row[col_id] }}</td>
+              {% endfor %}
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

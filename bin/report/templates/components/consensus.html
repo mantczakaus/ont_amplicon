@@ -1,0 +1,49 @@
+<h2>Consensus sequences</h2>
+
+<p>
+  This section shows the consensus sequences assembled from the sequencing reads. Based on the data shown here, the analyst should select one of more consensus sequences as a reference for taxonomic identification of the sample.
+</p>
+
+<p class="alert alert-warning">
+  It is likely that only some of the sequences shown here match the sample organism. Erroneous sequences can originate from sample contamination or from sequencing/assembly artefacts. It is the responsibility of the analyst to select the most appropriate sequence(s) for taxonomic identification based on the data shown. Furthermore, the results shown here <strong>cannot be used</strong> to make a confident assessment of the sample taxonomy. Taxonomic identity should be determined by downstream analysis.
+</p>
+
+<ul class="lead">
+  <li>
+    {{ consensus_fasta | length }} consensus sequences were assembled from the data.
+  </li>
+  <li>
+    {{ consensus_blast_stats.count }}
+    ({{ consensus_blast_stats.percent }} %)
+    consensus sequences matched a reference sequence with BLAST.
+  </li>
+</ul>
+
+<button
+  type="button"
+  class="btn btn-primary"
+  data-bs-toggle="modal"
+  data-bs-target="#consensusBlastModal"
+>
+  Consensus statistics
+</button>
+
+<button
+  type="button"
+  class="btn btn-primary"
+  data-bs-toggle="modal"
+  data-bs-target="#consensusFastaModal"
+>
+  Consensus sequences
+</button>
+
+<a
+  class="btn btn-primary hide-broken"
+  href="./{{ bam_html_file }}"
+  target="_blank"
+>
+  Read alignment (BAM)
+</a>
+
+{% include 'components/consensus-blast-modal.html' %}
+{% include 'components/consensus-fasta-modal.html' %}
