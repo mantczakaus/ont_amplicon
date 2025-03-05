@@ -20,22 +20,40 @@
       </div>
       <div class="modal-body">
         <p>
-          This table shows BLAST hit and read mapping statistics for the assembled consensus sequences.
+          This table shows BLAST hit and read mapping statistics for each assembled consensus sequences. Row colours indicate the strength of the evidence supporting the sequence, based on read mapping statistics.
         </p>
 
-        <table class="table table-striped tight">
+        <table class="table table-lined tight">
           <thead>
             <tr>
-              {% for col_id, colname in consensus_blast_hits.COLUMNS_TO_DISPLAY %}
-              <th>{{ colname }}</th>
+              {% for colname in consensus_blast_hits.columns_display %}
+              <th
+                {% if consensus_blast_hits.COLUMN_METADATA[colname]['tooltip'] %}
+                title="{{ consensus_blast_hits.COLUMN_METADATA[colname]['tooltip'] }}"
+                data-bs-toggle="tooltip"
+                data-bs-placement="top"
+                {% endif %}
+              >
+                {{ consensus_blast_hits.COLUMN_METADATA[colname]['label'] }}
+              </th>
               {% endfor %}
             </tr>
           </thead>
           <tbody>
             {% for row in consensus_blast_hits %}
-            <tr>
-              {% for col_id, colname in consensus_blast_hits.COLUMNS_TO_DISPLAY %}
-              <td>{{ row[col_id] }}</td>
+            <tr
+              {% if row['bs_class'] %}
+              class="alert-{{ row['bs_class'] }}"
+              {% endif %}
+            >
+              {% for colname in consensus_blast_hits.columns_display %}
+              <td>
+                {% if colname == 'evalue' %}
+                <span style="white-space: nowrap;">{{ row[colname] }}</span>
+                {% else %}
+                {{ row[colname] }}
+                {% endif %}
+              </td>
               {% endfor %}
             </tr>
             {% endfor %}

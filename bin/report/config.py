@@ -5,6 +5,7 @@ from datetime import datetime
 from functools import cached_property
 from pathlib import Path
 
+ROOT_DIR = Path(__file__).parent
 GITHUB_URL = 'https://github.com/maelyg/ont_amplicon'
 
 
@@ -13,6 +14,9 @@ class Config:
     METADATA_FILE = 'index.csv'
     TIMESTAMP_FILE = '*_start_timestamp.txt'
     REPORT_FILE = 'report.html'
+
+    class SCHEMA:
+        BLAST_HITS_FIELD_CSV = ROOT_DIR / 'schema/blast_hits_columns.csv'
 
     class OUTPUTS:
         BAM_HTML_FILENAME = 'bam-alignment.html'

@@ -1,11 +1,35 @@
 """Define specific results from the analysis."""
 
 import base64
+import csv
 from Bio import SeqIO
 
 from .config import Config
 
 config = Config()
+
+
+def _csv_to_dict(csv_path, index_col='colname'):
+    with open(csv_path) as f:
+        reader = csv.reader(f)
+        next(reader)  # skip header line
+        ordered_colnames = [
+            row[0].strip()
+            for row in reader
+        ]
+    with open(csv_path) as f:
+        reader = csv.DictReader(f)
+        data = {
+            row[index_col].strip(): {
+                colname: value
+                for colname, value in row.items()
+            }
+            for row in reader
+        }
+        return {
+            colname: data[colname]
+            for colname in ordered_colnames
+        }
 
 
 class FLAGS:
@@ -88,15 +112,10 @@ class RunQC(AbstractDataRow):
 class AbstractResultRows:
     """A result composed of a series of rows with defined columns names."""
     COLUMNS = []
+    COLUMN_METADATA = {}
 
     def __init__(self, rows):
-        self.rows = [
-            {
-                column.lower(): row[column].strip()
-                for column in self.COLUMNS
-            }
-            for row in rows
-        ]
+        self.rows = self._parse_rows(rows)
 
     def __len__(self):
         return len(self.rows)
@@ -107,58 +126,72 @@ class AbstractResultRows:
     def __getitem__(self, index):
         return self.rows[index]
 
+    def _parse_rows(self, rows):
+        return [
+            {
+                colname: (
+                    self._cast(
+                        row[colname].strip(),
+                        self.COLUMN_METADATA.get(colname, {}).get('type'),
+                    )
+                )
+                for colname in self.COLUMNS
+            }
+            for row in rows
+        ]
+
+    def _cast(self, value, type_str):
+        if not type_str:
+            return value
+        if type_str == 'int':
+            num = int(float(value))
+            return f"{num:,}"
+        if type_str == 'float':
+            return float(value)
+        if type_str == 'scientific' and 'e' in value:
+            num = float(value)
+            return f"{num:.2e}"
+        return value
+
     def to_json(self):
         return self.rows
 
 
 class BlastHits(AbstractResultRows):
-    COLUMN_LABELS = [
-        ('sample_name', 'Sample ID'),
-        ('qseqid', 'Query ID'),
-        ('consensus_seq', None),
-        ('sgi', None),
-        ('sacc', 'Hit accession'),
-        ('alignment_length', 'Alignment length'),
-        ('nident', None),
-        ('pident', 'Identity %'),
-        ('mismatch', None),
-        ('gaps', 'Gaps'),
-        ('gapopen', None),
-        ('qstart', 'Query start'),
-        ('qend', 'Query end'),
-        ('qlen', None),
-        ('sstart', 'Subject start'),
-        ('send', 'Subject end'),
-        ('slen', 'Subject length'),
-        ('sstrand', None),
-        ('evalue', 'E-value'),
-        ('bitscore', 'Bitscore'),
-        ('qcovhsp', None),
-        ('stitle', 'Subject title'),
-        ('staxids', None),
-        ('qseq', None),
-        ('sseq', None),
-        ('sseqid', 'Subject ID'),
-        ('qcovs', None),
-        ('qframe', None),
-        ('sframe', None),
-        ('species', None),
-        ('sskingdoms', 'Kingdom'),
-        ('FullLineage', None),
-        ('target_organism_match', 'Target organism match'),
-        ('n_read_cont_cluster', None),
-        ('query_match_length', None),
-        ('qseq_mapping_read_count', 'Reads mapped'),
-        ('qseq_mean_depth', 'Read depth'),
-        ('qseq_pc_mapping_read', 'Reads mapped (%)'),
-        ('qseq_pc_depth_30X', '30X depth coverage (%)'),
-        ('30X_DEPTH_FLAG', None),
-        ('MAPPED_READ_COUNT_FLAG', None),
-        ('TARGET_ORGANISM_FLAG', None),
-        ('TARGET_SIZE_FLAG', None),
-    ]
-    COLUMNS = [c for c, _ in COLUMN_LABELS]
-    COLUMNS_TO_DISPLAY = [c for c in COLUMN_LABELS if c[1] is not None]
+    COLUMN_METADATA = _csv_to_dict(config.SCHEMA.BLAST_HITS_FIELD_CSV)
+    COLUMNS = list(COLUMN_METADATA.keys())
+
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.columns_display = [
+            c for c in self.COLUMN_METADATA
+            if self.COLUMN_METADATA[c]['label']
+        ]
+        self.columns_primary_display = [
+            c for c in self.columns_display
+            if self.COLUMN_METADATA[c]['primary_display']
+        ]
+        self.rows = self.set_bs_class()
+
+    def set_bs_class(self):
+        def _get_bs_class(row):
+            flags = (
+                row['30X_DEPTH_FLAG'],
+                row['MAPPED_READ_COUNT_FLAG'],
+            )
+            if 'ORANGE' in flags:
+                return 'warning'
+            if 'RED' in flags:
+                return 'danger'
+            return 'success'
+
+        return [
+            {
+                **row,
+                'bs_class': _get_bs_class(row),
+            }
+            for row in self.rows
+        ]
 
 
 class BlastHitsPolished(AbstractResultRows):
@@ -206,6 +239,20 @@ class ConsensusFASTA:
 
     def __iter__(self):
         return iter(self.records)
+
+    def __str__(self):
+        return '\n\n'.join(
+            f">{seq.id}\n"
+            + self._wrap(seq.seq)
+            for seq in self.records
+        )
+
+    def _wrap(self, seq, width=80):
+        seq_str = str(seq)
+        return '\n'.join(
+            seq_str[i:i + width]
+            for i in range(0, len(seq), width)
+        )
 
     def to_json(self):
         return {
