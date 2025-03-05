@@ -1,6 +1,6 @@
 colname,label,type,primary_display,tooltip
 sample_name,,,,
-qseqid,Consensus ID,,,
+qseqid,Consensus ID,,Y,
 consensus_seq,,,,
 sgi,,,,
 sacc,Hit accession,,,
@@ -34,10 +34,10 @@ FullLineage,,,,
 target_organism_match,Target organism match,,Y,
 n_read_cont_cluster,,int,,
 query_match_length,,int,,
-qseq_mapping_read_count,Reads mapped,int,Y,
-qseq_mean_depth,Read depth,,Y,
-qseq_pc_mapping_read,Reads mapped (%),,Y,
-qseq_pc_depth_30X,30X depth coverage (%),,Y,
+qseq_mapping_read_count,Reads mapped,int,Y,The number of reads mapped to this sequence. A higher read count suggests greater confidence in the sequence.
+qseq_mean_depth,Read depth,,Y,Depth of the reads mapped to this sequence – a depth of 30X indicates high confidence in the sequence.
+qseq_pc_mapping_read,Reads mapped (%),,Y,Percentage of total reads that were mapped to this sequence. This can indicate what proportion of sample material this sequence represents.
+qseq_pc_depth_30X,30X depth coverage (%),,Y,Percentage of this sequence with a depth of mapped reads of 30X or greater.
 30X_DEPTH_FLAG,,,,
 MAPPED_READ_COUNT_FLAG,,,,
 TARGET_ORGANISM_FLAG,,,,

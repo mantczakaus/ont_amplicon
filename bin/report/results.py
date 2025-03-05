@@ -183,6 +183,8 @@ class BlastHits(AbstractResultRows):
                 return 'warning'
             if 'RED' in flags:
                 return 'danger'
+            if 'GREY' in flags:
+                return 'secondary'
             return 'success'
 
         return [
