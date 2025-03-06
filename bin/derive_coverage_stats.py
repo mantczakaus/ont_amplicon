@@ -79,8 +79,8 @@ def main():
     #######30X_DEPTH_FLAG#######
     #Conditions:
     #GREEN: If sgi != 0 and the qseq_pc_depth_30X is >=90
-    #ORANGE: If sgi != 0 and the query_match_length is between 75 and 90.
-    #RED: If sgi != 0 and the query_match_length is <75.
+    #ORANGE: If sgi != 0 and the qseq_pc_depth_30X is between 75 and 90.
+    #RED: If sgi != 0 and the qseq_pc_depth_30X is <75.
     #GREY: If sgi == 0.
 
     blast_df_final['30X_DEPTH_FLAG'] = np.where(
@@ -105,8 +105,8 @@ def main():
     #######MAPPED_READ_COUNT_FLAG#######
     #Conditions:
     #GREEN: If sgi != 0 and the qseq_mapping_read_count is >=200
-    #ORANGE: If sgi != 0 and the query_match_length is between 100 and 200.
-    #RED: If sgi != 0 and the query_match_length is <100.
+    #ORANGE: If sgi != 0 and the qseq_mapping_read_count is between 100 and 200.
+    #RED: If sgi != 0 and the qseq_mapping_read_count is <100.
     #GREY: If sgi == 0.
     
     blast_df_final['MAPPED_READ_COUNT_FLAG'] = np.where(

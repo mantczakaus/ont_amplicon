@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 """Build the HTML report from output data."""
 
 import argparse

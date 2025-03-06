@@ -35,7 +35,9 @@ process NANOPLOT {
     path("*NanoStats.txt")
     path("*LengthvsQualityScatterPlot_dot.html")
     path("*NanoStats.txt"), emit: read_counts
-    tuple val(sampleid), path("${sampleid}_filtered_NanoStats.txt"), emit: stats, optional: true
+    tuple val(sampleid), path("${sampleid}_filtered_NanoStats.txt"), emit: filtstats, optional: true
+    tuple val(sampleid), path("${sampleid}_raw_NanoPlot-report.html"), emit: rawnanoplot, optional: true
+    tuple val(sampleid), path("${sampleid}_filtered_NanoPlot-report.html"), emit: filtnanoplot, optional: true
 
   
   script:
@@ -48,3 +50,39 @@ process NANOPLOT {
   fi
   """
 }
+
+/*
+process BLASTN {
+  publishDir "${params.outdir}/${sampleid}/megablast", mode: 'copy', pattern: '*_megablast*.txt'
+  tag "${sampleid}"
+  containerOptions "${bindOptions}"
+  label "setting_10"
+
+  input:
+    tuple val(sampleid), path(assembly)
+  output:
+    path("${sampleid}*_megablast*.txt")
+    tuple val(sampleid), path("${sampleid}*_megablast_top_10_hits.txt"), emit: blast_results
+
+  script:
+  def tmp_blast_output = assembly.getBaseName() + "_megablast_top_10_hits_temp.txt"
+  def blast_output = assembly.getBaseName() + "_megablast_top_10_hits.txt"
+  
+  if (params.blast_mode == "ncbi") {
+    """
+    cp ${blastn_db_dir}/taxdb.btd .
+    cp ${blastn_db_dir}/taxdb.bti .
+    blastn -query ${assembly} \
+      -db ${params.blastn_db} \
+      -out ${tmp_blast_output} \
+      -evalue 1e-3 \
+      -word_size 28 \
+      -num_threads ${params.blast_threads} \
+      -outfmt '6 qseqid sgi sacc length nident pident mismatch gaps gapopen qstart qend qlen sstart send slen sstrand evalue bitscore qcovhsp stitle staxids qseq sseq sseqid qcovs qframe sframe sscinames sskingdoms' \
+      -max_target_seqs 10
+    
+    cat <(printf "qseqid\tsgi\tsacc\tlength\tnident\tpident\tmismatch\tgaps\tgapopen\tqstart\tqlen\tqend\tsstart\tsend\tslen\tsstrand\tevalue\tbitscore\tqcovhsp\tstitle\tstaxids\tqseq\tsseq\tsseqid\tqcovs\tqframe\tsframe\tspecies\tsskingdoms\n") ${tmp_blast_output} > ${blast_output}
+    """
+  }
+}
+*/

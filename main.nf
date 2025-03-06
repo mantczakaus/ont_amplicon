@@ -152,12 +152,10 @@ process BLASTN {
   output:
     path("${sampleid}*_megablast*.txt")
     tuple val(sampleid), path("${sampleid}*_megablast_top_10_hits.txt"), emit: blast_results
-//    tuple val(sampleid), path("${sampleid}_ids_to_reverse_complement.txt"), path("${sampleid}*__megablast_COI_top_hit.txt"), emit: coi_blast_results, optional: true
 
   script:
   def tmp_blast_output = assembly.getBaseName() + "_megablast_top_10_hits_temp.txt"
   def blast_output = assembly.getBaseName() + "_megablast_top_10_hits.txt"
-//  def blast_output_COI = assembly.getBaseName() + "_megablast_COI_top_hit.txt"
   
   if (params.blast_mode == "ncbi") {
     """
@@ -215,7 +213,6 @@ process BLASTN2 {
   output:
     path("${sampleid}*_megablast*.txt")
     tuple val(sampleid), path("${sampleid}*_megablast_top_10_hits.txt"), emit: blast_results
-    tuple val(sampleid), path("${sampleid}_ids_to_reverse_complement.txt"), path("${sampleid}*__megablast_COI_top_hit.txt"), emit: coi_blast_results, optional: true
 
   script:
   def tmp_blast_output = assembly.getBaseName() + "_megablast_top_10_hits_temp.txt"
@@ -295,7 +292,7 @@ process COVSTATS {
     tuple val(sampleid), path(bed), path(consensus), path(coverage), path(top_hits), path(nanostats), val(target_size)
   output:
     path("*top_blast_with_cov_stats.txt"), optional: true
-    path("*top_blast_with_cov_stats.txt"), emit: detections_summary, optional: true
+    tuple val(sampleid), path("*top_blast_with_cov_stats.txt"), emit: detections_summary, optional: true
 
   script:
     """
@@ -305,6 +302,7 @@ process COVSTATS {
     fi
     """
 }
+
 /*
 process DETECTION_REPORT {
   label "local"
@@ -783,6 +781,8 @@ process QCREPORT {
   output:
     path("run_qc_report_*txt")
     path("run_qc_report_*html")
+    path("run_qc_report_*html"), emit: qc_report_html
+    path("run_qc_report_*txt"), emit: qc_report_txt
 
   script:
     """
@@ -947,6 +947,7 @@ process TIMESTAMP_START {
     cache false
     output:
     path "*nextflow_start_timestamp.txt"
+    path("*nextflow_start_timestamp.txt"), emit: timestamp
 
     script:
     """
@@ -954,6 +955,25 @@ process TIMESTAMP_START {
     echo "\$START_TIMESTAMP" > "\${START_TIMESTAMP}_nextflow_start_timestamp.txt"
     """
 }
+
+process HTML_REPORT {
+  publishDir "${params.outdir}/${sampleid}/html_report", mode: 'copy', overwrite: true
+  containerOptions "${bindOptions}"
+
+  input:
+    tuple val(sampleid), path(consensus_fasta), path(consensus_match_fasta), path(aln_sorted_bam), path(aln_sorted_bam_bai), path(raw_nanoplot), path(filtered_nanoplot), path(top_blast_hits), path(blast_with_cov_stats)
+//   path(timestamp), path(report), path(index)
+    path("*")
+
+  output:
+    path("*")
+
+  script:
+    """
+    build_report.py .
+    """
+}
+
 /*
 process TIMESTAMP_END {
     publishDir "${params.outdir}/logs", mode: 'copy', overwrite: true
@@ -970,6 +990,8 @@ process TIMESTAMP_END {
 */
 include { NANOPLOT as QC_PRE_DATA_PROCESSING } from './modules.nf'
 include { NANOPLOT as QC_POST_DATA_PROCESSING } from './modules.nf'
+//include { BLASTN as BLASTN } from './modules.nf'
+//include { BLASTN as BLASTN2 } from './modules.nf'
 
 workflow {
   TIMESTAMP_START ()
@@ -1175,16 +1197,22 @@ workflow {
         cov_stats_summary_ch = MOSDEPTH.out.mosdepth_results.join(EXTRACT_BLAST_HITS.out.consensus_fasta_files)
                                                              .join(SAMTOOLS_CONSENSUS.out.coverage)
                                                              .join(FASTA2TABLE.out.blast_results)
-                                                             .join(QC_POST_DATA_PROCESSING.out.stats)
+                                                             .join(QC_POST_DATA_PROCESSING.out.filtstats)
                                                              .join(ch_target_size)
-                                                             
-                                                             //.groupTuple().map {  [it[0], it[1].flatten()] }
-        //cov_stats_summary_ch = MOSDEPTH.out.mosdepth_results.join(EXTRACT_BLAST_HITS.out.consensus_fasta_files, SAMTOOLS_CONSENSUS.out.coverage, FASTA2TABLE.out.blast_results, QC_POST_DATA_PROCESSING.out.stats, ch_target_size)
-        //cov_stats_summary_ch = MOSDEPTH.out.mosdepth_results.concat(EXTRACT_BLAST_HITS.out.consensus_fasta_files, SAMTOOLS_CONSENSUS.out.coverage, FASTA2TABLE.out.blast_results, QC_POST_DATA_PROCESSING.out.stats).groupTuple().view()
-//       cov_stats_summary_ch.view()
+
         COVSTATS(cov_stats_summary_ch)
 
-      
+        files_for_report_ind_samples_ch = SAMTOOLS_CONSENSUS.out.sorted_bams.join(consensus)
+                                                                            .join(QC_PRE_DATA_PROCESSING.out.rawnanoplot)
+                                                                            .join(QC_POST_DATA_PROCESSING.out.filtnanoplot)
+                                                                            .join(ch_blast_merged)
+                                                                            .join(COVSTATS.out.detections_summary)
+
+        files_for_report_global_ch = TIMESTAMP_START.out.timestamp
+            .concat(QCREPORT.out.qc_report_html)
+            .concat(QCREPORT.out.qc_report_txt)
+            .concat(Channel.from(params.samplesheet).map { file(it) }).toList()
+        HTML_REPORT(files_for_report_ind_samples_ch, files_for_report_global_ch)
 
       //DETECTION_REPORT(COVSTATS.out.detections_summary.collect().ifEmpty([]))
 //        }
