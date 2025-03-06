@@ -1,0 +1,77 @@
+<h2>Input data</h2>
+
+<table class="table table-striped my-3">
+  <tr>
+    <td class="fw-bold">Sample ID</td>
+    <td><code>{{ sample_id }}</code></td>
+  </tr>
+  <tr>
+    <td class="fw-bold">FASTQ files</td>
+    <td><code><small>{{ metadata['sample_files'] }}</small></code></td>
+  </tr>
+  <tr>
+    <td class="fw-bold">Target taxon</td>
+    <td>{{ metadata['spp_targets'] }}</td>
+  </tr>
+  <tr>
+    <td class="fw-bold">Target gene</td>
+    <td>{{ metadata['gene_targets'] }}</td>
+  </tr>
+  <tr>
+    <td class="fw-bold">Amplicon size (nt)</td>
+    <td>{{ metadata['target_size'] }}</td>
+  </tr>
+  <tr>
+    <td class="fw-bold">Primer sequences</td>
+    <td>TBC</td>
+  </tr>
+</table>
+
+<p class="text-center">
+  <button
+    class="btn btn-primary my-3"
+    type="button"
+    data-bs-toggle="modal"
+    data-bs-target="#paramsModal"
+  >
+    View all parameters
+  </button>
+</p>
+
+<div
+  class="modal fade"
+  id="paramsModal"
+  tabindex="-1"
+  aria-labelledby="paramsModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="paramsModalLabel">All parameters</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <table class="table table-striped">
+          <thead>
+            <th>Name</th>
+            <th>Default</th>
+            <th>Provided</th>
+          </thead>
+          {% for key, value in parameters.items() %}
+            <tr>
+              <td class="fw-bold">{{ key }}</td>
+              <td>{{ value.default }}</td>
+              <td>{{ value.provided }}</td>
+            </tr>
+          {% endfor %}
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

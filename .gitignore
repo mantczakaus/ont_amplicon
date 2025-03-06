@@ -2,3 +2,5 @@
 work
 .nextflow
 results
+!bin/report/templates/components/results
+__pycache__/

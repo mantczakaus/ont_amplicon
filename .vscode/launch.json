@@ -1,0 +1,11 @@
+{
+    "configurations": [
+        {
+            "type": "debugpy",
+            "request": "launch",
+            "name": "Workflow report",
+            "program": "bin/build_report.py",
+            "args": ["results/barcode02_VE24-1280_COI"],
+        }
+    ]
+}
