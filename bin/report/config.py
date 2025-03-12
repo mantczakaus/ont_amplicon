@@ -80,6 +80,10 @@ class Config:
     @property
     def consensus_fasta_path(self) -> Path:
         return self._get_file_by_pattern("*polished_consensus.fasta")
+    
+    @property
+    def consensus_match_fasta_path(self) -> Path:
+        return self._get_file_by_pattern("*polished_consensus_match.fasta")
 
     @property
     def blast_hits_path(self) -> Path:

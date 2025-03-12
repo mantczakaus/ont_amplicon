@@ -713,7 +713,7 @@ process MINIMAP2_REF {
 
 process MOSDEPTH {
   tag "$sampleid"
-  label "setting_3"
+  label "setting_5"
   publishDir "${params.outdir}/${sampleid}/mapping_to_consensus", mode: 'copy'
 
   input:
