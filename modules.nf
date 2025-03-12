@@ -31,9 +31,9 @@ process NANOPLOT {
   input:
     tuple val(sampleid), path(sample)
   output:
-    path("*NanoPlot-report.html")
-    path("*NanoStats.txt")
-    path("*LengthvsQualityScatterPlot_dot.html")
+    path("*NanoPlot-report.html"), optional: true
+    path("*NanoStats.txt"), optional: true
+    path("*LengthvsQualityScatterPlot_dot.html"), optional: true
     path("*NanoStats.txt"), emit: read_counts
     tuple val(sampleid), path("${sampleid}_filtered_NanoStats.txt"), emit: filtstats, optional: true
     tuple val(sampleid), path("${sampleid}_raw_NanoPlot-report.html"), emit: rawnanoplot, optional: true
@@ -41,10 +41,19 @@ process NANOPLOT {
 
   
   script:
+  def fastq = sample.getBaseName() + ".fastq.gz"
   """
+  
   if [[ ${sample} == *trimmed.fastq.gz ]] || [[ ${sample} == *filtered.fastq.gz ]] ;
   then
-    NanoPlot -t 8 --fastq ${sample} --prefix ${sampleid}_filtered_ --plots dot --N50 --tsv_stats
+    if [ -n "\$(gunzip < ${sample} | head -n 1 | tr '\0\n' __)" ];
+    then
+        NanoPlot -t 8 --fastq ${sample} --prefix ${sampleid}_filtered_ --plots dot --N50 --tsv_stats
+    else
+        echo "Metrics dataset\nnumber_of_reads\t0" > ${sampleid}_filtered_NanoStats.txt
+        touch ${sampleid}_filtered_LengthvsQualityScatterPlot_dot.html
+        touch ${sampleid}_filtered_NanoPlot-report.html
+    fi
   else
     NanoPlot -t 8 --fastq ${sample} --prefix ${sampleid}_raw_ --plots dot --N50 --tsv_stats
   fi

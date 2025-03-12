@@ -285,7 +285,7 @@ process FASTPLONG {
 */
 process COVSTATS {
   tag "$sampleid"
-  label "setting_2"
+  label "setting_1"
   publishDir "${params.outdir}/${sampleid}/mapping_to_consensus", mode: 'copy'
 
   input:
@@ -350,7 +350,7 @@ process CUTADAPT {
   label "setting_1"
   publishDir "${params.outdir}/${sampleid}/polishing", pattern: '{*.fasta,*_cutadapt.log}', mode: 'copy'
   tag "${sampleid}"
-  label 'setting_2'
+  label 'setting_1'
   
 
   input:
@@ -365,7 +365,12 @@ process CUTADAPT {
 //  String fwd_primer_trimmed = fwd_primer[-10..-1]
 //  String rev_primer_trimmed = rev_primer[0..9]
     """
-    cutadapt -n 2 -j ${task.cpus} -g "${fwd_primer};max_error_rate=0.1" -a "${rev_primer};max_error_rate=0.1" --trim-n -o ${sampleid}_final_polished_consensus.fasta ${consensus} > ${sampleid}_cutadapt.log
+    if fwd_primer != null && rev_primer != null;
+      then
+        cutadapt -n 2 -j ${task.cpus} -g "${fwd_primer};max_error_rate=0.1" -a "${rev_primer};max_error_rate=0.1" --trim-n -o ${sampleid}_final_polished_consensus.fasta ${consensus} > ${sampleid}_cutadapt.log
+    else
+        cutadapt -n 2 -j ${task.cpus} --trim-n -o ${sampleid}_final_polished_consensus.fasta ${consensus} > ${sampleid}_cutadapt.log
+    fi
     """
 }
 
@@ -373,7 +378,7 @@ process CUTADAPT {
 process EXTRACT_BLAST_HITS {
   publishDir "${params.outdir}/${sampleid}/megablast", mode: 'copy', pattern: '{*fasta}'
   tag "${sampleid}"
-  label "setting_2"
+  label "setting_1"
   containerOptions "${bindOptions}"
 
   input:
@@ -434,7 +439,7 @@ process EXTRACT_REF_FASTA {
 process FASTCAT {
   publishDir "${params.outdir}/${sampleid}/qc/fastcat", mode: 'copy'
   tag "${sampleid}"
-  label "setting_2"
+  label "setting_1"
 
   input:
     tuple val(sampleid), path(fastq)
@@ -458,7 +463,7 @@ process FASTCAT {
 process FASTQ2FASTA {
   publishDir "${params.outdir}/${sampleid}/clustering", mode: 'copy', pattern: '*_rattle.fasta'
   tag "${sampleid}"
-  label "setting_2"
+  label "setting_1"
 
   input:
   tuple val(sampleid), path(fastq), path(assembly)
@@ -501,7 +506,7 @@ process EXTRACT_TAXONOMY {
 */
 process FASTA2TABLE {
   tag "$sampleid"
-  label "setting_2"
+  label "setting_1"
   publishDir "${params.outdir}/${sampleid}/megablast", mode: 'copy'
 
   input:
@@ -668,13 +673,13 @@ process MINIMAP2_CONSENSUS {
 
   script:
     """
-    minimap2 -ax map-ont --MD --sam-hit-only ${consensus} ${fastq} > ${sampleid}_aln.sam
+    minimap2 -ax map-ont -t ${task.cpus} --MD --sam-hit-only ${consensus} ${fastq} > ${sampleid}_aln.sam
     """
 }
 
 process MINIMAP2_RACON {
   tag "${sampleid}"
-  label "setting_8"
+  label "setting_2"
   containerOptions "${bindOptions}"
 
   input:
@@ -702,7 +707,7 @@ process MINIMAP2_REF {
 
   script:
     """
-    minimap2 -ax map-ont --MD --sam-hit-only ${ref} ${fastq} > ${sampleid}_aln.sam
+    minimap2 -ax map-ont --MD -t ${task.cpus} --sam-hit-only ${ref} ${fastq} > ${sampleid}_aln.sam
     """
 }
 
@@ -840,12 +845,25 @@ process RATTLE {
       rattle_clustering_min_length_set = '150'}
   }
     """
-    rattle cluster -i ${fastq} -t ${task.cpus} --lower-length ${rattle_clustering_min_length_set} ${rattle_clustering_options} -v 10000 -o .
-    rattle cluster_summary -i ${fastq} -c clusters.out > ${sampleid}_cluster_summary.txt
-    mkdir clusters
-    rattle extract_clusters -i ${fastq} -c clusters.out -l ${sampleid} -o clusters --fastq
-    rattle correct -i ${fastq} -c clusters.out -t ${task.cpus} -l ${sampleid}
-    rattle polish -i consensi.fq -t ${task.cpus} --summary ${rattle_polishing_options}
+    (
+      set +eo pipefail
+      rattle cluster -i ${fastq} -t ${task.cpus} --lower-length ${rattle_clustering_min_length_set} ${rattle_clustering_options} -v ${params.rattle_clustering_max_variance} -o .
+      rattle cluster_summary -i ${fastq} -c clusters.out > ${sampleid}_cluster_summary.txt
+      mkdir clusters
+      rattle extract_clusters -i ${fastq} -c clusters.out -l ${sampleid} -o clusters --fastq
+      rattle correct -i ${fastq} -c clusters.out -t ${task.cpus} -l ${sampleid}
+      rattle polish -i consensi.fq -t ${task.cpus} --summary ${rattle_polishing_options}
+      trap 'if [[ \$? -eq 139 ]]; then echo "segfault !"; fi' CHLD
+    ) 2>&1 | tee ${sampleid}_rattle.log
+
+    
+    if [[ ! -s transcriptome.fq ]]
+    then
+        touch transcriptome.fq
+        echo "Rattle clustering and polishing failed"
+    else
+      echo "Rattle clustering and polishing completed successfully"      
+    fi
     """
 }
 
@@ -872,7 +890,7 @@ process REFORMAT {
 process REVCOMP {
   publishDir "${params.outdir}/${sampleid}/megablast", mode: 'copy', pattern: '{*fasta}'
   tag "${sampleid}"
-  label "setting_2"
+  label "setting_1"
   containerOptions "${bindOptions}"
 
   input:
@@ -959,6 +977,7 @@ process TIMESTAMP_START {
 process HTML_REPORT {
   publishDir "${params.outdir}/${sampleid}/html_report", mode: 'copy', overwrite: true
   containerOptions "${bindOptions}"
+  label 'setting_3'
 
   input:
     tuple val(sampleid), path(consensus_fasta), path(consensus_match_fasta), path(aln_sorted_bam), path(aln_sorted_bam_bai), path(raw_nanoplot), path(filtered_nanoplot), path(top_blast_hits), path(blast_with_cov_stats)
@@ -1129,6 +1148,7 @@ workflow {
 
     if (!params.preprocessing_only) {
       //Currently only one analysis mode in ont_amplicon, this is legacy from ontvisc, consider removing if no other mode is added to this pipeline
+      //We have had talks about including an option to just a map to a reference of interest, but this is not implemented yet
       if ( params.analysis_mode == 'clustering' ) {
         //Perform clustering using Rattle and convert to fasta file
         ch_fq_target_size = (final_fq.join(ch_target_size))
