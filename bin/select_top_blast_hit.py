@@ -44,11 +44,27 @@ def main():
     staxids_list = blastn_top_hit['staxids'].unique().tolist()
     result = pytaxonkit.lineage(staxids_list)
     FullLineage_df = result[['TaxID', 'FullLineage']]
-    
     FullLineage_df2 = FullLineage_df.copy()
     FullLineage_df2.rename(columns={"TaxID": "staxids"}, inplace=True)
     FullLineage_df2['staxids']=FullLineage_df2['staxids'].astype(int)
-    blast_with_full_phylo_desc_df = blastn_top_hit.merge(FullLineage_df2,  how='right', on='staxids')
+
+    spp_name_results = pytaxonkit.filter(staxids_list, equal_to='species', higher_than='species')
+    spp_name = pytaxonkit.name(spp_name_results)
+    spp_df = spp_name[['TaxID', 'Name']]
+    spp_df2 = spp_df.copy()
+    spp_df2.rename(columns={"TaxID": "staxids", "Name": "Species"}, inplace=True)
+    spp_df2['staxids']=spp_df2['staxids'].astype(int)
+
+    result2 = pytaxonkit.lineage((staxids_list),formatstr="{k}")
+    super_kingdom_df = result2[['TaxID', 'Lineage']]
+    super_kingdom_df2 = super_kingdom_df.copy()
+    super_kingdom_df2.rename(columns={"TaxID": "staxids", "Lineage": "sskingdoms"}, inplace=True)
+    super_kingdom_df2['staxids']=super_kingdom_df2['staxids'].astype(int)
+
+    dfs = [blastn_top_hit, spp_df2, super_kingdom_df2, FullLineage_df2]
+    #blast_with_full_phylo_desc_df = blastn_top_hit.merge(dfs,  how='right', on='staxids')
+    blast_with_full_phylo_desc_df = reduce(lambda left,right: pd.merge(left,right,on=["staxids"],how='outer'), dfs)
+    print(blast_with_full_phylo_desc_df.columns)
     blast_with_full_phylo_desc_df.insert(0, "sample_name", sample_name)
     blast_with_full_phylo_desc_df = blast_with_full_phylo_desc_df[["sample_name", "qseqid", "sgi", "sacc", "length", "nident", "pident", "mismatch", "gaps", "gapopen", "qstart", "qend", "qlen", "sstart", "send", "slen", "sstrand", "evalue", "bitscore", "qcovhsp", "stitle", "staxids", "qseq", "sseq", "sseqid", "qcovs", "qframe", "sframe", "species", "sskingdoms", "FullLineage"]]
     

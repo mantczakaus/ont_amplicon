@@ -1,0 +1,3 @@
+sampleid,sample_files,target_size,spp_targets,gene_targets
+ONT141,tests/peq_data/barcode05/*fastq.gz,238,virus,coat_protein
+ONT142,tests/peq_data/barcode06/*fastq.gz,370,virus,coat_protein

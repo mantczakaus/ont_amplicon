@@ -159,8 +159,6 @@ process BLASTN {
   
   if (params.blast_mode == "ncbi") {
     """
-    cp ${blastn_db_dir}/taxdb.btd .
-    cp ${blastn_db_dir}/taxdb.bti .
     blastn -query ${assembly} \
       -db ${params.blastn_db} \
       -out ${tmp_blast_output} \
@@ -170,10 +168,11 @@ process BLASTN {
       -outfmt '6 qseqid sgi sacc length nident pident mismatch gaps gapopen qstart qend qlen sstart send slen sstrand evalue bitscore qcovhsp stitle staxids qseq sseq sseqid qcovs qframe sframe sscinames sskingdoms' \
       -max_target_seqs 10
     
-    cat <(printf "qseqid\tsgi\tsacc\tlength\tnident\tpident\tmismatch\tgaps\tgapopen\tqstart\tqlen\tqend\tsstart\tsend\tslen\tsstrand\tevalue\tbitscore\tqcovhsp\tstitle\tstaxids\tqseq\tsseq\tsseqid\tqcovs\tqframe\tsframe\tspecies\tsskingdoms\n") ${tmp_blast_output} > ${blast_output}
+    cat <(printf "qseqid\tsgi\tsacc\tlength\tnident\tpident\tmismatch\tgaps\tgapopen\tqstart\tqlen\tqend\tsstart\tsend\tslen\tsstrand\tevalue\tbitscore\tqcovhsp\tstitle\tstaxids\tqseq\tsseq\tsseqid\tqcovs\tqframe\tsframe\n") ${tmp_blast_output} > ${blast_output}
     """
   }
 }
+
 
 process BLASTN_COI {
   publishDir "${params.outdir}/${sampleid}/megablast", mode: 'copy', pattern: '*_megablast*.txt'
@@ -220,8 +219,6 @@ process BLASTN2 {
   
   if (params.blast_mode == "ncbi") {
     """
-    cp ${blastn_db_dir}/taxdb.btd .
-    cp ${blastn_db_dir}/taxdb.bti .
     blastn -query ${assembly} \
       -db ${params.blastn_db} \
       -out ${tmp_blast_output} \
@@ -230,7 +227,7 @@ process BLASTN2 {
       -outfmt '6 qseqid sgi sacc length nident pident mismatch gaps gapopen qstart qend qlen sstart send slen sstrand evalue bitscore qcovhsp stitle staxids qseq sseq sseqid qcovs qframe sframe sscinames sskingdoms' \
       -max_target_seqs 10
       
-    cat <(printf "qseqid\tsgi\tsacc\tlength\tnident\tpident\tmismatch\tgaps\tgapopen\tqstart\tqlen\tqend\tsstart\tsend\tslen\tsstrand\tevalue\tbitscore\tqcovhsp\tstitle\tstaxids\tqseq\tsseq\tsseqid\tqcovs\tqframe\tsframe\tspecies\tsskingdoms\n") ${tmp_blast_output} > ${blast_output}
+    cat <(printf "qseqid\tsgi\tsacc\tlength\tnident\tpident\tmismatch\tgaps\tgapopen\tqstart\tqlen\tqend\tsstart\tsend\tslen\tsstrand\tevalue\tbitscore\tqcovhsp\tstitle\tstaxids\tqseq\tsseq\tsseqid\tqcovs\tqframe\tsframe\n") ${tmp_blast_output} > ${blast_output}
     """
   }
 }
@@ -638,7 +635,6 @@ process MEDAKA2 {
   publishDir "${params.outdir}/${sampleid}/polishing", mode: 'copy'
   tag "${sampleid}"
   label 'setting_3'
-  containerOptions "${bindOptions}"
 
   input:
    tuple val(sampleid), path(fastq), path(assembly)
@@ -680,7 +676,6 @@ process MINIMAP2_CONSENSUS {
 process MINIMAP2_RACON {
   tag "${sampleid}"
   label "setting_2"
-  containerOptions "${bindOptions}"
 
   input:
   tuple val(sampleid), path(fastq), path(assembly)
@@ -753,9 +748,8 @@ process PYFAIDX {
 
 process PORECHOP_ABI {
   tag "${sampleid}"
-  publishDir "$params.outdir/${sampleid}/preprocessing/porechop",  mode: 'link', pattern: '*_porechop.log'
+  publishDir "$params.outdir/${sampleid}/preprocessing/porechop",  mode: 'copy', pattern: '*_porechop.log'
   label "setting_2"
-  containerOptions "${bindOptions}"
 
   input:
     tuple val(sampleid), path(sample)
@@ -799,7 +793,6 @@ process RACON {
   publishDir "${params.outdir}/${sampleid}/polishing", mode: 'copy'
   tag "${sampleid}"
   label 'setting_3'
-  containerOptions "${bindOptions}"
 
   input:
    tuple val(sampleid), path(fastq), path(assembly), path(paf)
@@ -820,7 +813,6 @@ process RACON {
 process RATTLE {
   tag "${sampleid}"
   label 'setting_7'
-  containerOptions "${bindOptions}"
 
   input:
     tuple val(sampleid), path(fastq), val(target_size)
@@ -860,9 +852,9 @@ process RATTLE {
     if [[ ! -s transcriptome.fq ]]
     then
         touch transcriptome.fq
-        echo "Rattle clustering and polishing failed"
+        echo "Rattle clustering and polishing failed."
     else
-      echo "Rattle clustering and polishing completed successfully"      
+      echo "Rattle clustering and polishing completed successfully."
     fi
     """
 }
@@ -878,12 +870,15 @@ process REFORMAT {
     tuple val(sampleid), path(fastq)
 
   output:
+    path("${sampleid}_preprocessed.fastq.gz")
+    path("${sampleid}_basecalling_model_inference.txt")
     tuple val(sampleid), path("${sampleid}_preprocessed.fastq.gz"), emit: reformatted_fq
     tuple val(sampleid), path("${sampleid}_preprocessed.fastq.gz"), emit: cov_derivation_ch
 
   script:
     """
     reformat.sh in=${fastq} out=${sampleid}_preprocessed.fastq.gz trd qin=33
+    zcat ${fastq} | head -n1 | sed 's/^.*basecall_model_version_id=//' > ${sampleid}_basecalling_model_inference.txt
     """
 }
 
@@ -949,10 +944,10 @@ process SAMTOOLS_CONSENSUS {
     path "${sampleid}_histogram.txt"
     tuple val(sampleid), path(consensus), path("${sampleid}_aln.sorted.bam"), path("${sampleid}_aln.sorted.bam.bai"), emit: sorted_bams
     tuple val(sampleid), path("${sampleid}_coverage.txt"), emit: coverage
-    tuple val(sampleid), path("${sampleid}_aligning_ids.txt"), emit: seqids
+    tuple val(sampleid), path("${sampleid}_contigs_reads_ids.txt"), emit: contig_seqids
   script:
     """
-    samtools view -S -F 4 ${sample} | cut -f1 > ${sampleid}_aligning_ids.txt
+    samtools view -S -F 4 ${sample} | cut -f1,3 | sort | uniq > ${sampleid}_contigs_reads_ids.txt
     samtools view -Sb -F 4 ${sample} | samtools sort -o ${sampleid}_aln.sorted.bam
     samtools index ${sampleid}_aln.sorted.bam
     samtools coverage ${sampleid}_aln.sorted.bam  > ${sampleid}_coverage.txt
@@ -960,6 +955,13 @@ process SAMTOOLS_CONSENSUS {
     """
 }
 
+/*
+samtools view -S -F 4 ${sample} | cut -f3 | sort | uniq > contigs_id.txt
+    for id in `cat contigs_id.txt`;
+      do 
+        samtools view  -S -F 4 ${sample} | grep ${id} | cut -f1 >  ${sampleid}_${id}_aligning_ids.txt; 
+      done
+*/
 process TIMESTAMP_START {
     publishDir "${params.outdir}/logs", mode: 'copy', overwrite: true
     cache false
@@ -993,20 +995,51 @@ process HTML_REPORT {
     """
 }
 
-/*
-process TIMESTAMP_END {
-    publishDir "${params.outdir}/logs", mode: 'copy', overwrite: true
-    cache false
-    output:
-    path "*nextflow_end_timestamp.txt"
+process SEQTK {
+  tag "${sampleid}"
+  label "setting_2"
 
-    script:
-    """
-    END_TIMESTAMP=\$(date "+%Y%m%d%H%M%S")
-    echo "\$END_TIMESTAMP" > "\${END_TIMESTAMP}_nextflow_end_timestamp.txt"
-    """
+  input:
+  tuple val(sampleid), path(contig_seqids), path(fastq)
+  output:
+  tuple val(sampleid), path("${sampleid}.fasta"), emit: fasta
+  tuple val(sampleid), path(contig_seqids), emit: contig_seqids
+
+  script:
+  """
+  seqtk seq -A -C ${fastq} > ${sampleid}_all_reads.fasta
+  cut -f1 ${contig_seqids} | sort | uniq > reads_ids.txt
+  seqtk subseq ${sampleid}_all_reads.fasta reads_ids.txt > ${sampleid}.fasta
+  """
+}
+
+/*
+cut -f2 ${contig_seqids} | sort | uniq > contigs.txt
+  
+  for id in `cat contigs.txt`;
+    do
+      grep ${id} ${contig_seqids} | cut -f1 >  ${sampleid}_${id}_aligning_ids.txt;
+      seqtk subseq ${sampleid}.fasta ${sampleid}_${id}_aligning_ids.txt > ${sampleid}_${id}.fasta
+    done
+
+
+
+process EXTRACT_READ_LENGTHS {
+  tag "${sampleid}"
+  label "setting_2"
+
+  input:
+  tuple val(sampleid), path(fasta), path(contig_seqids), path(results_table)
+  output:
+  path "${sampleid}.fasta"
+
+  script:
+  """
+  seq_length.py --sample ${sampleid} --contig_seqids ${contig_seqids} --fasta ${fasta} --results_table ${results_table}
+  """
 }
 */
+
 include { NANOPLOT as QC_PRE_DATA_PROCESSING } from './modules.nf'
 include { NANOPLOT as QC_POST_DATA_PROCESSING } from './modules.nf'
 //include { BLASTN as BLASTN } from './modules.nf'
@@ -1213,6 +1246,9 @@ workflow {
         //Derive bed file for mosdepth to run coverage statistics
         PYFAIDX ( EXTRACT_BLAST_HITS.out.consensus_fasta_files )
         MOSDEPTH (SAMTOOLS_CONSENSUS.out.sorted_bams.join(PYFAIDX.out.bed))
+
+        
+
         //Derive summary file presenting coverage statistics alongside blast results
         cov_stats_summary_ch = MOSDEPTH.out.mosdepth_results.join(EXTRACT_BLAST_HITS.out.consensus_fasta_files)
                                                              .join(SAMTOOLS_CONSENSUS.out.coverage)
@@ -1221,6 +1257,9 @@ workflow {
                                                              .join(ch_target_size)
 
         COVSTATS(cov_stats_summary_ch)
+
+        SEQTK (SAMTOOLS_CONSENSUS.out.contig_seqids.join(final_fq))
+        //EXTRACT_READ_LENGTHS ((SEQTK.out.fasta).join(SEQTK.out.contig_seqids).join(COVSTATS.out.detections_summary))
 
         files_for_report_ind_samples_ch = SAMTOOLS_CONSENSUS.out.sorted_bams.join(consensus)
                                                                             .join(QC_PRE_DATA_PROCESSING.out.rawnanoplot)
