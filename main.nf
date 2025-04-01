@@ -127,7 +127,7 @@ switch (workflow.containerEngine) {
       bindbuild = (bindbuild + "-B ${blastn_COI_dir} ")
     }
     if (params.taxdump != null) {
-      bindbuild = (bindbuild + "-B ${taxdump} ")
+      bindbuild = (bindbuild + "-B ${params.taxdump} ")
     }
     if (params.reference != null) {
       bindbuild = (bindbuild + "-B ${reference_dir} ")
