@@ -913,7 +913,6 @@ process HTML_REPORT {
 
   input:
     tuple val(sampleid), path(consensus_fasta), path(consensus_match_fasta), path(aln_sorted_bam), path(aln_sorted_bam_bai), path(raw_nanoplot), path(filtered_nanoplot), path(top_blast_hits), path(blast_with_cov_stats)
-//   path(timestamp), path(report), path(index)
     path("*")
 
   output:
@@ -921,7 +920,8 @@ process HTML_REPORT {
 
   script:
     """
-    build_report.py .
+    csv_file=\$(find . -name "*.csv")
+    build_report.py --samplesheet \$csv_file --result_dir .
     """
 }
 
@@ -1201,6 +1201,7 @@ workflow {
             .concat(QCREPORT.out.qc_report_html)
             .concat(QCREPORT.out.qc_report_txt)
             .concat(Channel.from(params.samplesheet).map { file(it) }).toList()
+
         HTML_REPORT(files_for_report_ind_samples_ch, files_for_report_global_ch)
 
       //DETECTION_REPORT(COVSTATS.out.detections_summary.collect().ifEmpty([]))

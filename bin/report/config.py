@@ -11,7 +11,7 @@ GITHUB_URL = 'https://github.com/maelyg/ont_amplicon'
 
 class Config:
 
-    METADATA_FILE = 'index.csv'
+    #METADATA_FILE = 'index.csv'
     TIMESTAMP_FILE = '*_start_timestamp.txt'
     REPORT_FILE = 'report.html'
 

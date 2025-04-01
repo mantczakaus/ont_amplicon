@@ -27,13 +27,13 @@ TEMPLATE_DIR = Path(__file__).parent / 'templates'
 STATIC_DIR = Path(__file__).parent / 'static'
 
 
-def render(result_dir: Path):
+def render(result_dir: Path, samplesheet: Path):
     """Render to HTML report to the configured output directory."""
     config.load(result_dir)
     render_bam_html()
     j2 = Environment(loader=FileSystemLoader(TEMPLATE_DIR))
     template = j2.get_template('index.html')
-    context = _get_report_context()
+    context = _get_report_context(samplesheet)
 
     # ! TODO: Remove this
     path = config.result_dir / 'example_report_context.json'
@@ -82,7 +82,7 @@ def _get_img_src(path):
     )
 
 
-def _get_report_context() -> dict:
+def _get_report_context(samplesheet) -> dict:
     """Build the context for the report template."""
     blast_hits = _get_blast_hits()
     consensus_fasta = ConsensusFASTA(config.consensus_fasta_path)
@@ -95,7 +95,7 @@ def _get_report_context() -> dict:
         'start_time': _get_start_time(),
         'end_time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         'wall_time': _get_walltime(),
-        'metadata': _get_metadata(),
+        'metadata': _get_metadata(samplesheet),
         'parameters': {},  # _get_parameters(),  # TODO: doesn't exist yet
         'run_qc': _get_run_qc(),
         'bam_html_file': config.bam_html_output_path.name,
@@ -130,9 +130,9 @@ def _get_walltime():
     }
 
 
-def _get_metadata():
+def _get_metadata(samplesheet):
     """Return the metadata as a dict."""
-    with config.metadata_path.open() as f:
+    with open(samplesheet) as f:
         reader = csv.DictReader(f)
         for row in reader:
             if row['sampleid'] == config.sample_id:

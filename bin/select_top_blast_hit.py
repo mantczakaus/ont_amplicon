@@ -25,8 +25,8 @@ def main():
 
     if mode == "ncbi":
 #        blastn_results = pd.read_csv(blastn_results_path, sep="\t", index_col=False, names=["qseqid", "sgi", "sacc", "length", "nident", "pident", "mismatch", "gaps", "gapopen", "qstart", "qend", "qlen", "sstart", "send", "slen", "sstrand", "evalue", "bitscore", "qcovhsp", "stitle", "staxids", "qseq", "sseq", "sseqid", "qcovs", "qframe", "sframe", "species", "sskingdoms"], dtype={"stitle": 'str', "staxids": 'str', "species": 'str'})
-        columns = ["qseqid", "sgi", "sacc", "length", "nident", "pident", "mismatch", "gaps", "gapopen", "qstart", 
-                  "qend", "qlen", "sstart", "send", "slen", "sstrand", "evalue", "bitscore", "qcovhsp", "stitle", 
+        columns = ["qseqid", "sgi", "sacc", "length", "nident", "pident", "mismatch", "gaps", "gapopen", "qstart",
+                  "qend", "qlen", "sstart", "send", "slen", "sstrand", "evalue", "bitscore", "qcovhsp", "stitle",
                   "staxids", "qseq", "sseq", "sseqid", "qcovs", "qframe", "sframe"]
         blastn_results = pd.read_csv(blastn_results_path, sep="\t", index_col=False, header=0, usecols=columns,
                                       dtype={"qseqid": 'str',"sgi": 'str',"sacc": 'str',"length": 'int64',"nident": 'int64',
@@ -47,7 +47,7 @@ def main():
 
 
     blastn_results["staxids"] = blastn_results["staxids"].str.split(";").str[0].astype(int)
-
+    print(blastn_results)
     staxids_list = blastn_results['staxids'].unique().tolist()
     result = pytaxonkit.lineage(staxids_list)
     FullLineage_df = result[['TaxID', 'FullLineage']]

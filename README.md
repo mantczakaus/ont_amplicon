@@ -85,3 +85,64 @@ Specify the path of your COI database in your nextflow command using ```--blastn
     --blastn_COI = '/full/path/to/MetaCOXI_Seqs.fasta'
   }
   ```
+
+## Running the pipeline  
+
+### Run test data
+- Run the command:
+  ```
+  nextflow run maelyg/ont_amplicon -profile singularity --samplesheet index.csv
+  ```
+  The first time the command runs, it will download the pipeline into your assets.  
+
+  The source code can also be downloaded directly from GitHub using the git command:
+  ```
+  git clone https://github.com/maelyg/ont_amplicon
+  ```
+
+- Provide an index.csv file.  
+  Create a comma separated file that will be the input for the workflow. By default the pipeline will look for a file called “index.csv” in the base directory but you can specify any file name using the ```--samplesheet [filename]``` in the nextflow run command. This text file requires the following columns (which need to be included as a header): ```sampleid,sample_files,spp_targets,gene_targets,target_size,fwd_primer,rev_primer``` 
+
+  **sampleid** will be the sample name that will be given to the files created by the pipeline (required).  
+  **sample_path** is the full path to the fastq files that the pipeline requires as starting input (required).  
+  **spp_targets** is the organism targetted by the PCR (required).
+  **gene_targets** is the gene targetted by the PCR (optional).
+  **target_size** is the expected size of the amplicon (required).
+  **fwd_primer** is the nucleotide sequence of the FWD primer (optional).
+  **rev_primer** is the nucleotide sequence of the REV primer (optional).
+
+  This is an example of an index.csv file which specifies the name and path of fastq.gz files for 2 samples. Specify the full path length for samples with a single fastq.gz file. If there are multiple fastq.gz files per sample, place them all in a single folder and the path can be specified on one line using an asterisk:
+  ```
+  sampleid,sample_files
+  MT212,/path_to_fastq_file_folder/*fastq.gz
+  MT213,/path_to_fastq_file_folder/*fastq.gz
+  ```
+
+- Specify a profile:
+  ```
+  nextflow run eresearchqut/ontvisc -profile {singularity, docker} --samplesheet index_example.csv
+  ```
+  setting the profile parameter to one of ```docker``` or ```singularity``` to suit your environment.
+  
+- Specify one analysis mode: ```--analysis_mode {read_classification, clustering, denovo_assembly, map2ref}``` (see below for more details)
+
+- To set additional parameters, you can either include these in your nextflow run command:
+  ```
+  nextflow run eresearchqut/ontvisc -profile {singularity, docker} --samplesheet index_example.csv --adapter_trimming
+  ```
+  or set them to true in the nextflow.config file.
+  ```
+  params {
+    adapter_trimming = true
+  }
+  ```
+
+- A test is provided to check if the pipeline was successfully installed. The test.fastq.gz file is derived from of a plant infected with Miscanthus sinensis mosaic virus. To use the test, run the following command, selecting the adequate profile (singularity/docker):
+  ```
+  nextflow run eresearchqut/ontvisc -profile test,{singularity, docker}
+  ```
+  If this command does not run properly, you might need to also specify thte test.config file in the command line:  
+  ```
+  nextflow -c conf/test.config run eresearchqut/ontvisc -profile test,{singularity, docker}
+  ```
+  The test requires 2 cpus at least 16Gb of memory to run and can be executed locally.  
