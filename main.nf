@@ -101,9 +101,9 @@ if (params.blastn_COI != null) {
     blastn_COI_dir = file(params.blastn_COI).parent
 }
 
-if (params.taxdump != null) {
-    taxdump_dir = file(params.taxdump).parent
-}
+//if (params.taxdump != null) {
+//    taxdump_dir = file(params.taxdump).parent
+//}
 
 if (params.reference != null) {
     reference_name = file(params.reference).name
@@ -127,7 +127,7 @@ switch (workflow.containerEngine) {
       bindbuild = (bindbuild + "-B ${blastn_COI_dir} ")
     }
     if (params.taxdump != null) {
-      bindbuild = (bindbuild + "-B ${taxdump_dir} ")
+      bindbuild = (bindbuild + "-B ${taxdump} ")
     }
     if (params.reference != null) {
       bindbuild = (bindbuild + "-B ${reference_dir} ")
