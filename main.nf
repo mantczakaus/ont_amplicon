@@ -173,7 +173,6 @@ process BLASTN {
   }
 }
 
-
 process BLASTN_COI {
   publishDir "${params.outdir}/${sampleid}/megablast", mode: 'copy', pattern: '*_megablast*.txt'
   tag "${sampleid}"
@@ -224,7 +223,7 @@ process BLASTN2 {
       -out ${tmp_blast_output} \
       -evalue 1e-3 \
       -num_threads ${params.blast_threads} \
-      -outfmt '6 qseqid sgi sacc length nident pident mismatch gaps gapopen qstart qend qlen sstart send slen sstrand evalue bitscore qcovhsp stitle staxids qseq sseq sseqid qcovs qframe sframe sscinames sskingdoms' \
+      -outfmt '6 qseqid sgi sacc length nident pident mismatch gaps gapopen qstart qend qlen sstart send slen sstrand evalue bitscore qcovhsp stitle staxids qseq sseq sseqid qcovs qframe sframe' \
       -max_target_seqs 10
       
     cat <(printf "qseqid\tsgi\tsacc\tlength\tnident\tpident\tmismatch\tgaps\tgapopen\tqstart\tqlen\tqend\tsstart\tsend\tslen\tsstrand\tevalue\tbitscore\tqcovhsp\tstitle\tstaxids\tqseq\tsseq\tsseqid\tqcovs\tqframe\tsframe\n") ${tmp_blast_output} > ${blast_output}
@@ -247,7 +246,7 @@ process CHOPPER {
   script:
   def chopper_options = (params.chopper_options) ? " ${params.chopper_options}" : ''
     """
-    gunzip -c ${sample} | chopper ${chopper_options} 2> ${sampleid}_chopper.log | gzip > ${sampleid}_filtered.fastq.gz
+    gunzip -c ${sample} | chopper ${chopper_options} --threads ${task.cpus} 2> ${sampleid}_chopper.log | gzip > ${sampleid}_filtered.fastq.gz
     """
 }
 /*
@@ -300,24 +299,6 @@ process COVSTATS {
     """
 }
 
-/*
-process DETECTION_REPORT {
-  label "local"
-    publishDir "${params.outdir}/detection_summary", mode: 'copy', overwrite: true
-    containerOptions "${bindOptions}"
-
-  input:
-    path('*')
-
-  output:
-    path("detection_summary*.txt")
-
-  script:
-    """
-    detection_summary.py --threshold ${params.contamination_flag_threshold}
-    """
-}
-
 process EXTRACT_READS {
   tag "${sampleid}"
   label "setting_11"
@@ -340,7 +321,6 @@ process EXTRACT_READS {
   echo \$n_lines > ${sampleid}_unaligned_reads_count.txt
   """
 }
-*/
 
 process CUTADAPT {
   tag "$sampleid"
@@ -372,6 +352,7 @@ process CUTADAPT {
 }
 
 //cutadapt -n 2 -j ${task.cpus} -g "${fwd_primer_trimmed};max_error_rate=0.1;min_overlap=10" -a "${rev_primer_trimmed};max_error_rate=0.1;min_overlap=10" --trim-n -o ${sampleid}_final_polished_consensus.fasta ${consensus} > ${sampleid}_cutadapt.log
+
 process EXTRACT_BLAST_HITS {
   publishDir "${params.outdir}/${sampleid}/megablast", mode: 'copy', pattern: '{*fasta}'
   tag "${sampleid}"
@@ -404,13 +385,6 @@ process EXTRACT_BLAST_HITS {
 }
 
 /*
-echo "# BLASTN 2.13.0+" > template.txt
-    echo "# Query: ${sampleid}" >> template.txt
-    echo "# Database: /scratch/datasets/blast_db/20240730/nt" >> template.txt
-    echo "# Fields: query acc., subject acc., subject title, evalue, q. start, q. end, s. start, s. end, bit score, alignment length, mismatches, % identity, identical, % query coverage per subject, subject seq, query seq" >> template.txt
-    echo "Top 10 hits reported" >> template.txt
-    cat  template.txt ${sampleid}_blastn_report.txt > ${sampleid}_blastn_report_ed.txt
-
 process EXTRACT_REF_FASTA {
   tag "$sampleid"
   label "setting_1"
@@ -474,33 +448,7 @@ process FASTQ2FASTA {
   seqtk seq -A -C ${sampleid}_tmp.fastq > ${sampleid}_rattle.fasta
   """
 }
-/*
-process EXTRACT_TAXONOMY {
-  publishDir "${params.outdir}/${sampleid}/megablast", mode: 'copy', pattern: '{*.txt}'
-  tag "${sampleid}"
-  label 'setting_3'
-  containerOptions "${bindOptions}"
 
-  input:
-    tuple val(sampleid), path(blast_results)
-
-  output:
-    path("*taxonomy_file.txt"), optional: true
-    tuple val(sampleid), path("*taxonomy_file.txt"), emit: taxonomy, optional: true
-
-  script:
-    """
-    c1grep() { grep  "\$@" || test \$? = 1; }
-    c1grep "Eukaryota" ${blast_results} | cut -f3 | sort | uniq > ids_to_retrieve.txt
-    if [ -s ids_to_retrieve.txt ]
-      then
-        for i in `cut -f1 ids_to_retrieve.txt`; do esearch -db nuccore -query "\${i}" | elink -target taxonomy | efetch -format native -mode xml | grep ScientificName | awk -F ">|<" 'BEGIN{ORS=", ";}{print \$3;}'  >> ${sampleid}_taxonomy_file.txt; printf "\t\$i" >> ${sampleid}_taxonomy_file.txt; printf "\n"  >> ${sampleid}_taxonomy_file.txt; done
-    else
-      touch ${sampleid}_taxonomy_file.txt
-    fi
-    """
-}
-*/
 process FASTA2TABLE {
   tag "$sampleid"
   label "setting_1"
@@ -518,24 +466,6 @@ process FASTA2TABLE {
     """
 }
 /*
-process FILTER_CONSENSUS {
-  publishDir "${params.outdir}/${sampleid}/megablast", mode: 'copy', pattern: '{*.txt}'
-  tag "${sampleid}"
-  label "setting_2"
-  containerOptions "${bindOptions}"
-
-  input:
-    tuple val(sampleid), val(spp_targets), val(gene_targets), val(size), path(taxonomy), path(blast_results)
-
-  output:
-    file "${sampleid}*blastn_top_hits_filtered.txt"
-
-  script:
-    """
-    filter_blast_results.py --sample_name ${sampleid} --acc_phylo_info ${taxonomy} --spp_targets ${spp_targets} --gene_targets ${gene_targets} --blastn_results ${blast_results} --mode ${params.blast_mode} --target_size ${size}
-    """
-}
-
 process DERIVE_MASKED_CONSENSUS {
   publishDir "${params.outdir}/${sampleid}/mapping_back_to_ref", mode: 'copy'
   tag "${sampleid}"
@@ -708,7 +638,7 @@ process MINIMAP2_REF {
 
 process MOSDEPTH {
   tag "$sampleid"
-  label "setting_5"
+  label "setting_3"
   publishDir "${params.outdir}/${sampleid}/mapping_to_consensus", mode: 'copy'
 
   input:
@@ -792,7 +722,7 @@ process QCREPORT {
 process RACON {
   publishDir "${params.outdir}/${sampleid}/polishing", mode: 'copy'
   tag "${sampleid}"
-  label 'setting_3'
+  label 'setting_2'
 
   input:
    tuple val(sampleid), path(fastq), path(assembly), path(paf)
@@ -803,7 +733,7 @@ process RACON {
 
   script:
     """
-    racon -m 8 -x -6 -g -8 -w 500 -t $task.cpus -q -1 --no-trimming -u \
+    racon -m 8 -x -6 -g -8 -w 500 -t ${task.cpus} -q -1 --no-trimming -u \
         ${fastq} ${paf} ${assembly} \
         > ${sampleid}_racon_polished_tmp.fasta
     cut -f1 -d ' ' ${sampleid}_racon_polished_tmp.fasta > ${sampleid}_racon_polished.fasta
@@ -812,7 +742,7 @@ process RACON {
 
 process RATTLE {
   tag "${sampleid}"
-  label 'setting_7'
+  label 'setting_10'
 
   input:
     tuple val(sampleid), path(fastq), val(target_size)
@@ -843,7 +773,7 @@ process RATTLE {
       rattle cluster_summary -i ${fastq} -c clusters.out > ${sampleid}_cluster_summary.txt
       mkdir clusters
       rattle extract_clusters -i ${fastq} -c clusters.out -l ${sampleid} -o clusters --fastq
-      rattle correct -i ${fastq} -c clusters.out -t ${task.cpus} -l ${sampleid}
+      rattle correct -t ${task.cpus} -i ${fastq} -c clusters.out -t ${task.cpus} -l ${sampleid}
       rattle polish -i consensi.fq -t ${task.cpus} --summary ${rattle_polishing_options}
       trap 'if [[ \$? -eq 139 ]]; then echo "segfault !"; fi' CHLD
     ) 2>&1 | tee ${sampleid}_rattle.log
@@ -1229,7 +1159,7 @@ workflow {
         EXTRACT_BLAST_HITS ( ch_blast_merged.join(ch_targets) )
         //Add consensus sequence to blast results summary table
         FASTA2TABLE ( EXTRACT_BLAST_HITS.out.topblast.join(consensus) )
-        
+
         //MAPPING BACK TO REFERENCE
         mapping_ch = (EXTRACT_BLAST_HITS.out.reference_fasta_files.join(REFORMAT.out.cov_derivation_ch))
         //Map filtered reads back to the reference sequence which was retrieved from blast search
