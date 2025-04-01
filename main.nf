@@ -357,6 +357,7 @@ process EXTRACT_BLAST_HITS {
   publishDir "${params.outdir}/${sampleid}/megablast", mode: 'copy', pattern: '{*fasta}'
   tag "${sampleid}"
   label "setting_1"
+  containerOptions "${bindOptions}"
 
   input:
     tuple val(sampleid), path(blast_results), val(spp_targets), val(gene_targets), val(target_size)
