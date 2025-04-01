@@ -40,7 +40,7 @@ It takes compressed fastq files as input.
 
 ## Installation
 ### Requirements  
-1. Install Java if not already on your system. Follow these instructions on this page [`page`](https://www.nextflow.io/docs/latest/getstarted.html#installation).
+1. Install Java if not already on your system. Follow the java download instructions provided on this page [`page`](https://www.nextflow.io/docs/latest/getstarted.html#installation).
 
 2. Install Nextflow [`Nextflow`](https://www.nextflow.io/docs/latest/getstarted.html#installation)
 
@@ -49,22 +49,39 @@ It takes compressed fastq files as input.
 3. Install taxonkit using the script install_taxonkit.sh or follow the steps described on this page [`page`](https://bioinf.shenwei.me/taxonkit/download/).
 
 
-Download a local copy of the NCBI NT database, following the detailed steps available at https://www.ncbi.nlm.nih.gov/books/NBK569850/. Create a folder where you will store your NCBI databases. It is good practice to include the date of download. For instance:
+4. Install NCBI NT or coreNT.  
+Download a local copy of the NCBI database of interest, following the detailed steps available at https://www.ncbi.nlm.nih.gov/books/NBK569850/. Create a folder where you will store your NCBI databases. It is good practice to include the date of download. For instance:
   ```
   mkdir blastDB/20230930
   ```
   You will need to use a current update_blastdb.pl script from the blast+ version used with the pipeline (ie 2.16.0).
   For example:
   ```
-  perl update_blastdb.pl --decompress nt
-  perl update_blastdb.pl taxdb
+  singularity exec -B /scratch https://depot.galaxyproject.org/singularity/blast:2.16.0--h66d330f_4  update_blastdb.pl --decompress nt
+  singularity exec -B /scratch https://depot.galaxyproject.org/singularity/blast:2.16.0--h66d330f_4  update_blastdb.pl --decompress taxdb
   tar -xzf taxdb.tar.gz
   ```
-
-  Specify the path of your local NCBI blast nt directories in the nextflow.config file or your enxtflow command.
+  
+  Specify the path of your local NCBI blast directories in your nextflow command using ```--blastn_db = '/full/path/to/blastDB/20230930/nt'``` or specify the following lines in a user config file.
   For instance:
   ```
   params {
-    --blastn_db = '/work/hia_mt18005_db/blastDB/20230930/nt'
+    --blastn_db = '/full/path/to/blastDB/20230930/nt'
+  }
+  ```
+
+5. Download the Cytochrome oxydase 1 (COI1) database if you are planning to analyse COI samples.
+  ```
+  git clone https://github.com/bachob5/MetaCOXI.git
+  #extract MetaCOXI_Seqs.fasta from the MetaCOXI_Seqs.tar.gz file
+  tar -xvf MetaCOXI_Seqs.tar.gz
+  #make a blast database from the fasta file
+  singularity exec -B /scratch https://depot.galaxyproject.org/singularity/blast:2.16.0--h66d330f_4 makeblastdb -in MetaCOXI_Seqs.fasta -parse_seqids -dbtype prot
+  ```
+Specify the path of your COI database in your nextflow command using ```--blastn_COI = '/full/path/to/MetaCOXI_Seqs.fasta'``` or specify the following lines in a user config file.
+  For instance:
+  ```
+  params {
+    --blastn_COI = '/full/path/to/MetaCOXI_Seqs.fasta'
   }
   ```
