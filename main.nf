@@ -51,9 +51,6 @@ def helpMessage () {
       --chopper_options               Chopper options
                                       Default: ''
 
-      --host_fasta                    Path to the fasta file of nucleotide sequences to filter
-                                      Default: ''
-
       #### Analysis mode and associated parameters ####
       ### Clustering (clustering) ###
       --rattle_clustering_options     Rattle clustering options
@@ -1022,7 +1019,7 @@ workflow {
 
 
   if ( params.analysis_mode == 'clustering') {
-    if (!params.blast_vs_ref) {
+    if (!params.blast_vs_ref & !params.qc_only) {
       if ( params.blastn_db == null) {
         error("Please provide the path to a blast database using the parameter --blastn_db.")
       }

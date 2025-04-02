@@ -233,6 +233,13 @@ By default the pipeline will run a quality control check of the raw reads using 
 
 - It is recommended to first run only the quality control step to have a preliminary look at the data before proceeding with downstream analyses by specifying the ```--qc_only``` parameter.
 
+The command you would run would look like this:
+```
+nextflow run maelyg/ont_amplicon -profile singularity \
+                            --merge \
+                            --qc_only
+```
+
 ### Preprocessing reads
 If multiple fastq files exist for a single sample, they will first need to be merged using the `--merge` option using [`Fascat`](https://github.com/epi2me-labs/fastcat).
 Then the read names of the fastq file created will be trimmed after the first whitespace, for compatiblity purposes with all downstream tools.  
@@ -249,12 +256,12 @@ T  o limit the search to custom adapters, specify ```--adapter_trimming --porech
      line 2: Start adapter sequence
      line 3: End adapter sequence
      --- repeat for each adapter pair---
-     ```
+    ```
 
 - Perform a quality filtering step using [`Chopper`](https://github.com/wdecoster/chopper) by specifying the ```--qual_filt``` parameter. The following parameters can be specified using the ```--chopper_options '{options}'```. Please refer to the Chopper manual.  
 For instance to filter reads shorter than 1000 bp and longer than 20000 bp, and reads with a minimum Phred average quality score of 10, you would specify: ```--qual_filt --chopper_options '-q 10 -l 1000 --maxlength 20000'```.  **Based on our benchmarking, we recommend using the following parameters ```--chopper_options '-q 8 -l 100'``` as a first pass**.  
 
-  If you are analysing samples that are of poor quality (i.e. failed the QC_FLAG), then we recommend ommitting the ```--qual_filt``` step to retain more reads.  
+  If you are analysing samples that are of poor quality (i.e. failed the QC_FLAG) or amplifying a very short amplicon (e.g. <150 bp), then we recommend using the following setting ```--chopper_options '-q 8 -l 25'``` to retain reads of all lengths.  
 
 A zipped copy of the resulting **preprocessed** and/or **quality filtered fastq file** will be saved in the preprocessing folder.  
 
@@ -273,14 +280,16 @@ In the clustering mode, the tool [`RATTLE`](https://github.com/comprna/RATTLE#De
 - Finally, the ``rattle_clustering_max_variance`` is set by default to 10000. It is recommended to drop it to 10 if analysing fastq files that were generated using a **fast** basecalling model.
 
   **Special usage:**
-  The parameters ``--lower-length [number]``` (by default: 150) and ```--upper-length [number]``` (by default: 100,000) can also be specified on the command line to filter out more precisely reads of a certain size.  
+  The parameters ``--rattle_clustering_min_length [number]``` (by default: 150) and ```--rattle_clustering_max_length [number]``` (by default: 100,000) can also be specified on the command line to restrict more strictly read size.  
   Additional parameters (other than raw, lower-length, upper-length and max-variance) can be set using the parameter ```--rattle_clustering_options '[additional paramater]'```
 
 Example in which all reads will be retained during the clustering step:
 ```
-nextflow run eresearchqut/ontvisc -resume -profile singularity \
+nextflow run maelyg/ont_amplicon -resume -profile singularity \
                             --analysis_mode clustering \
                             --adapter_trimming \
+                            --qual_filt \
+                            --chopper_options '-q 8 -l 25' \
                             --rattle_raw \
                             --blast_threads 2 \
                             --blastn_db /path/to/ncbi_blast_db/nt
@@ -288,7 +297,7 @@ nextflow run eresearchqut/ontvisc -resume -profile singularity \
 
 Example in which reads are first quality filtered using the tool chopper (only reads with a Phread average quality score above 10 are retained). Then for the clustering step, only reads ranging between 500 and 2000 bp will be retained:
 ```
-nextflow run eresearchqut/ontvisc -resume -profile singularity \
+nextflow run maelyg/ont_amplicon -resume -profile singularity \
                             --qual_filt \
                             --chopper_options chopper_options = '-q 8 -l 100' \
                             --analysis_mode clustering \
