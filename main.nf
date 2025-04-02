@@ -824,7 +824,6 @@ process REVCOMP {
   script:
     """
     reverse_complement.py --sample ${sampleid} --ids_to_rc ${ids_to_revcomp} --fasta ${contigs}
-    
     """
 }
 
