@@ -299,3 +299,4 @@ nextflow run eresearchqut/ontvisc -resume -profile singularity \
 ```
 
 ### Polishing step
+The clusters derived using RATTLE can be polished. The reads are first mapped back to the clusters using Minimap2 and then the clusters are polished using Racon, Medaka2 and Samtools consensus. The resulting polished
