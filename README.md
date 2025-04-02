@@ -279,6 +279,7 @@ Example in which all reads will be retained during the clustering step:
 ```
 nextflow run eresearchqut/ontvisc -resume -profile singularity \
                             --analysis_mode clustering \
+                            --adapter_trimming \
                             --rattle_raw \
                             --blast_threads 2 \
                             --blastn_db /path/to/ncbi_blast_db/nt
@@ -286,13 +287,14 @@ nextflow run eresearchqut/ontvisc -resume -profile singularity \
 
 Example in which reads are first quality filtered using the tool chopper (only reads with a Phread average quality score above 10 are retained). Then for the clustering step, only reads ranging between 500 and 2000 bp will be retained:
 ```
-nextflow run eresearchqut/ontvisc -resume -profile {singularity, docker} \
-                            --qual_filt --qual_filt_method chopper --chopper_options '-q 10' \
+nextflow run eresearchqut/ontvisc -resume -profile singularity \
+                            --qual_filt \
+                            --chopper_options chopper_options = '-q 8 -l 100' \
                             --analysis_mode clustering \
-                            --rattle_clustering_options '--lower-length 500 --upper-length 2000' \
-                            --blast_threads 8 \
+                            --rattle_clustering_min_length 500 \
+                            --rattle_clustering_max_length 2000 \
+                            --blast_threads 2 \
                             --blastn_db /path/to/ncbi_blast_db/nt
 ```
-
 
 ### Polishing step
