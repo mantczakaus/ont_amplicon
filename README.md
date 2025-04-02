@@ -113,9 +113,10 @@ Specify the path of your COI database in your nextflow command using ```--blastn
 
   This is an example of an index.csv file which specifies the name and path of fastq.gz files for 2 samples. Specify the full path length for samples with a single fastq.gz file. If there are multiple fastq.gz files per sample, place them all in a single folder and the path can be specified on one line using an asterisk:
   ```
-  sampleid,sample_files
-  MT212,/path_to_fastq_file_folder/*fastq.gz
-  MT213,/path_to_fastq_file_folder/*fastq.gz
+  sampleid,sample_files,spp_targets,gene_targets,target_size,fwd_primer,rev_primer
+  barcode01_VE24-1279_COI,tests/mtdt_data/barcode01_VE24-1279_COI/*fastq.gz,drosophilidae,COI,711,GGTCAACAAATCATAAAGATATTGG,ATTTTTTGGTCACCCTGAAGTTTA
+  barcode06_MP24-1051A_16S,tests/mtdt_data/barcode06_MP24-1051A_16S/*fastq.gz,bacteria,16s,1509,AGAGTTTGATCATGGCTCAG,AAGTCGTAACAAGGTAACCGT
+  barcode19_MP24-1096B_gyrB,tests/mtdt_data/barcode19_MP24-1096B_gyrB/*fastq.gz,bacteria,gyrB,1258,GAAGTCATCATGACCGTTCTGCAYGCNGGNGGNAARTTYGA,ATGACNGAYGCNGAYGTNGAYGGCTCGCACATCCGTACCCTGCT
   ```
 
 - Specify a profile:

@@ -51,8 +51,6 @@ def helpMessage () {
       --chopper_options               Chopper options
                                       Default: ''
 
-      --host_filtering                Run host filtering step using Minimap2
-                                      Default: false
       --host_fasta                    Path to the fasta file of nucleotide sequences to filter
                                       Default: ''
 
@@ -109,9 +107,9 @@ if (params.reference != null) {
     reference_name = file(params.reference).name
     reference_dir = file(params.reference).parent
 }
-if (params.host_fasta != null) {
-    host_fasta_dir = file(params.host_fasta).parent
-}
+//if (params.host_fasta != null) {
+//   host_fasta_dir = file(params.host_fasta).parent
+//}
 
 if (params.porechop_custom_primers == true) {
     porechop_custom_primers_dir = file(params.porechop_custom_primers_path).parent
@@ -132,9 +130,9 @@ switch (workflow.containerEngine) {
     if (params.reference != null) {
       bindbuild = (bindbuild + "-B ${reference_dir} ")
     }
-    if (params.host_fasta != null) {
-      bindbuild = (bindbuild + "-B ${host_fasta_dir} ")
-    }
+//   if (params.host_fasta != null) {
+//      bindbuild = (bindbuild + "-B ${host_fasta_dir} ")
+//    }
     bindOptions = bindbuild;
     break;
   default:
@@ -298,7 +296,7 @@ process COVSTATS {
     fi
     """
 }
-
+/*
 process EXTRACT_READS {
   tag "${sampleid}"
   label "setting_11"
@@ -321,7 +319,7 @@ process EXTRACT_READS {
   echo \$n_lines > ${sampleid}_unaligned_reads_count.txt
   """
 }
-
+*/
 process CUTADAPT {
   tag "$sampleid"
   label "setting_1"
@@ -712,7 +710,7 @@ process QCREPORT {
 
   script:
     """
-    seq_run_qc_report.py --host_filtering ${params.host_filtering} --adapter_trimming ${params.adapter_trimming} --quality_trimming ${params.qual_filt}
+    seq_run_qc_report.py --adapter_trimming ${params.adapter_trimming} --quality_trimming ${params.qual_filt}
     """
 }
 

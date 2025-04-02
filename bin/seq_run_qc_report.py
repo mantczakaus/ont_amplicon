@@ -8,7 +8,6 @@ import numpy as np
 
 def main():
     parser = argparse.ArgumentParser(description="Derive a qc report")
-    parser.add_argument("--host_filtering", type=str)
     parser.add_argument("--adapter_trimming", type=str)
     parser.add_argument("--quality_trimming", type=str)
     args = parser.parse_args()
