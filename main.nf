@@ -855,7 +855,7 @@ process SAMTOOLS {
 }
 
 process SAMTOOLS_CONSENSUS {
-  publishDir "${params.outdir}/${sampleid}/mapping_to_consensus", mode: 'copy', pattern: '{*.bam,*.bai,*_coverage.txt,*_histogram.txt}'
+  publishDir "${params.outdir}/${sampleid}/mapping_to_consensus", mode: 'copy', pattern: '{*.bam,*.bai,*_coverage.txt,*_histogram.txt,*final_polished_consensus_match.fasta}'
   tag "${sampleid}"
   label 'setting_2'
 
@@ -863,6 +863,7 @@ process SAMTOOLS_CONSENSUS {
     tuple val(sampleid), path(consensus), path(sample)
 
   output:
+    path "${sampleid}_final_polished_consensus_match.fasta"
     path "${sampleid}_aln.sorted.bam"
     path "${sampleid}_aln.sorted.bam.bai"
     path "${sampleid}_coverage.txt"

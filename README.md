@@ -101,19 +101,25 @@ Specify the path of your COI database in your nextflow command using ```--blastn
   ```
 
 - Provide an index.csv file.  
-  Create a **comma separated file** that will be the input for the workflow. By default the pipeline will look for a file called “index.csv” in the base directory but you can specify any file name using the ```--samplesheet [filename]``` in the nextflow run command, as long as it has a **.csv** suffix. This text file requires the following columns (which need to be included as a header): ```sampleid,sample_files,spp_targets,gene_targets,target_size,fwd_primer,rev_primer``` 
+  Create a **comma separated file (csv)** that will be the input for the workflow. 
+  
+  **Please note**: it is best to edit the csv file with an editor that does not add special characters/symbols (e.g. VSCode or Atom). If using other editors, check your files and if necessary, run dos2unix[`dos2unix`](https://www.linuxfromscratch.org/blfs/view/git/general/dos2unix.html) on the file to get rid of these unwanted characters/symbols as they will cause the pipeline to fail.  
+  
+  By default the pipeline will look for a file called “index.csv” in the base directory but you can specify any file name using the ```--samplesheet [filename]``` in the nextflow run command, as long as it has a **.csv** suffix. This text file requires the following columns (which need to be included as a header): ```sampleid,sample_files,spp_targets,gene_targets,target_size,fwd_primer,rev_primer``` 
 
-  **sampleid** will be the sample name that will be given to the files created by the pipeline (required).  
-  **sample_path** is the full path to the fastq files that the pipeline requires as starting input (required).  
-  **spp_targets** is the organism targetted by the PCR (required).  
-  **gene_targets** is the gene targetted by the PCR (optional).  
-  **target_size** is the expected size of the amplicon (required).  
-  **fwd_primer** is the nucleotide sequence of the FWD primer (optional).  
-  **rev_primer** is the nucleotide sequence of the REV primer (optional).  
+   - **sampleid** will be the sample name that will be given to the files created by the pipeline (required).  
+   - **sample_path** is the full path to the fastq files that the pipeline requires as starting input (required).  
+   - **spp_targets** is the organism targetted by the PCR (required).  
+   - **gene_targets** is the gene targetted by the PCR (optional).  
+   - **target_size** is the expected size of the amplicon (required).  
+   - **fwd_primer** is the nucleotide sequence of the FWD primer (optional).  
+   - **rev_primer** is the nucleotide sequence of the REV primer (optional).  
 
-  For the fastq files path, the pipeline is currently expecting either 1) multiple fastq.gz files per sample located within one folder or a single fastq.gz file per sample.  
-  If there are **multiple fastq.gz files per sample**, their full path can be specified on one line using **an asterisk** and you will need to speicyf the parameter ```--merge```
-  See an example of an index.csv file for 2 MTDT samples:
+
+
+  For the fastq files path, the pipeline is currently expecting either 1) multiple fastq.gz files per sample located within one folder or 2) a single fastq.gz file per sample.  
+  If there are **multiple fastq.gz files per sample**, their full path can be specified on one line using **an asterisk (*fastq.gz)** and you will need to specify the parameter ```--merge``` either on the command line or a config file.  
+  See an example of an index.csv file for 2 MTDT samples:  
   ```
   sampleid,sample_files,spp_targets,gene_targets,target_size,fwd_primer,rev_primer
   VE24-1279_COI,tests/mtdt_data/barcode01_VE24-1279_COI/*fastq.gz,drosophilidae,COI,711,GGTCAACAAATCATAAAGATATTGG,ATTTTTTGGTCACCCTGAAGTTTA
@@ -125,15 +131,15 @@ Specify the path of your COI database in your nextflow command using ```--blastn
 
 - Specify a profile:
   ```
-  nextflow run eresearchqut/ontvisc -profile {singularity, docker} --samplesheet index_example.csv
+  nextflow run maelyg/ont_amplicon -profile singularity --samplesheet index_example.csv
   ```
   setting the profile parameter to one of ```docker``` or ```singularity``` to suit your environment.
   
-- Specify one analysis mode: ```--analysis_mode {read_classification, clustering, denovo_assembly, map2ref}``` (see below for more details)
+- Specify the analysis mode: ```--analysis_mode read_classification``` (see below for more details).  
 
 - To set additional parameters, you can either include these in your nextflow run command:
   ```
-  nextflow run eresearchqut/ontvisc -profile {singularity, docker} --samplesheet index_example.csv --adapter_trimming
+  nextflow run maelyg/ont_amplicon -profile singularity --samplesheet index_example.csv --adapter_trimming
   ```
   or set them to true in the nextflow.config file.
   ```
@@ -167,15 +173,10 @@ results/
 │   ├── mapping_to_consensus
 │   │   ├── barcode01_VE24-1279_COI_aln.sorted.bam
 │   │   ├── barcode01_VE24-1279_COI_aln.sorted.bam.bai
-│   │   ├── barcode01_VE24-1279_COI.bed
-│   │   ├── barcode01_VE24-1279_COI_contigs_reads_ids.txt
 │   │   ├── barcode01_VE24-1279_COI_coverage.txt
 │   │   ├── barcode01_VE24-1279_COI_final_polished_consensus_match.fasta
 │   │   ├── barcode01_VE24-1279_COI_histogram.txt
-│   │   ├── barcode01_VE24-1279_COI.mosdepth.global.dist.txt
 │   │   ├── barcode01_VE24-1279_COI.per-base.bed
-│   │   ├── barcode01_VE24-1279_COI.regions.bed
-│   │   ├── barcode01_VE24-1279_COI.thresholds.bed
 │   │   └── barcode01_VE24-1279_COI_top_blast_with_cov_stats.txt
 │   ├── mapping_to_ref
 │   │   ├── barcode01_VE24-1279_COI_aln.sorted.bam
