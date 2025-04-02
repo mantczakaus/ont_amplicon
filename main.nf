@@ -660,7 +660,6 @@ process MOSDEPTH {
 process PYFAIDX {
   tag "$sampleid"
   label "setting_3"
-  publishDir "${params.outdir}/${sampleid}/mapping_to_consensus", mode: 'copy'
 
   input:
     tuple val(sampleid), path(fasta)
@@ -858,7 +857,7 @@ process SAMTOOLS {
 }
 
 process SAMTOOLS_CONSENSUS {
-  publishDir "${params.outdir}/${sampleid}/mapping_to_consensus", mode: 'copy'
+  publishDir "${params.outdir}/${sampleid}/mapping_to_consensus", mode: 'copy', pattern: '{*.bam,*.bai,*_coverage.txt,*_histogram.txt}'
   tag "${sampleid}"
   label 'setting_2'
 
