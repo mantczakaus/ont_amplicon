@@ -318,9 +318,10 @@ This step is performed by default by the pipeline but can be skipped by specifyi
 If the fwd_primer and the rev_primer have been provided in the csv file, clusters are then searched for primers using Cutadapt.  
 
 ### Blast homology search against NCBI
-A preliminary megablast homology search against a Cytochrome oxidase I (COI) database will be performed if the gene targetted is COI and based on the strandedness of the consensus in the blast results, they will be reverse complemented where required.  
-Blast homology search of the consensuses are then performed.  
-A first step 
+A preliminary megablast homology search against a Cytochrome oxidase I (COI) database will be performed if the gene targetted is COI;  based on the strandedness of the consensus in the blast results, some will be reverse complemented where required.  
+
+Blast homology search of the consensuses against NCBI is then performed.  
+
 All the top hits derived for each contig are listed under the file **SampleName_assembly_blastn_top_hits.txt**. This file contains the following 26 columns:
 ```
 - qseqid
@@ -348,6 +349,20 @@ All the top hits derived for each contig are listed under the file **SampleName_
 - qcovs
 - qframe
 - sframe
-- species
+```
 
-
+To do :
+Update current flags  
+Add additional flags (contamination flag, % long reads, etc...)
+Improve reporting errors when RATTLE fails to produce clusters  
+Force specification of COI database if COI gene specified  
+Prevent pipeline from proceeding if fast basecalling model is detected.  
+Make map back to ref optional  
+Fix bug in reporting of contigs returnign a blast hit.  
+Incorporate basecalling model, analyst and facility  
+Incorporate cluster match fasta file in report.  
+reduce the mem required udner testing mode for blast search and rattle search  
+Provide option to run only map to ref  
+Provide a config file example  
+Provide a quick start up  
+Provide a mem and cpu requirement  

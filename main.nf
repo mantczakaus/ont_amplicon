@@ -1007,7 +1007,7 @@ workflow {
       .map{ row-> tuple((row.sampleid), (row.gene_targets)) }
       .filter { sampleid, gene_targets -> gene_targets.contains("COI") }
       .set{ ch_coi }
-    
+
     Channel
       .fromPath(params.samplesheet, checkIfExists: true)
       .splitCsv(header:true)
@@ -1017,13 +1017,20 @@ workflow {
   
   } else { exit 1, "Input samplesheet file not specified!" }
 
+
+  def elements = ch_coi.toList()  // Collect the elements in the channel to a list
+  if (elements.size() != 0) {
+    if ( params.blastn_COI == null) {
+      error("Please provide the path to a MetaCOXI database using the parameter --blastn_COI.")
+    }
+  }
   if ( params.analyst_name == null) {
-  error("Please provide the name of the analyst who is performing the analysis.")
+    error("Please provide the name of the analyst who is performing the analysis.")
       }
 
 
   if ( params.facility == null) {
-  error("Please provide the name of the facility where the analysis was performed.")
+    error("Please provide the name of the facility where the analysis was performed.")
       }
 
 
