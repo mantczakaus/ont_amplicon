@@ -269,11 +269,12 @@ In the clustering mode, the tool [`RATTLE`](https://github.com/comprna/RATTLE#De
 
 - The ont_amplicon pipeline will automatically set a **lower read length** of **100** bp during the RATTLE clustering step if the amplicon target_size specified in the csv file is **<=300 bp**.  
 - If the amplicon target_size specified in the csv file is **>300 bp**, the default lower read length of **150 bp** will be applied at the RATTLE clustering step instead.  
-- For poor quality samples (i.e. failed the QC_FLAG) or if your amplicon is known to be shorter than 150 bp, use the parameter ```--rattle_clustering_options '--raw'``` to use all the reads without any length filtering during the RATTLE clustering step.  
-- Finally, the ``rattle_clustering_max_variance`` is set by default to 10000. It is recommended to drop it to 10 if analysing fastq files that were generated using **fast** basecalling model.
+- For poor quality samples (i.e. failed the QC_FLAG) or if your amplicon is known to be shorter than 150 bp, use the parameter ```--rattle_raw``` to use all the reads without any length filtering during the RATTLE clustering step.  
+- Finally, the ``rattle_clustering_max_variance`` is set by default to 10000. It is recommended to drop it to 10 if analysing fastq files that were generated using a **fast** basecalling model.
 
   **Special usage:**
   The parameters ``--lower-length [number]``` (by default: 150) and ```--upper-length [number]``` (by default: 100,000) can also be specified on the command line to filter out more precisely reads of a certain size.  
+  Additional parameters (other than raw, lower-length, upper-length and max-variance) can be set using the parameter ```--rattle_clustering_options '[additional paramater]'```
 
 Example in which all reads will be retained during the clustering step:
 ```
