@@ -1017,11 +1017,23 @@ workflow {
   
   } else { exit 1, "Input samplesheet file not specified!" }
 
+  if ( params.analyst_name == null) {
+  error("Please provide the name of the analyst who is performing the analysis.")
+      }
+
+
+  if ( params.facility == null) {
+  error("Please provide the name of the facility where the analysis was performed.")
+      }
+
 
   if ( params.analysis_mode == 'clustering') {
     if (!params.blast_vs_ref & !params.qc_only & !params.preprocessing_only) {
       if ( params.blastn_db == null) {
         error("Please provide the path to a blast database using the parameter --blastn_db.")
+      }
+      if ( params.taxdump == null) {
+        error("Please provide the path to a taxonkit database using the parameter --taxdump.")
       }
     }
     else if (params.blast_vs_ref ) {
