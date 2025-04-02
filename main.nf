@@ -764,7 +764,7 @@ process RATTLE {
       if [[ ${params.rattle_raw} == true ]]; then
         rattle cluster -i ${fastq} -t ${task.cpus} --raw ${rattle_clustering_options} -v ${params.rattle_clustering_max_variance} -o .
       else
-        rattle cluster -i ${fastq} -t ${task.cpus} --lower-length ${rattle_clustering_min_length_set} ${params.rattle_clustering_max_length} ${rattle_clustering_options} -v ${params.rattle_clustering_max_variance} -o .
+        rattle cluster -i ${fastq} -t ${task.cpus} --lower-length ${rattle_clustering_min_length_set} --upper-length ${params.rattle_clustering_max_length} ${rattle_clustering_options} -v ${params.rattle_clustering_max_variance} -o .
       fi
       rattle cluster_summary -i ${fastq} -c clusters.out > ${sampleid}_cluster_summary.txt
       mkdir clusters

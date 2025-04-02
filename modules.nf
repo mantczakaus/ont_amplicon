@@ -2,9 +2,10 @@ if (params.blastn_db != null) {
     blastn_db_name = file(params.blastn_db).name
     blastn_db_dir = file(params.blastn_db).parent
 }
-if (params.host_fasta != null) {
-    host_fasta_dir = file(params.host_fasta).parent
-}
+
+//if (params.host_fasta != null) {
+//    host_fasta_dir = file(params.host_fasta).parent
+//}
 
 switch (workflow.containerEngine) {
   case "singularity":
