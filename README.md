@@ -240,10 +240,10 @@ Then the read names of the fastq file created will be trimmed after the first wh
 Reads can also be optionally trimmed of adapters and/or quality filtered:  
 - Search for presence of adapters in sequences reads using [`Porechop ABI`](https://github.com/rrwick/Porechop) by specifying the ``--adapter_trimming`` parameter. Porechop ABI parameters can be specified using ```--porechop_options '{options} '```, making sure you leave a space at the end before the closing quote. Please refer to the Porechop manual.  
 
-**Special usage:**
-To limit the search to known adapters listed in [`adapter.py`](https://github.com/bonsai-team/Porechop_ABI/blob/master/porechop_abi/adapters.py), just specify the ```--adapter_trimming``` option.  
-To search ab initio for adapters on top of known adapters, specify ```--adapter_trimming --porechop_options '-abi '```.  
-To limit the search to custom adapters, specify ```--adapter_trimming --porechop_custom_primers --porechop_options '-ddb '``` and list the custom adapters in the text file located under bin/adapters.txt following the format:
+  **Special usage:**  
+  To limit the search to known adapters listed in [`adapter.py`](https://github.com/bonsai-team/Porechop_ABI/blob/master/porechop_abi/adapters.py), just specify the ```--adapter_trimming``` option.  
+  To search ab initio for adapters on top of known adapters, specify ```--adapter_trimming --porechop_options '-abi '```.  
+T  o limit the search to custom adapters, specify ```--adapter_trimming --porechop_custom_primers --porechop_options '-ddb '``` and list the custom adapters in the text file located under bin/adapters.txt following the format:  
     ```
      line 1: Adapter name
      line 2: Start adapter sequence
@@ -254,10 +254,9 @@ To limit the search to custom adapters, specify ```--adapter_trimming --porechop
 - Perform a quality filtering step using [`Chopper`](https://github.com/wdecoster/chopper) by specifying the ```--qual_filt``` parameter. The following parameters can be specified using the ```--chopper_options '{options}'```. Please refer to the Chopper manual.  
 For instance to filter reads shorter than 1000 bp and longer than 20000 bp, and reads with a minimum Phred average quality score of 10, you would specify: ```--qual_filt --chopper_options '-q 10 -l 1000 --maxlength 20000'```.  **Based on our benchmarking, we recommend using the following parameters ```--chopper_options '-q 8 -l 100'``` as a first pass**.  
 
-If you are analysing samples that are of poor quality (i.e. failed the QC_FLAG), then we recommend ommitting the 
-```--qual_filt``` step to retain more reads.  
+  If you are analysing samples that are of poor quality (i.e. failed the QC_FLAG), then we recommend ommitting the ```--qual_filt``` step to retain more reads.  
 
-A zipped copy of the resulting preprocessed and/or quality filtered fastq file will be saved in the preprocessing folder.  
+A zipped copy of the resulting **preprocessed** and/or **quality filtered fastq file** will be saved in the preprocessing folder.  
 
 If you trim raw read of adapters and/or quality filter the raw reads, an additional quality control step will be performed and a qc report will be generated summarising the read counts recovered before and after preprocessing for all samples listed in the index.csv file.
 
@@ -271,15 +270,16 @@ In the clustering mode, the tool [`RATTLE`](https://github.com/comprna/RATTLE#De
 - The ont_amplicon pipeline will automatically set a **lower read length** of **100** bp during the RATTLE clustering step if the amplicon target_size specified in the csv file is **<=300 bp**.  
 - If the amplicon target_size specified in the csv file is **>300 bp**, the default lower read length of **150 bp** will be applied at the RATTLE clustering step instead.  
 - For poor quality samples (i.e. failed the QC_FLAG) or if your amplicon is known to be shorter than 150 bp, use the parameter ```--rattle_clustering_options '--raw'``` to use all the reads without any length filtering during the RATTLE clustering step.  
+- Finally, the ``rattle_clustering_max_variance`` is set by default to 10000. It is recommended to drop it to 10 if analysing fastq files that were generated using **fast** basecalling model.
 
-**Special usage:**
-The parameters ``--lower-length [number]``` (by default: 150) and ```--upper-length [number]``` (by default: 100,000) can also be specified on the command line to filter out more precisely reads of a certain size.  
+  **Special usage:**
+  The parameters ``--lower-length [number]``` (by default: 150) and ```--upper-length [number]``` (by default: 100,000) can also be specified on the command line to filter out more precisely reads of a certain size.  
 
 Example in which all reads will be retained during the clustering step:
 ```
 nextflow run eresearchqut/ontvisc -resume -profile singularity \
                             --analysis_mode clustering \
-                            --rattle_clustering_options '--raw' \
+                            --rattle_raw \
                             --blast_threads 2 \
                             --blastn_db /path/to/ncbi_blast_db/nt
 ```
