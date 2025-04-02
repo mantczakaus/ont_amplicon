@@ -639,21 +639,19 @@ process MINIMAP2_REF {
 process MOSDEPTH {
   tag "$sampleid"
   label "setting_3"
-  publishDir "${params.outdir}/${sampleid}/mapping_to_consensus", mode: 'copy'
+  publishDir "${params.outdir}/${sampleid}/mapping_to_consensus", mode: 'copy', pattern: pattern: '{*.per-base.bed,*.mosdepth.summary.txt}'
 
   input:
     tuple val(sampleid), path(consensus), path(bam), path(bai), path(bed)
 
   output:
-    path("*.mosdepth.global.dist.txt"), optional: true
     path("*.per-base.bed"), optional: true
-    path("*regions.bed"), optional: true
+    path("*.mosdepth.summary.txt"), optional: true
     tuple val(sampleid), path("${sampleid}.thresholds.bed"), emit: mosdepth_results, optional: true
 
   script:
     """
     mosdepth --by ${bed} --thresholds 30 -t ${task.cpus} ${sampleid} ${bam}
-    gunzip *regions.bed.gz
     gunzip *.per-base.bed.gz
     gunzip *.thresholds.bed.gz
     """

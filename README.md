@@ -101,7 +101,7 @@ Specify the path of your COI database in your nextflow command using ```--blastn
   ```
 
 - Provide an index.csv file.  
-  Create a comma separated file that will be the input for the workflow. By default the pipeline will look for a file called “index.csv” in the base directory but you can specify any file name using the ```--samplesheet [filename]``` in the nextflow run command. This text file requires the following columns (which need to be included as a header): ```sampleid,sample_files,spp_targets,gene_targets,target_size,fwd_primer,rev_primer``` 
+  Create a **comma separated file** that will be the input for the workflow. By default the pipeline will look for a file called “index.csv” in the base directory but you can specify any file name using the ```--samplesheet [filename]``` in the nextflow run command, as long as it has a **.csv** suffix. This text file requires the following columns (which need to be included as a header): ```sampleid,sample_files,spp_targets,gene_targets,target_size,fwd_primer,rev_primer``` 
 
   **sampleid** will be the sample name that will be given to the files created by the pipeline (required).  
   **sample_path** is the full path to the fastq files that the pipeline requires as starting input (required).  
@@ -137,12 +137,86 @@ Specify the path of your COI database in your nextflow command using ```--blastn
   }
   ```
 
-- A test is provided to check if the pipeline was successfully installed. The test.fastq.gz file is derived from of a plant infected with Miscanthus sinensis mosaic virus. To use the test, run the following command, selecting the adequate profile (singularity/docker):
+- Two tests are currently provided to check if the pipeline was successfully installed and demonstrate the current outputs generates by the pipeline prototype. The mtdt_test runs three samples provided by  MTDT (barcode01_VE24-1279_COI, barcode06_MP24-1051A_16S and barcode19_MP24-1096B_gyrB). The peq_test runs two samples provided by PEQ (ONT141 and ONT142).  
+
+To use the tests, change directory to ont_amplicon and run the following command for the MTDT test:
   ```
-  nextflow run eresearchqut/ontvisc -profile test,{singularity, docker}
+  nextflow run main.nf -profile mtdt_test,singularity
   ```
-  If this command does not run properly, you might need to also specify thte test.config file in the command line:  
+  and this command for the PEQ test:  
   ```
-  nextflow -c conf/test.config run eresearchqut/ontvisc -profile test,{singularity, docker}
+  nextflow run main.nf -profile peq_test,singularity
   ```
-  The test requires 2 cpus at least 16Gb of memory to run and can be executed locally.  
+The tests should take less than 5 minutes to run to completion.
+
+If the installation is successful, it will generate a results/test folder with the following structure:
+```
+results/
+├── barcode01_VE24-1279_COI
+│   ├── clustering
+│   │   └── barcode01_VE24-1279_COI_rattle.fasta
+│   ├── html_report
+│   │   ├── bam-alignment.html
+│   │   ├── example_report_context.json
+│   │   └── report.html
+│   ├── mapping_to_consensus
+│   │   ├── barcode01_VE24-1279_COI_aln.sorted.bam
+│   │   ├── barcode01_VE24-1279_COI_aln.sorted.bam.bai
+│   │   ├── barcode01_VE24-1279_COI.bed
+│   │   ├── barcode01_VE24-1279_COI_contigs_reads_ids.txt
+│   │   ├── barcode01_VE24-1279_COI_coverage.txt
+│   │   ├── barcode01_VE24-1279_COI_final_polished_consensus_match.fasta
+│   │   ├── barcode01_VE24-1279_COI_histogram.txt
+│   │   ├── barcode01_VE24-1279_COI.mosdepth.global.dist.txt
+│   │   ├── barcode01_VE24-1279_COI.per-base.bed
+│   │   ├── barcode01_VE24-1279_COI.regions.bed
+│   │   ├── barcode01_VE24-1279_COI.thresholds.bed
+│   │   └── barcode01_VE24-1279_COI_top_blast_with_cov_stats.txt
+│   ├── mapping_to_ref
+│   │   ├── barcode01_VE24-1279_COI_aln.sorted.bam
+│   │   ├── barcode01_VE24-1279_COI_aln.sorted.bam.bai
+│   │   ├── barcode01_VE24-1279_COI_coverage.txt
+│   │   ├── barcode01_VE24-1279_COI_histogram.txt
+│   │   ├── barcode01_VE24-1279_COI_reference_match.fasta
+│   │   └── barcode01_VE24-1279_COI_samtools_consensus_from_ref.fasta
+│   ├── megablast
+│   │   ├── barcode01_VE24-1279_COI_final_polished_consensus_match.fasta
+│   │   ├── barcode01_VE24-1279_COI_final_polished_consensus_megablast_COI_top_hit.txt
+│   │   ├── barcode01_VE24-1279_COI_final_polished_consensus_rc.fasta
+│   │   ├── barcode01_VE24-1279_COI_final_polished_consensus_rc_megablast_top_10_hits_temp.txt
+│   │   ├── barcode01_VE24-1279_COI_final_polished_consensus_rc_megablast_top_10_hits.txt
+│   │   ├── barcode01_VE24-1279_COI_final_polished_consensus_rc_megablast_top_hits.txt
+│   │   └── barcode01_VE24-1279_COI_reference_match.fasta
+│   ├── polishing
+│   │   ├── barcode01_VE24-1279_COI_cutadapt.log
+│   │   ├── barcode01_VE24-1279_COI_final_polished_consensus.fasta
+│   │   ├── barcode01_VE24-1279_COI_medaka_consensus.bam
+│   │   ├── barcode01_VE24-1279_COI_medaka_consensus.bam.bai
+│   │   ├── barcode01_VE24-1279_COI_medaka_consensus.fasta
+│   │   ├── barcode01_VE24-1279_COI_preprocessed.fastq.gz
+│   │   ├── barcode01_VE24-1279_COI_racon_polished.fasta
+│   │   └── barcode01_VE24-1279_COI_samtools_consensus.fasta
+│   ├── preprocessing
+│   │   ├── barcode01_VE24-1279_COI_basecalling_model_inference.txt
+│   │   ├── barcode01_VE24-1279_COI_preprocessed.fastq.gz
+│   │   ├── chopper
+│   │   │   └── barcode01_VE24-1279_COI_chopper.log
+│   │   └── porechop
+│   │       └── barcode01_VE24-1279_COI_porechop.log
+│   └── qc
+│       ├── fastcat
+│       │   ├── barcode01_VE24-1279_COI.fastq.gz
+│       │   ├── barcode01_VE24-1279_COI_stats.tsv
+│       │   └── histograms
+│       │       ├── length.hist
+│       │       └── quality.hist
+│       └── nanoplot
+│           ├── barcode01_VE24-1279_COI_filtered_LengthvsQualityScatterPlot_dot.html
+│           ├── barcode01_VE24-1279_COI_filtered_NanoPlot-report.html
+│           ├── barcode01_VE24-1279_COI_filtered_NanoStats.txt
+│           ├── barcode01_VE24-1279_COI_raw_LengthvsQualityScatterPlot_dot.html
+│           ├── barcode01_VE24-1279_COI_raw_NanoPlot-report.html
+│           └── barcode01_VE24-1279_COI_raw_NanoStats.txt
+└── qc_report
+    ├── run_qc_report_20250401-210340.html
+    ├── run_qc_report_20250401-210340.txt
