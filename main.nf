@@ -639,7 +639,7 @@ process MINIMAP2_REF {
 process MOSDEPTH {
   tag "$sampleid"
   label "setting_3"
-  publishDir "${params.outdir}/${sampleid}/mapping_to_consensus", mode: 'copy', pattern: pattern: '{*.per-base.bed,*.mosdepth.summary.txt}'
+  publishDir "${params.outdir}/${sampleid}/mapping_to_consensus", mode: 'copy', pattern: '{*.per-base.bed,*.mosdepth.summary.txt}'
 
   input:
     tuple val(sampleid), path(consensus), path(bam), path(bai), path(bed)
