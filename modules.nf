@@ -13,9 +13,9 @@ switch (workflow.containerEngine) {
     if (params.blastn_db != null) {
       bindbuild = (bindbuild + "-B ${blastn_db_dir} ")
     }
-    if (params.host_fasta != null) {
-      bindbuild = (bindbuild + "-B ${host_fasta_dir} ")
-    }
+//    if (params.host_fasta != null) {
+//      bindbuild = (bindbuild + "-B ${host_fasta_dir} ")
+//    }
     bindOptions = bindbuild;
     break;
   default:

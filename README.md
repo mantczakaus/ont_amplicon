@@ -269,6 +269,7 @@ If you trim raw read of adapters and/or quality filter the raw reads, an additio
 
 A qc report will be generated in text and html formats summarising the read counts recovered after the pre-processing step.  
 
+If the user wants to check the data after preprocessing before performing downstream analysis, they can apply the parameter ``--preprocessing_only``.
 
 ### Clustering step (RATTLE)
 
@@ -301,7 +302,7 @@ nextflow run maelyg/ont_amplicon -resume -profile singularity \
                             --qual_filt \
                             --chopper_options chopper_options = '-q 8 -l 100' \
                             --analysis_mode clustering \
-                            --rattle_clustering_min_length 500 \
+                            --rattle_clustering_min_length 200 \
                             --rattle_clustering_max_length 2000 \
                             --blast_threads 2 \
                             --blastn_db /path/to/ncbi_blast_db/nt
