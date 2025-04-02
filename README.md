@@ -226,7 +226,7 @@ results/
 └── qc_report
     ├── run_qc_report_20250401-210340.html
     └── run_qc_report_20250401-210340.txt
-
+```
 
 ### QC step
 By default the pipeline will run a quality control check of the raw reads using NanoPlot.
