@@ -105,19 +105,23 @@ Specify the path of your COI database in your nextflow command using ```--blastn
 
   **sampleid** will be the sample name that will be given to the files created by the pipeline (required).  
   **sample_path** is the full path to the fastq files that the pipeline requires as starting input (required).  
-  **spp_targets** is the organism targetted by the PCR (required).
-  **gene_targets** is the gene targetted by the PCR (optional).
-  **target_size** is the expected size of the amplicon (required).
-  **fwd_primer** is the nucleotide sequence of the FWD primer (optional).
-  **rev_primer** is the nucleotide sequence of the REV primer (optional).
+  **spp_targets** is the organism targetted by the PCR (required).  
+  **gene_targets** is the gene targetted by the PCR (optional).  
+  **target_size** is the expected size of the amplicon (required).  
+  **fwd_primer** is the nucleotide sequence of the FWD primer (optional).  
+  **rev_primer** is the nucleotide sequence of the REV primer (optional).  
 
-  This is an example of an index.csv file which specifies the name and path of fastq.gz files for 2 samples. Specify the full path length for samples with a single fastq.gz file. If there are multiple fastq.gz files per sample, place them all in a single folder and the path can be specified on one line using an asterisk:
+  For the fastq files path, the pipeline is currently expecting either 1) multiple fastq.gz files per sample located within one folder or a single fastq.gz file per sample.  
+  If there are **multiple fastq.gz files per sample**, their full path can be specified on one line using **an asterisk** and you will need to speicyf the parameter ```--merge```
+  See an example of an index.csv file for 2 MTDT samples:
   ```
   sampleid,sample_files,spp_targets,gene_targets,target_size,fwd_primer,rev_primer
-  barcode01_VE24-1279_COI,tests/mtdt_data/barcode01_VE24-1279_COI/*fastq.gz,drosophilidae,COI,711,GGTCAACAAATCATAAAGATATTGG,ATTTTTTGGTCACCCTGAAGTTTA
-  barcode06_MP24-1051A_16S,tests/mtdt_data/barcode06_MP24-1051A_16S/*fastq.gz,bacteria,16s,1509,AGAGTTTGATCATGGCTCAG,AAGTCGTAACAAGGTAACCGT
-  barcode19_MP24-1096B_gyrB,tests/mtdt_data/barcode19_MP24-1096B_gyrB/*fastq.gz,bacteria,gyrB,1258,GAAGTCATCATGACCGTTCTGCAYGCNGGNGGNAARTTYGA,ATGACNGAYGCNGAYGTNGAYGGCTCGCACATCCGTACCCTGCT
+  VE24-1279_COI,tests/mtdt_data/barcode01_VE24-1279_COI/*fastq.gz,drosophilidae,COI,711,GGTCAACAAATCATAAAGATATTGG,ATTTTTTGGTCACCCTGAAGTTTA
+  MP24-1051A_16S,tests/mtdt_data/barcode06_MP24-1051A_16S/*fastq.gz,bacteria,16s,1509,AGAGTTTGATCATGGCTCAG,AAGTCGTAACAAGGTAACCGT
+  MP24-1096B_gyrB,tests/mtdt_data/barcode19_MP24-1096B_gyrB/*fastq.gz,bacteria,gyrB,1258,GAAGTCATCATGACCGTTCTGCAYGCNGGNGGNAARTTYGA,ATGACNGAYGCNGAYGTNGAYGGCTCGCACATCCGTACCCTGCT
   ```
+  For samples with a single fastq.gz file, specify **the full path to the fastq.gz file.**
+
 
 - Specify a profile:
   ```
