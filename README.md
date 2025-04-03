@@ -408,7 +408,7 @@ Currently applied flags include:
   
 ### Mapping back to reference (optional)
 By default the quality filtered reads derived during the pre-processing step are also mapped back to the
-reference blast match and samtools consensus are used to derive independent guided-reference consensuses. Their nucleotide sequences can be compared to that of the original consensuses to resolve ambiguities (ie low complexity and repetitive regions).  
+reference blast match and samtools consensus is used to derive independent guided-reference consensuses. Their nucleotide sequences can be compared to that of the original consensuses to resolve ambiguities (ie low complexity and repetitive regions).  
 
 ### HTML report
 An html summary report is generated for each sample, incorporating sample metadata, QC before and after 
@@ -484,10 +484,11 @@ All the top hits derived for each contig are listed in the file **SampleName/meg
 A separate blast output called **SampleName/megablast/SampleName_final_polished_consensus_megablast_top_hit.txt** is then derived using pytaxonkit, which outputs preliminary taxonomic assignment to the top blast hit for each consensus. The nucleotide sequence of qseq (ie consensus match) and sseq (ie reference match) are extracted to use when mapping reads back to consensus and reference respectively (see steps below). These are called **SampleName/megablast/SampleName_final_polished_consensus_match.fasta** and **SampleName/megablast/SampleName_reference_match.fasta** respectively.  
 
 ### Outputs from the mapping reads back to consensus matches step
-(in progress)  
+(in progress)
 
 ### Outputs from mapping reads back to reference matches step
-(in progress)  
+By default the quality filtered reads derived during the pre-processing step are mapped back to the
+reference blast match. A bam file is generated and Samtools consensus is used to derive independent guided-reference consensuses that are stored in a file called **SampleName/mapping_back_to_ref/samtools_consensus_from_ref.fasta** file. Their nucleotide sequences can be compared to that of the original consensuses to resolve ambiguities (ie low complexity and repetitive regions). 
 
 ### HTML report output
 (in progress)  

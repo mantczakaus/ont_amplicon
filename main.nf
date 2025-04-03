@@ -557,7 +557,7 @@ process MEDAKA1 {
 */
 
 process MEDAKA2 {
-  publishDir "${params.outdir}/${sampleid}/polishing", mode: 'copy'
+  publishDir "${params.outdir}/${sampleid}/polishing", mode: 'copy', pattern: '*_consensus.fasta'
   tag "${sampleid}"
   label 'setting_3'
 
@@ -565,6 +565,8 @@ process MEDAKA2 {
    tuple val(sampleid), path(fastq), path(assembly)
 
   output:
+   path("${sampleid}_medaka_consensus.fasta")
+   path("${sampleid}_samtools_consensus.fasta")
    tuple val(sampleid), path("${sampleid}_medaka_consensus.fasta"), path("${sampleid}_medaka_consensus.bam"), path("${sampleid}_medaka_consensus.bam.bai"), path("${sampleid}_samtools_consensus.fasta")
    tuple val(sampleid), path("${sampleid}_medaka_consensus.fasta"), path("${sampleid}_medaka_consensus.bam"), path("${sampleid}_medaka_consensus.bam.bai"), emit: consensus1
    tuple val(sampleid), path("${sampleid}_samtools_consensus.fasta"), emit: consensus2
@@ -712,7 +714,7 @@ process QCREPORT {
 }
 
 process RACON {
-  publishDir "${params.outdir}/${sampleid}/polishing", mode: 'copy'
+  publishDir "${params.outdir}/${sampleid}/polishing", mode: 'copy', pattern: '*_racon_polished.fasta'
   tag "${sampleid}"
   label 'setting_2'
 
