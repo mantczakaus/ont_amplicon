@@ -72,12 +72,10 @@ Download a local copy of the NCBI database of interest, following the detailed s
   tar -xzf taxdb.tar.gz
   ```
   
-  Specify the path of your local NCBI blast directories in your nextflow command using ```--blastn_db = '/full/path/to/blastDB/20230930/nt'``` or specify the path in your parameter file.
+  Specify the path of your local NCBI blast directories in your parameter file.
   For instance:
   ```
-  {
-  blastn_db: "/full/path/to/blastDB/20230930/nt"
-  }
+  blastn_db: /full/path/to/blastDB/20230930/nt
   ```
 
 5. Download the Cytochrome oxydase 1 (COI1) database if you are planning to analyse COI samples.
@@ -88,12 +86,10 @@ Download a local copy of the NCBI database of interest, following the detailed s
   #make a blast database from the fasta file
   singularity exec -B /scratch https://depot.galaxyproject.org/singularity/blast:2.16.0--h66d330f_4 makeblastdb -in MetaCOXI_Seqs.fasta -parse_seqids -dbtype prot
   ```
-Specify the path of your COI database in your nextflow command using ```--blastn_COI = '/full/path/to/MetaCOXI_Seqs.fasta'``` or specify the following lines in your parameter file.
+Specify the path of your COI database in your in your parameter file.
   For instance:
   ```
-  {
-  blastn_COI: "/full/path/to/MetaCOXI_Seqs.fasta"
-  }
+  blastn_COI: /full/path/to/MetaCOXI_Seqs.fasta
   ```
 
 ## Running the pipeline  
@@ -101,41 +97,42 @@ Specify the path of your COI database in your nextflow command using ```--blastn
 ### Quick start
 The typical command for running the pipeline is as follows:
 ```
-nextflow run maelyg/ont_amplicon  -profile singularity -params-file params_example.json
+nextflow run maelyg/ont_amplicon  -profile singularity -params-file params_mtdt_test.yml
 ```
-With the following parmaters specified in the params_example.json:
+With the following parmaters specified in the params_mtdt_test.yml:
 ```
 {
-    "samplesheet": "/full/path/to/index.csv",
-    "merge": true,
-    "adapter_trimming": true,
-    "qual_filt": true,
-    "chopper_options": "-q 8 -l 100",
-    "polishing": true,
-    "blastn_db": "/full/path/to/blast/db/nt",
-    "blastn_COI": "/full/path/to/blast/to/MetaCOXI_Seqs.fasta",
-    "taxdump": "/full/path/to/taxonkit",
-    "blast_threads": 2,
-    "analyst_name": "John Smith",
-    "facility": "MTDT",
-    "mapping_back_to_ref": true
+samplesheet: tests/index_mtdt.csv
+merge: true
+adapter_trimming: true
+qual_filt: true
+chopper_options: -q 8 -l 100
+polishing: true
+blastn_db: $HOME/ont_amplicon/tests/blastdb/reference.fasta
+blastn_COI: $HOME/ont_amplicon/tests/COIdb/MetaCOXI_Seqs.fasta
+taxdump: ~/.taxonkit
+blast_threads: 2
+analyst_name: John Smith
+facility: MTDT
+mapping_back_to_ref: true
 }
 ```
 
-And below is an example of index.file:
+And below is an example of an index.file:
 ```
 sampleid,sample_files,spp_targets,gene_targets,target_size,fwd_primer,rev_primer
-VE24-1279_COI,tests/mtdt_data/barcode01_VE24-1279_COI/*fastq.gz,drosophilidae,COI,711,GGTCAACAAATCATAAAGATATTGG,ATTTTTTGGTCACCCTGAAGTTTA
-MP24-1051A_16S,tests/mtdt_data/barcode06_MP24-1051A_16S/*fastq.gz,bacteria,16s,1509,AGAGTTTGATCATGGCTCAG,AAGTCGTAACAAGGTAACCGT
-MP24-1096B_gyrB,tests/mtdt_data/barcode19_MP24-1096B_gyrB/*fastq.gz,bacteria,gyrB,1258,GAAGTCATCATGACCGTTCTGCAYGCNGGNGGNAARTTYGA,ATGACNGAYGCNGAYGTNGAYGGCTCGCACATCCGTACCCTGCT
+VE24-1279_COI,/work/tests/mtdt_data/barcode01_VE24-1279_COI/*fastq.gz,drosophilidae,COI,711,GGTCAACAAATCATAAAGATATTGG,ATTTTTTGGTCACCCTGAAGTTTA
+MP24-1051A_16S,/work/tests/mtdt_data/barcode06_MP24-1051A_16S/*fastq.gz,bacteria,16s,1509,AGAGTTTGATCATGGCTCAG,AAGTCGTAACAAGGTAACCGT
+MP24-1096B_gyrB,/work/tests/mtdt_data/barcode19_MP24-1096B_gyrB/*fastq.gz,bacteria,gyrB,1258,GAAGTCATCATGACCGTTCTGCAYGCNGGNGGNAARTTYGA,ATGACNGAYGCNGAYGTNGAYGGCTCGCACATCCGTACCCTGCT
 ```
 
 ### Run the pipeline for the first time
 - Run the command:
   ```
-  nextflow run maelyg/ont_amplicon -profile singularity --samplesheet index.csv
+  nextflow run maelyg/ont_amplicon -profile singularity
   ```
-  The first time the command runs, it will download the pipeline into your assets.  
+  To downlaod the pipeline, you will need your github username and password.  
+  The first time the command runs, it will download the pipeline into your assets folder and then run the pipeline.  
 
   The source code can also be downloaded directly from GitHub using the git command:
   ```
@@ -155,20 +152,20 @@ MP24-1096B_gyrB,tests/mtdt_data/barcode19_MP24-1096B_gyrB/*fastq.gz,bacteria,gyr
    - **gene_targets** is the gene targetted by the PCR (optional).  
    - **target_size** is the expected size of the amplicon (required).  
    - **fwd_primer** is the nucleotide sequence of the FWD primer (optional).  
-   - **rev_primer** is the nucleotide sequence of the REV primer (optional).  
+   - **rev_primer** is the nucleotide sequence of the REV primer (optional). Please note that the reverse primer chas to be reverse complemented so it reads in the 5-3 direction.  
 
+  To specify parameters, we recommend that you use a parameter file. Please refer to this document for additional information on how to pass parameters and how parameter passing priority works (https://software.pixelgen.com/nf-core-pixelator/1.3.x/usage/passing-parameters/).  
 
-
-  For the fastq files path, the pipeline is currently expecting either 1) multiple fastq.gz files per sample located within one folder or 2) a single fastq.gz file per sample.  
-  If there are **multiple fastq.gz files per sample**, their full path can be specified on one line using **an asterisk (*fastq.gz)** and you will need to specify the parameter ```--merge``` in the parameter file.  
+  For the fastq files path, the pipeline can process 1) multiple fastq.gz files per sample located within one folder (default) or 2) a single fastq.gz file per sample.  
+  If there are **multiple fastq.gz files per sample**, their full path can be specified on one line using **an asterisk (i.e. *fastq.gz)** and you will need to specify the parameter ```--merge``` in the parameter file (default setting).  
   See an example of an index.csv file for 2 MTDT samples:  
   ```
   sampleid,sample_files,spp_targets,gene_targets,target_size,fwd_primer,rev_primer
-  VE24-1279_COI,tests/mtdt_data/barcode01_VE24-1279_COI/*fastq.gz,drosophilidae,COI,711,GGTCAACAAATCATAAAGATATTGG,ATTTTTTGGTCACCCTGAAGTTTA
-  MP24-1051A_16S,tests/mtdt_data/barcode06_MP24-1051A_16S/*fastq.gz,bacteria,16s,1509,AGAGTTTGATCATGGCTCAG,AAGTCGTAACAAGGTAACCGT
-  MP24-1096B_gyrB,tests/mtdt_data/barcode19_MP24-1096B_gyrB/*fastq.gz,bacteria,gyrB,1258,GAAGTCATCATGACCGTTCTGCAYGCNGGNGGNAARTTYGA,ATGACNGAYGCNGAYGTNGAYGGCTCGCACATCCGTACCCTGCT
+  VE24-1279_COI,/work/tests/mtdt_data/barcode01_VE24-1279_COI/*fastq.gz,drosophilidae,COI,711,GGTCAACAAATCATAAAGATATTGG,ATTTTTTGGTCACCCTGAAGTTTA
+  MP24-1051A_16S,/work/tests/mtdt_data/barcode06_MP24-1051A_16S/*fastq.gz,bacteria,16s,1509,AGAGTTTGATCATGGCTCAG,AAGTCGTAACAAGGTAACCGT
+  MP24-1096B_gyrB,/work/tests/mtdt_data/barcode19_MP24-1096B_gyrB/*fastq.gz,bacteria,gyrB,1258,GAAGTCATCATGACCGTTCTGCAYGCNGGNGGNAARTTYGA,ATGACNGAYGCNGAYGTNGAYGGCTCGCACATCCGTACCCTGCT
   ```
-  For samples with a single fastq.gz file, specify **the full path to the fastq.gz file.**
+  For samples with a single fastq.gz file, specify **the full path to the fastq.gz file**  and set the merge parameter as false.  
 
 
 - Specify a profile:
@@ -179,18 +176,10 @@ MP24-1096B_gyrB,tests/mtdt_data/barcode19_MP24-1096B_gyrB/*fastq.gz,bacteria,gyr
   
 - Specify the analysis mode: ```--analysis_mode clustering``` (this is set to clustering by default; haivng this parameter in place will enable us to add other analysis modes like mapping to ref down the track if required).  
 
-- Specify the ``--analyst_name`` and the ``--facility`` either on the nextflow command or in your parameter file.  The analysis cannot proceed without these being set.  
+- Specify the ``--analyst_name`` and the ``--facility`` in your parameter file.  The analysis cannot proceed without these being set.  
 
-- To set additional parameters, you can either include these in your nextflow run command:
-  ```
-  nextflow run maelyg/ont_amplicon -profile singularity --samplesheet index_example.csv --adapter_trimming
-  ```
-  or set them to true in the nextflow.config file.
-  ```
-  params {
-    adapter_trimming = true
-  }
-  ```
+- To customise additional parameters, you modify the params.yml file.  
+
 ### Run tests
 Two tests are currently provided to check if the pipeline was successfully installed and to demonstrate to users the current outputs generated by the pipeline prototype so they can provide feedback. The mtdt_test runs three samples provided by  MTDT (barcode01_VE24-1279_COI, barcode06_MP24-1051A_16S and barcode19_MP24-1096B_gyrB). The peq_test runs two samples provided by PEQ (ONT141 and ONT142). A small NCBI blast database and COI database have been derived to speed up the analysis run in test mode.  
 
