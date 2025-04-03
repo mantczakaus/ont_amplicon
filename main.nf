@@ -1017,13 +1017,17 @@ workflow {
   
   } else { exit 1, "Input samplesheet file not specified!" }
 
+  // Collect the elements in the channel to a list to check if it is empty or not
+  //If not empty, ensure a path to a MetaCOXI database has been specified
+  //def elements = ch_coi.toList()
+  //println "The channel 'ch_coi' contains: ${elements}"
 
-  def elements = ch_coi.toList()  // Collect the elements in the channel to a list
-  if (elements.size() != 0) {
-    if ( params.blastn_COI == null) {
-      error("Please provide the path to a MetaCOXI database using the parameter --blastn_COI.")
-    }
-  }
+  //if (!elements.size() == 0) {
+  //  if ( params.blastn_COI == null) {
+  //    error("Please provide the path to a MetaCOXI database using the parameter --blastn_COI.")
+  //  }
+  //}
+
   if ( params.analyst_name == null) {
     error("Please provide the name of the analyst who is performing the analysis.")
       }
