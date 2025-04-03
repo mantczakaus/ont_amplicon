@@ -405,7 +405,8 @@ reference blast match and samtools consensus are used to derive independent guid
 
 ### HTML report
 An html summary report is generated for each sample, incorporating sample metadata, QC before and after 
-preprocessing, blast results and coverage statistics. It also provides a link to the bam files generated when ampping back to consensus.
+preprocessing, blast results and coverage statistics. It also provides a link to the bam files generated when ampping back to consensus.  
+The current proposed structure of the workflow can be found at: https://miro.com/app/board/uXjVLghknb4=/.  
 
 ## Output files
 
@@ -449,13 +450,18 @@ Cameron Hyde c.hyde@qcif.edu.au
 To do :
 Provide a quick start up  
 Provide a config file example  
+Add an image depicting the current flow of the pipeline  
 
 Improve reporting errors when RATTLE fails to produce clusters  
 Add additional flags (basecalling model, contamination flag, % long reads)  
 Force specification of COI database if COI gene specified  
-Prevent pipeline from proceeding if fast basecalling model is detected.  
+
 Fix bug in reporting of contigs returning a blast hit vs total in html report.  
 Incorporate basecalling model, analyst and facility in html report  
 Incorporate cluster match fasta file in html report.  
+Display colour for each flag  
+
+
+Prevent pipeline from proceeding if fast basecalling model is detected.  
 Provide option to run only map to ref  
 List current version of tools  
