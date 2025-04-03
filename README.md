@@ -496,7 +496,7 @@ A separate blast output called **SampleName/megablast/SampleName_final_polished_
 Marie-Emilie Gauthier gauthiem@qut.edu.au
 Cameron Hyde c.hyde@qcif.edu.au
 
-To do :
+## To do :
 Provide a quick start up  
 Provide a config file example  
 Add an image depicting the current flow of the pipeline  
