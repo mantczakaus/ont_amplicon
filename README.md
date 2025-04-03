@@ -406,9 +406,29 @@ reference blast match and samtools consensus are used to derive independent guid
 ### HTML report
 An html summary report is generated for each sample, incorporating sample metadata, QC before and after 
 preprocessing, blast results and coverage statistics. It also provides a link to the bam files generated when ampping back to consensus.  
-The current proposed structure of the workflow can be found at: https://miro.com/app/board/uXjVLghknb4=/.  
+The current proposed structure of the report can be found at: https://miro.com/app/board/uXjVLghknb4=/.  
 
 ## Output files
+
+### Preprocessing and host read filtering outputs
+If a merge step is required, fastcat will create a summary text file showing the read length distribution.  
+Quality check will be performed on the raw fastq file using [NanoPlot](https://github.com/wdecoster/NanoPlot) which is a tool that can be used to produce general quality metrics e.g. quality score distribution, read lengths and other general stats. A NanoPlot-report.html file will be saved under the **SampleName/qc/nanoplot** folder with the prefix **raw**. This report displays 6 plots as well as a table of summary statistics.  
+
+<p align="center"><img src="docs/images/Example_Statistics.png" width="1000"></p>
+
+Example of output plots:
+<p align="center"><img src="docs/images/Example_raw_WeightedHistogramReadlength.png" width="750"></p>
+<p align="center"><img src="docs/images/Example_LengthvsQualityScatterPlot.png" width="750"></p>
+
+A preprocessed fastq file will be saved in the **SampleName/preprocessing** output directory which will minimally have its read names trimmed after the first whitespace, for compatiblity purposes with all downstream tools. This fastq file might be additionally trimmed of adapters and/or filtered based on quality and length (if PoreChopABI and/or Chopper were run).  
+
+After quality/length trimming, a PoreChopABI log will be saved under the **SampleName/preprocessing/porechop** folder.  
+
+After adapter trimming, a Chopper log file will be saved under the **SampleName/preprocessing/chopper** folder.  
+
+If adapter trimming and/or quality/length trimming is performed, a second quality check will be performed on the processsed fastq file and a NanoPlot-report.html file will be saved under the **SampleName/qc/nanoplot** folder with the prefix **filtered**.
+
+
 
 All the top hits derived for each contig are listed under the file **SampleName_assembly_blastn_top_hits.txt**. This file contains the following 26 columns:
 ```
