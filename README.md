@@ -363,14 +363,14 @@ This step is performed by default by the pipeline but can be skipped by specifyi
 If the fwd_primer and the rev_primer have been provided in the csv file, clusters are then searched for primers using Cutadapt.  
 
 ### Blast homology search against NCBI
-If the gene targetted is COI, a preliminary megablast homology search against a Cytochrome oxidase I (COI) database will be performed; then based on the strandedness of the consensus in the blast results, some will be reverse complemented where required.  
+If the gene targetted is Cytochrome oxidase I (COI), a preliminary megablast homology search against a COI database will be performed; then based on the strandedness of the consensus in the blast results, some will be reverse complemented where required.  
 
 Blast homology search of the consensuses against NCBI is then performed and the top 10 hits are returned.
-A separate blast output is then derived using pytaxonkit, which outputs preliminary taxonomic assignment to the top blast hit for each consensus. The nucleotide sequence of qseq (ie consensus match) and sseq (ie reference) match are extracted to use when mapping back to consensus and reference respectively.
+A separate blast output is then derived using pytaxonkit, which outputs preliminary taxonomic assignment to the top blast hit for each consensus. The nucleotide sequence of qseq (ie consensus match) and sseq (ie reference match) are extracted to use when mapping reads back to consensus and reference respectively (see steps below).  
 
 ### Mapping back to consensus
-The quality filtered reads derived during the pre-processing step are mapped back to the consensus matches using Mimimap2. Samtools and Mosdepth are then used to derive bam files and coverage statistics. Coverage statistics and associated flags are then derived.
-Currently applied flags include:
+The quality filtered reads derived during the pre-processing step are mapped back to the consensus matches using Mimimap2. Samtools and Mosdepth are then used to derive bam files and coverage statistics. A summary of the blast results, preliminary taxonimic assignment, coverage statistics and associated flags are then derived for each consensus using python.  
+Currently applied flags include:  
 1) 30X DEPTH FLAG:
   - GREEN = when mapping back to consensus match (ie qseq), the percentage of bases that attained at least 30X sequence coverage > 90
   - ORANGE = when mapping back to consensus match (ie qseq), the percentage of bases that attained at least 30X sequence coverage is between 75 and 90
@@ -401,7 +401,7 @@ Currently applied flags include:
   
 ### Mapping back to reference (optional)
 By default the quality filtered reads derived during the pre-processing step are also mapped back to the
-reference blast match and samtools consensus is used to derive an independent guided-reference consensus. This can be compared to the original consensus nucleotide sequences to resolve ambiguities (ie low complexity and repetitive regions).  
+reference blast match and samtools consensus are used to derive independent guided-reference consensuses. Their nucleotide sequences can be compared to that of the original consensuses to resolve ambiguities (ie low complexity and repetitive regions).  
 
 ## Output files
 
