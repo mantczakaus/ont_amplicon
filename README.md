@@ -97,7 +97,7 @@ Specify the path of your COI database in your in your parameter file.
 ### Quick start
 The typical command for running the pipeline is as follows:
 ```
-nextflow run maelyg/ont_amplicon  -profile singularity -params-file params_mtdt_test.yml
+nextflow run main.nf  -profile singularity -params-file params_mtdt_test.yml
 ```
 With the following parmaters specified in the params_mtdt_test.yml:
 ```
@@ -127,24 +127,20 @@ MP24-1096B_gyrB,/work/tests/mtdt_data/barcode19_MP24-1096B_gyrB/*fastq.gz,bacter
 ```
 
 ### Run the pipeline for the first time
-- Run the command:
+-  To download the pipeline, you will need your github username and password.  
+  
+-  The source code can also be downloaded directly from GitHub using the git command:
   ```
-  nextflow run maelyg/ont_amplicon -profile singularity
+  git clone https://github.com/main.nf
   ```
-  To downlaod the pipeline, you will need your github username and password.  
-  The first time the command runs, it will download the pipeline into your assets folder and then run the pipeline.  
-
-  The source code can also be downloaded directly from GitHub using the git command:
-  ```
-  git clone https://github.com/maelyg/ont_amplicon
-  ```
+  Once you have downloaded the pipeline, you can either move into the pipeline **ont_amplicon** directory or direct Nextflow to the pipeline code by providing the full path to the **main.nf** file within the **ont_amplicon**. **Please note that you can only run one Nextflow analysis at a time from a given folder.**  
 
 - Provide an index.csv file.  
   Create a **comma separated file (csv)** that will be the input for the workflow. 
   
   **Please note**: it is best to edit the csv file with an editor that does not add special characters/symbols (e.g. VSCode or Atom). If using other editors, check your files and if necessary, run dos2unix[`dos2unix`](https://www.linuxfromscratch.org/blfs/view/git/general/dos2unix.html) on the file to get rid of these unwanted characters/symbols as they will cause the pipeline to fail.  
   
-  By default the pipeline will look for a file called “index.csv” in the base directory but you can specify any file name using the ```--samplesheet [filename]``` in the nextflow run command, as long as it has a **.csv** suffix. This text file requires the following columns (which need to be included as a header): ```sampleid,sample_files,spp_targets,gene_targets,target_size,fwd_primer,rev_primer``` 
+  By default the pipeline will look for a file called “index.csv” in the base directory but you can specify any file name using the ```--samplesheet [filename]``` in the parameter file, as long as it has a **.csv** suffix. This text file requires the following columns (which need to be included as a header): ```sampleid,sample_files,spp_targets,gene_targets,target_size,fwd_primer,rev_primer``` 
 
    - **sampleid** will be the sample name that will be given to the files created by the pipeline (required).  
    - **sample_path** is the full path to the fastq files that the pipeline requires as starting input (required).  
@@ -170,7 +166,7 @@ MP24-1096B_gyrB,/work/tests/mtdt_data/barcode19_MP24-1096B_gyrB/*fastq.gz,bacter
 
 - Specify a profile:
   ```
-  nextflow run maelyg/ont_amplicon -profile singularity --samplesheet index_example.csv
+  nextflow run main.nf -profile singularity --samplesheet index_example.csv
   ```
   setting the profile parameter to one of ```docker``` or ```singularity``` to suit your environment.
   
@@ -306,37 +302,52 @@ results/
 ### QC step
 By default the pipeline will run a quality control check of the raw reads using NanoPlot.
 
-- It is recommended to first run only the quality control step to have a preliminary look at the data before proceeding with downstream analyses by specifying the ```--qc_only``` parameter.
+- It is recommended to first run only the quality control step to have a preliminary look at the data before proceeding with downstream analyses by specifying the `qc_only: true` parameter.
 
 The command you would run would look like this:
 ```
-nextflow run maelyg/ont_amplicon -profile singularity \
+nextflow run main.nf -profile singularity \
                             --merge \
                             --qc_only
 ```
 
 ### Preprocessing reads
-If multiple fastq files exist for a single sample, they will first need to be merged using the `--merge` option using [`Fascat`](https://github.com/epi2me-labs/fastcat).
+If multiple fastq files exist for a single sample, they will first need to be merged using the `merge: true` option using [`Fascat`](https://github.com/epi2me-labs/fastcat).
 Then the read names of the fastq file created will be trimmed after the first whitespace, for compatiblity purposes with all downstream tools.  
 
 Reads can also be optionally trimmed of adapters and/or quality filtered:  
-- Search for presence of sequencing adapters in sequences reads using [`Porechop ABI`](https://github.com/rrwick/Porechop) by specifying the ``--adapter_trimming`` parameter. Porechop ABI parameters can be specified using ```--porechop_options '{options} '```, making sure you leave a space at the end before the closing quote. Please refer to the Porechop manual.  
+- Search for presence of sequencing adapters in sequences reads using [`Porechop ABI`](https://github.com/rrwick/Porechop) by specifying the ``adapter_trimming: true`` parameter. Porechop ABI parameters can be specified using ```porechop_options: '{options} '```, making sure you leave a space at the end before the closing quote. Please refer to the Porechop manual.  
 
   **Special usage:**  
-  To limit the search to known adapters listed in [`adapter.py`](https://github.com/bonsai-team/Porechop_ABI/blob/master/porechop_abi/adapters.py), just specify the ```--adapter_trimming``` option.  
-  To search ab initio for adapters on top of known adapters, specify ```--adapter_trimming --porechop_options '-abi '```.  
-T  o limit the search to custom adapters, specify ```--adapter_trimming --porechop_custom_primers --porechop_options '-ddb '``` and list the custom adapters in the text file located under bin/adapters.txt following the format:  
-    ```
-     line 1: Adapter name
-     line 2: Start adapter sequence
-     line 3: End adapter sequence
-     --- repeat for each adapter pair---
-    ```
+  To limit the search to known adapters listed in [`adapter.py`](https://github.com/bonsai-team/Porechop_ABI/blob/master/porechop_abi/adapters.py), just specify the ```adapter_trimming: true``` parameter.  
+  To search ab initio for adapters on top of known adapters, specify:
+  ```
+  adapter_trimming: true 
+  porechop_options: '-abi '
+  ```  
+  To limit the search to custom adapters, specify 
+  ```
+  adapter_trimming: true
+  porechop_custom_primers: true
+  porechop_options '-ddb '
+  ```
+  and list the custom adapters in the text file located under bin/adapters.txt following the format:  
+  ```
+  line 1: Adapter name
+  line 2: Start adapter sequence
+  line 3: End adapter sequence
+  --- repeat for each adapter pair---
+  ```
 
-- Perform a quality filtering step using [`Chopper`](https://github.com/wdecoster/chopper) by specifying the ```--qual_filt``` parameter. The following parameters can be specified using the ```--chopper_options '{options}'```. Please refer to the Chopper manual.  
-For instance to filter reads shorter than 1000 bp and longer than 20000 bp, and reads with a minimum Phred average quality score of 10, you would specify: ```--qual_filt --chopper_options '-q 10 -l 1000 --maxlength 20000'```.  **Based on our benchmarking, we recommend using the following parameters ```--chopper_options '-q 8 -l 100'``` as a first pass**.  
+- Perform a quality filtering step using [`Chopper`](https://github.com/wdecoster/chopper) by specifying  the ```qual_filt: true``` parameter. The following parameters can be specified using the ```chopper_options: {options}```. Please refer to the Chopper manual.  
+  For instance to filter reads shorter than 1000 bp and longer than 20000 bp, and reads with a minimum Phred average quality score of 10, you would specify: 
+  ```
+  qual_filt: true
+  chopper_options: -q 10 -l 1000 --maxlength 20000
+  ```
+**Based on our benchmarking, we recommend using the following parameters ```chopper_options: -q 8 -l 100``` as a first pass**.  
 
-  If you are analysing samples that are of poor quality (i.e. failed the QC_FLAG) or amplifying a very short amplicon (e.g. <150 bp), then we recommend using the following setting ```--chopper_options '-q 8 -l 25'``` to retain reads of all lengths.  
+  If you are analysing samples that are of poor quality (i.e. failed the QC_FLAG) or amplifying a very short amplicon (e.g. <150 bp), then we recommend using the following setting ```chopper_options: -q 8 -l 25``` to retain reads of all lengths.  
 
 A zipped copy of the resulting **preprocessed** and/or **quality filtered fastq file** will be saved in the preprocessing folder.  
 
@@ -351,7 +362,7 @@ It will include 3 flags:
 - ORANGE = < 5000 starting reads, > 1000 quality filtered reads.
 - RED = < 5000 starting reads, < 1000 quality filtered reads.
 
-If the user wants to check the data after preprocessing before performing downstream analysis, they can apply the parameter ``--preprocessing_only``.
+If the user wants to check the data after preprocessing before performing downstream analysis, they can apply the parameter ``preprocessing_only: true``.
 
 ### Clustering step (RATTLE)
 
@@ -359,16 +370,16 @@ In the clustering mode, the tool [`RATTLE`](https://github.com/comprna/RATTLE#De
 
 - The ont_amplicon pipeline will automatically set a **lower read length** of **100** bp during the RATTLE clustering step if the amplicon target_size specified in the csv file is **<=300 bp**.  
 - If the amplicon target_size specified in the csv file is **>300 bp**, the default lower read length of **150 bp** will be applied at the RATTLE clustering step instead.  
-- For poor quality samples (i.e. failed the QC_FLAG) or if your amplicon is known to be shorter than 150 bp, use the parameter ```--rattle_raw``` to use all the reads without any length filtering during the RATTLE clustering step.  
+- For poor quality samples (i.e. failed the QC_FLAG) or if your amplicon is known to be shorter than 150 bp, use the parameter ``rattle_raw: true`` to use all the reads without any length filtering during the RATTLE clustering step.  
 - Finally, the ``rattle_clustering_max_variance`` is set by default to 10000. It is recommended to drop it to 10 if analysing fastq files that were generated using a **fast** basecalling model.  
 
   **Special usage:**
-  The parameters ``--rattle_clustering_min_length [number]``` (by default: 150) and ```--rattle_clustering_max_length [number]``` (by default: 100,000) can also be specified on the command line to restrict more strictly read size.  
-  Additional parameters (other than raw, lower-length, upper-length and max-variance) can be set using the parameter ```--rattle_clustering_options '[additional paramater]'```.  
+  The parameters ``rattle_clustering_min_length: [number]``` (by default: 150) and ```rattle_clustering_max_length: [number]``` (by default: 100,000) can also be specified in the parameter file to restrict more strictly read size.  
+  Additional parameters (other than raw, lower-length, upper-length and max-variance) can be set using the parameter ```rattle_clustering_options: [additional paramater]```.  
 
 Example in which all reads will be retained during the clustering step:  
 ```
-nextflow run maelyg/ont_amplicon -resume -profile singularity \
+nextflow run main.nf -resume -profile singularity \
                             --analysis_mode clustering \
                             --adapter_trimming \
                             --qual_filt \
@@ -380,7 +391,7 @@ nextflow run maelyg/ont_amplicon -resume -profile singularity \
 
 Example in which reads are first quality filtered using the tool chopper (only reads with a Phread average quality score above 10 are retained). Then for the clustering step, only reads ranging between 500 and 2000 bp will be retained:  
 ```
-nextflow run maelyg/ont_amplicon -resume -profile singularity \
+nextflow run main.nf -resume -profile singularity \
                             --qual_filt \
                             --chopper_options chopper_options = '-q 8 -l 100' \
                             --analysis_mode clustering \
