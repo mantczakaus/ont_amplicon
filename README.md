@@ -483,13 +483,13 @@ All the top hits derived for each contig are listed in the file **SampleName/meg
 
 A separate blast output called **SampleName/megablast/SampleName_final_polished_consensus_megablast_top_hit.txt** is then derived using pytaxonkit, which outputs preliminary taxonomic assignment to the top blast hit for each consensus. The nucleotide sequence of qseq (ie consensus match) and sseq (ie reference match) are extracted to use when mapping reads back to consensus and reference respectively (see steps below). These are called **SampleName/megablast/SampleName_final_polished_consensus_match.fasta** and **SampleName/megablast/SampleName_reference_match.fasta** respectively.  
 
-# Outputs from the mapping reads back to consensus matches step
+### Outputs from the mapping reads back to consensus matches step
 (in progress)  
 
-# Outputs from mapping reads back to reference matches step
+### Outputs from mapping reads back to reference matches step
 (in progress)  
 
-# HTML report output
+### HTML report output
 (in progress)  
 
 ## Authors
