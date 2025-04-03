@@ -439,9 +439,10 @@ If the adapter trimming and/or the quality filtering options have been run, a QC
 
 Example of report:
 
-| Sample| raw_reads | quality_filtered_reads | percent_quality_filtered | raw_reads_flag | qfiltered_flag | QC_FLAG
-| --- | --- | --- | --- | --- | --- |
-| MT010 | 315868 | 315081 | 99.75 | 63.52 |
+| Sample| raw_reads | quality_filtered_reads | percent_quality_filtered | raw_reads_flag | qfiltered_flag | QC_FLAG |
+| --- | --- | --- | --- | --- | --- | --- |
+| ONT141 | 10929 | 2338 | 21.39 | | | GREEN |
+| ONT142| 21849 | 4232 | 9.37 | | | GREEN |
 
 All the top hits derived for each contig are listed under the file **SampleName_assembly_blastn_top_hits.txt**. This file contains the following 26 columns:
 ```
