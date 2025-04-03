@@ -104,24 +104,45 @@ def main():
     )
     #######MAPPED_READ_COUNT_FLAG#######
     #Conditions:
-    #GREEN: If sgi != 0 and the qseq_mapping_read_count is >=200
-    #ORANGE: If sgi != 0 and the qseq_mapping_read_count is between 100 and 200.
-    #RED: If sgi != 0 and the qseq_mapping_read_count is <100.
+    #GREEN: If sgi != 0 and the qseq_mapping_read_count is >=1000
+    #ORANGE: If sgi != 0 and the qseq_mapping_read_count is between 200 and 1000.
+    #RED: If sgi != 0 and the qseq_mapping_read_count is <200.
     #GREY: If sgi == 0.
     
     blast_df_final['MAPPED_READ_COUNT_FLAG'] = np.where(
         (blast_df_final['sgi'] != 0) & 
-        (blast_df_final['qseq_mapping_read_count'] >= 200), 
+        (blast_df_final['qseq_mapping_read_count'] >= 1000), 
         "GREEN",
         np.where((blast_df_final['sgi'] != 0) & 
-            (blast_df_final['qseq_mapping_read_count'] >= 100) & 
-            (blast_df_final['qseq_mapping_read_count'] < 200), 
+            (blast_df_final['qseq_mapping_read_count'] >= 200) & 
+            (blast_df_final['qseq_mapping_read_count'] < 1000), 
             "ORANGE",
             np.where((blast_df_final['sgi'] != 0) & 
-                (blast_df_final['qseq_mapping_read_count'] < 100), 
+                (blast_df_final['qseq_mapping_read_count'] < 200), 
                 "RED",
                 np.where((blast_df_final['sgi'] == 0) & 
                     (blast_df_final['qseq_mapping_read_count'] == 0), 
+                    "GREY", 
+                    ""
+                )
+            )
+        )
+    )
+
+
+    blast_df_final['MEAN_COVERAGE_FLAG'] = np.where(
+        (blast_df_final['sgi'] != 0) & 
+        (blast_df_final['qseq_mean_depth'] >= 500), 
+        "GREEN",
+        np.where((blast_df_final['sgi'] != 0) & 
+            (blast_df_final['qseq_mean_depth'] >= 100) & 
+            (blast_df_final['qseq_mean_depth'] < 500), 
+            "ORANGE",
+            np.where((blast_df_final['sgi'] != 0) & 
+                (blast_df_final['qseq_mean_depth'] < 500), 
+                "RED",
+                np.where((blast_df_final['sgi'] == 0) & 
+                    (blast_df_final['qseq_mean_depth'] == 0), 
                     "GREY", 
                     ""
                 )
@@ -136,14 +157,20 @@ def main():
 
     blast_df_final["TARGET_ORGANISM_FLAG"] = np.where(
         (blast_df_final['sgi'] != 0) & 
-        (blast_df_final.target_organism_match.str.match("Y")), 
+        (blast_df_final.target_organism_match.str.match("Y")) & 
+        (blast_df_final['pident'] >= 90),
         "GREEN",
         np.where((blast_df_final['sgi'] != 0) & 
-            (blast_df_final.target_organism_match.str.match("N")), 
-            "RED",
-            np.where((blast_df_final['sgi'] == 0), 
-                "GREY",
-                ""
+            (blast_df_final.target_organism_match.str.match("Y")) & 
+            (blast_df_final['pident'] < 90),
+            "ORANGE",
+            np.where((blast_df_final['sgi'] != 0) & 
+                (blast_df_final.target_organism_match.str.match("N")),
+                "RED",
+                np.where((blast_df_final['sgi'] == 0), 
+                    "GREY",
+                    ""
+                )
             )
         )
     )
