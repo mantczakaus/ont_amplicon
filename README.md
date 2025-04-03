@@ -363,16 +363,45 @@ This step is performed by default by the pipeline but can be skipped by specifyi
 If the fwd_primer and the rev_primer have been provided in the csv file, clusters are then searched for primers using Cutadapt.  
 
 ### Blast homology search against NCBI
-A preliminary megablast homology search against a Cytochrome oxidase I (COI) database will be performed if the gene targetted is COI;  based on the strandedness of the consensus in the blast results, some will be reverse complemented where required.  
+If the gene targetted is COI, a preliminary megablast homology search against a Cytochrome oxidase I (COI) database will be performed; then based on the strandedness of the consensus in the blast results, some will be reverse complemented where required.  
 
 Blast homology search of the consensuses against NCBI is then performed and the top 10 hits are returned.
-A separate blast output is derived using pytaxonkit which outputs preliminary taxonomic assignment to the top blast hit for each consensus.
+A separate blast output is then derived using pytaxonkit, which outputs preliminary taxonomic assignment to the top blast hit for each consensus. The nucleotide sequence of qseq (ie consensus match) and sseq (ie reference) match are extracted to use when mapping back to consensus and reference respectively.
 
-
-
-
-
-
+### Mapping back to consensus
+The quality filtered reads derived during the pre-processing step are mapped back to the consensus matches using Mimimap2. Samtools and Mosdepth are then used to derive bam files and coverage statistics. Coverage statistics and associated flags are then derived.
+Currently applied flags include:
+1) 30X DEPTH FLAG:
+  - GREEN = when mapping back to consensus match (ie qseq), the percentage of bases that attained at least 30X sequence coverage > 90
+  - ORANGE = when mapping back to consensus match (ie qseq), the percentage of bases that attained at least 30X sequence coverage is between 75 and 90
+  - RED = when mapping back to consensus match (ie qseq), the percentage of bases that attained at least 30X sequence coverage is < 75
+  - GREY = consensus returned no blast hits
+ 
+2) TARGET ORGANISM FLAG
+  - GREEN = target organism detected and % blast identity > 90%
+  - ORANGE = target organism detected and % blast identity is < 90%
+  - RED = target organism not detected
+  - GREY = consensus returned no blast hits
+ 
+3) TARGET SIZE FLAG
+  - GREEN = the consensus match length is within ±20% of the target_size
+  - ORANGE = the consensus match length is ±20% to ±40% of target size
+  - RED = the consensus match length is outside the range of ±40% of the target_size.
+ 
+4) MAPPED READ COUNT FLAG
+  - GREEN = when mapping back to the consensus match (ie qseq), read count is >=1000
+  - ORANGE = when mapping back to the  consensus match (ie qseq), read count is between 200 and 1000
+  - RED = when mapping back to the consensus match (ie qseq), read count is <200
+  - GREY = consensus returned no blast hits
+ 
+ 5) MEAN COVERAGE FLAG
+  - GREEN = when mapping back to the consensus match (ie qseq), the mean coverage >=500
+  - ORANGE = when mapping back to the consensus match (ie qseq), the mean coverage is between 100 and 500
+  - RED = when mapping back to the consensus match (ie qseq), the mean coverage is < 100
+  
+### Mapping back to reference (optional)
+By default the quality filtered reads derived during the pre-processing step are also mapped back to the
+reference blast match and samtools consensus is used to derive an independent guided-reference consensus. This can be compared to the original consensus nucleotide sequences to resolve ambiguities (ie low complexity and repetitive regions).  
 
 ## Output files
 
@@ -421,7 +450,6 @@ Improve reporting errors when RATTLE fails to produce clusters
 Add additional flags (basecalling model, contamination flag, % long reads)  
 Force specification of COI database if COI gene specified  
 Prevent pipeline from proceeding if fast basecalling model is detected.  
-Make map back to ref optional  
 Fix bug in reporting of contigs returning a blast hit vs total in html report.  
 Incorporate basecalling model, analyst and facility in html report  
 Incorporate cluster match fasta file in html report.  

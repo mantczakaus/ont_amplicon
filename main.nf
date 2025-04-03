@@ -1183,8 +1183,6 @@ workflow {
         //Add consensus sequence to blast results summary table
         FASTA2TABLE ( EXTRACT_BLAST_HITS.out.topblast.join(consensus) )
 
-        
-
         //MAPPING BACK TO CONSENSUS
         mapping2consensus_ch = (EXTRACT_BLAST_HITS.out.consensus_fasta_files.join(REFORMAT.out.cov_derivation_ch))
         //Map filtered reads back to the portion of sequence which returned a blast hit
@@ -1228,9 +1226,6 @@ workflow {
           //Derive bam file and consensus fasta file
           SAMTOOLS ( MINIMAP2_REF.out.aligned_sample )
         }
-        
-
-        
 
       //DETECTION_REPORT(COVSTATS.out.detections_summary.collect().ifEmpty([]))
 //        }
