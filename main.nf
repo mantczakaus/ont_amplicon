@@ -1183,12 +1183,7 @@ workflow {
         //Add consensus sequence to blast results summary table
         FASTA2TABLE ( EXTRACT_BLAST_HITS.out.topblast.join(consensus) )
 
-        //MAPPING BACK TO REFERENCE
-        mapping_ch = (EXTRACT_BLAST_HITS.out.reference_fasta_files.join(REFORMAT.out.cov_derivation_ch))
-        //Map filtered reads back to the reference sequence which was retrieved from blast search
-        MINIMAP2_REF ( mapping_ch )
-        //Derive bam file and consensus fasta file
-        SAMTOOLS ( MINIMAP2_REF.out.aligned_sample )
+        
 
         //MAPPING BACK TO CONSENSUS
         mapping2consensus_ch = (EXTRACT_BLAST_HITS.out.consensus_fasta_files.join(REFORMAT.out.cov_derivation_ch))
@@ -1199,9 +1194,7 @@ workflow {
         //Derive bed file for mosdepth to run coverage statistics
         PYFAIDX ( EXTRACT_BLAST_HITS.out.consensus_fasta_files )
         MOSDEPTH (SAMTOOLS_CONSENSUS.out.sorted_bams.join(PYFAIDX.out.bed))
-
         
-
         //Derive summary file presenting coverage statistics alongside blast results
         cov_stats_summary_ch = MOSDEPTH.out.mosdepth_results.join(EXTRACT_BLAST_HITS.out.consensus_fasta_files)
                                                              .join(SAMTOOLS_CONSENSUS.out.coverage)
@@ -1226,6 +1219,18 @@ workflow {
             .concat(Channel.from(params.samplesheet).map { file(it) }).toList()
 
         HTML_REPORT(files_for_report_ind_samples_ch, files_for_report_global_ch)
+
+        //MAPPING BACK TO REFERENCE
+        if (params.mapping_back_to_ref) {
+          mapping_ch = (EXTRACT_BLAST_HITS.out.reference_fasta_files.join(REFORMAT.out.cov_derivation_ch))
+          //Map filtered reads back to the reference sequence which was retrieved from blast search
+          MINIMAP2_REF ( mapping_ch )
+          //Derive bam file and consensus fasta file
+          SAMTOOLS ( MINIMAP2_REF.out.aligned_sample )
+        }
+        
+
+        
 
       //DETECTION_REPORT(COVSTATS.out.detections_summary.collect().ifEmpty([]))
 //        }

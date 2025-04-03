@@ -414,8 +414,10 @@ Cameron Hyde c.hyde@qcif.edu.au
 
 
 To do :
+Provide a quick start up  
+Provide a config file example  
+
 Improve reporting errors when RATTLE fails to produce clusters  
-Update current flags and miro board to reflect new proposed thresholds.  
 Add additional flags (basecalling model, contamination flag, % long reads)  
 Force specification of COI database if COI gene specified  
 Prevent pipeline from proceeding if fast basecalling model is detected.  
@@ -424,5 +426,4 @@ Fix bug in reporting of contigs returning a blast hit vs total in html report.
 Incorporate basecalling model, analyst and facility in html report  
 Incorporate cluster match fasta file in html report.  
 Provide option to run only map to ref  
-Provide a config file example  
-Provide a quick start up  
+List current version of tools  
