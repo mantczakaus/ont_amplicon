@@ -1,0 +1,15 @@
+{
+    "samplesheet": "tests/index_mtdt.csv",
+    "merge": true,
+    "adapter_trimming": true,
+    "qual_filt": true,
+    "chopper_options": "-q 8 -l 100",
+    "polishing": true,
+    "blastn_db": "tests/reference.fasta",
+    "blastn_COI": "tests/COI/MetaCOXI_Seqs.fasta",
+    "taxdump": "~/.taxonkit",
+    "blast_threads": 2,
+    "analyst_name": "John Smith",
+    "facility": "MTDT",
+    "mapping_back_to_ref": true
+}

@@ -47,6 +47,13 @@ The pipeline will generate ~5-100Mb of files per sample, depending on the number
 
 2. Install Nextflow [`Nextflow`](https://www.nextflow.io/docs/latest/getstarted.html#installation)
 
+  Nextflow memory requirements
+
+  In some cases, the Nextflow Java virtual machines can start to request a large amount of memory. We recommend adding the following line to your environment to limit this (typically in ~/.bashrc or ~./bash_profile): 
+  ```
+  NXF_OPTS='-Xms1g -Xmx4g'
+  ```
+
 3. Install [`Singularity`](https://docs.sylabs.io/guides/3.0/user-guide/quick_start.html#quick-installation-steps) to suit your environment. The pipeline has been validated using singularity version 3.10.2-1 and apptainer version 1.3.6-1.el9 but has not yet been tested with singularity version 4.
 
 3. Install taxonkit using the script install_taxonkit.sh or follow the steps described on this page [`page`](https://bioinf.shenwei.me/taxonkit/download/).
@@ -90,6 +97,30 @@ Specify the path of your COI database in your nextflow command using ```--blastn
   ```
 
 ## Running the pipeline  
+
+### Quick start
+The typical command for running the pipeline is as follows:
+```
+nextflow run maelyg/ont_amplicon  -profile singularity -params-file params_example.json
+```
+With the following parmaters specified in the params_example.json:
+```
+{
+    "samplesheet": "/full/path/to/index.csv",
+    "merge": true,
+    "adapter_trimming": true,
+    "qual_filt": true,
+    "chopper_options": "-q 8 -l 100",
+    "polishing": true,
+    "blastn_db": "/full/path/to/blast/db/nt",
+    "blastn_COI": "/full/path/to/blast/to/MetaCOXI_Seqs.fasta",
+    "taxdump": "/full/path/to/taxonkit",
+    "blast_threads": 2,
+    "analyst_name": "John Smith",
+    "facility": "MTDT",
+    "mapping_back_to_ref": true
+}
+```
 
 ### Run the pipeline for the first time
 - Run the command:
@@ -494,24 +525,21 @@ reference blast match. A bam file is generated and Samtools consensus is used to
 (in progress)  
 
 ## Authors
-Marie-Emilie Gauthier gauthiem@qut.edu.au
-Cameron Hyde c.hyde@qcif.edu.au
+Marie-Emilie Gauthier gauthiem@qut.edu.au  
+Cameron Hyde c.hyde@qcif.edu.au  
 
 ## To do :
-Provide a quick start up  
-Provide a config file example  
 Add an image depicting the current flow of the pipeline  
 Finish output section  
 
-Improve reporting errors when RATTLE fails to produce clusters  
+Improve reporting errors when RATTLE fails to produce clusters and prevent pipeline from crashing, report in report that no clusters were generated.  
 Add additional flags (basecalling model, contamination flag, % long reads)  
 Force specification of COI database if COI gene specified  
 
 Fix bug in reporting of contigs returning a blast hit vs total in html report.  
 Incorporate basecalling model, analyst and facility in html report  
 Incorporate cluster match fasta file in html report.  
-Display colour for each flag  
-
+Display colour for each flag in html report.  
 
 Prevent pipeline from proceeding if fast basecalling model is detected?  
 Generate a QC report even if preprocessing is not run to capture the raw read counts?  
