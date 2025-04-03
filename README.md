@@ -403,6 +403,10 @@ Currently applied flags include:
 By default the quality filtered reads derived during the pre-processing step are also mapped back to the
 reference blast match and samtools consensus are used to derive independent guided-reference consensuses. Their nucleotide sequences can be compared to that of the original consensuses to resolve ambiguities (ie low complexity and repetitive regions).  
 
+### HTML report
+An html summary report is generated for each sample, incorporating sample metadata, QC before and after 
+preprocessing, blast results and coverage statistics. It also provides a link to the bam files generated when ampping back to consensus.
+
 ## Output files
 
 All the top hits derived for each contig are listed under the file **SampleName_assembly_blastn_top_hits.txt**. This file contains the following 26 columns:
