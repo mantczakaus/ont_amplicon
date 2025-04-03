@@ -315,6 +315,13 @@ A zipped copy of the resulting **preprocessed** and/or **quality filtered fastq 
 If you trim raw read of adapters and/or quality filter the raw reads, an additional quality control step will be performed and a qc report will be generated summarising the read counts recovered before and after preprocessing for all samples listed in the index.csv file.
 
 A qc report will be generated in text and html formats summarising the read counts recovered after the pre-processing step.  
+It will include 3 flags:  
+1) For the raw_reads_flag, if raw_reads < 5000, the column will display: "Less than 5000 raw reads".  
+2) For the qfiltered_flag, if quality_filtered_reads < 1000 , the column will display: "Less than 1000 processed reads".  
+3) QC_FLAG:
+- GREEN = > 5000 starting reads, > 1000 quality filtered reads.
+- ORANGE = < 5000 starting reads, > 1000 quality filtered reads.
+- RED = < 5000 starting reads, < 1000 quality filtered reads.
 
 If the user wants to check the data after preprocessing before performing downstream analysis, they can apply the parameter ``--preprocessing_only``.
 
@@ -426,9 +433,15 @@ After quality/length trimming, a PoreChopABI log will be saved under the **Sampl
 
 After adapter trimming, a Chopper log file will be saved under the **SampleName/preprocessing/chopper** folder.  
 
-If adapter trimming and/or quality/length trimming is performed, a second quality check will be performed on the processsed fastq file and a NanoPlot-report.html file will be saved under the **SampleName/qc/nanoplot** folder with the prefix **filtered**.
+If adapter trimming and/or quality/length trimming is performed, a second quality check will be performed on the processsed fastq file and a NanoPlot-report.html file will be saved under the **SampleName/qc/nanoplot** folder with the prefix **filtered**.  
 
+If the adapter trimming and/or the quality filtering options have been run, a QC report will be saved both in text and html format (i.e. **run_qc_report_YYYYMMDD-HHMMSS.txt** and **run_qc_report_YYYYMMDD-HHMMSS.html**) under the **qc_report** folder.  
 
+Example of report:
+
+| Sample| raw_reads | quality_filtered_reads | percent_quality_filtered | raw_reads_flag | qfiltered_flag | QC_FLAG
+| --- | --- | --- | --- | --- | --- |
+| MT010 | 315868 | 315081 | 99.75 | 63.52 |
 
 All the top hits derived for each contig are listed under the file **SampleName_assembly_blastn_top_hits.txt**. This file contains the following 26 columns:
 ```
@@ -471,6 +484,7 @@ To do :
 Provide a quick start up  
 Provide a config file example  
 Add an image depicting the current flow of the pipeline  
+Finish output section  
 
 Improve reporting errors when RATTLE fails to produce clusters  
 Add additional flags (basecalling model, contamination flag, % long reads)  
@@ -482,6 +496,7 @@ Incorporate cluster match fasta file in html report.
 Display colour for each flag  
 
 
-Prevent pipeline from proceeding if fast basecalling model is detected.  
+Prevent pipeline from proceeding if fast basecalling model is detected?  
+Generate a QC report even if preprocessing is not run to capture the raw read counts?  
 Provide option to run only map to ref  
 List current version of tools  
