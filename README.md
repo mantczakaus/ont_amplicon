@@ -72,11 +72,11 @@ Download a local copy of the NCBI database of interest, following the detailed s
   tar -xzf taxdb.tar.gz
   ```
   
-  Specify the path of your local NCBI blast directories in your nextflow command using ```--blastn_db = '/full/path/to/blastDB/20230930/nt'``` or specify the following lines in a user config file.
+  Specify the path of your local NCBI blast directories in your nextflow command using ```--blastn_db = '/full/path/to/blastDB/20230930/nt'``` or specify the path in your parameter file.
   For instance:
   ```
-  params {
-    --blastn_db = '/full/path/to/blastDB/20230930/nt'
+  {
+  blastn_db: "/full/path/to/blastDB/20230930/nt"
   }
   ```
 
@@ -88,11 +88,11 @@ Download a local copy of the NCBI database of interest, following the detailed s
   #make a blast database from the fasta file
   singularity exec -B /scratch https://depot.galaxyproject.org/singularity/blast:2.16.0--h66d330f_4 makeblastdb -in MetaCOXI_Seqs.fasta -parse_seqids -dbtype prot
   ```
-Specify the path of your COI database in your nextflow command using ```--blastn_COI = '/full/path/to/MetaCOXI_Seqs.fasta'``` or specify the following lines in a user config file.
+Specify the path of your COI database in your nextflow command using ```--blastn_COI = '/full/path/to/MetaCOXI_Seqs.fasta'``` or specify the following lines in your parameter file.
   For instance:
   ```
-  params {
-    --blastn_COI = '/full/path/to/MetaCOXI_Seqs.fasta'
+  {
+  blastn_COI: "/full/path/to/MetaCOXI_Seqs.fasta"
   }
   ```
 
@@ -120,6 +120,14 @@ With the following parmaters specified in the params_example.json:
     "facility": "MTDT",
     "mapping_back_to_ref": true
 }
+```
+
+And below is an example of index.file:
+```
+sampleid,sample_files,spp_targets,gene_targets,target_size,fwd_primer,rev_primer
+VE24-1279_COI,tests/mtdt_data/barcode01_VE24-1279_COI/*fastq.gz,drosophilidae,COI,711,GGTCAACAAATCATAAAGATATTGG,ATTTTTTGGTCACCCTGAAGTTTA
+MP24-1051A_16S,tests/mtdt_data/barcode06_MP24-1051A_16S/*fastq.gz,bacteria,16s,1509,AGAGTTTGATCATGGCTCAG,AAGTCGTAACAAGGTAACCGT
+MP24-1096B_gyrB,tests/mtdt_data/barcode19_MP24-1096B_gyrB/*fastq.gz,bacteria,gyrB,1258,GAAGTCATCATGACCGTTCTGCAYGCNGGNGGNAARTTYGA,ATGACNGAYGCNGAYGTNGAYGGCTCGCACATCCGTACCCTGCT
 ```
 
 ### Run the pipeline for the first time
@@ -152,7 +160,7 @@ With the following parmaters specified in the params_example.json:
 
 
   For the fastq files path, the pipeline is currently expecting either 1) multiple fastq.gz files per sample located within one folder or 2) a single fastq.gz file per sample.  
-  If there are **multiple fastq.gz files per sample**, their full path can be specified on one line using **an asterisk (*fastq.gz)** and you will need to specify the parameter ```--merge``` either on the command line or a config file.  
+  If there are **multiple fastq.gz files per sample**, their full path can be specified on one line using **an asterisk (*fastq.gz)** and you will need to specify the parameter ```--merge``` in the parameter file.  
   See an example of an index.csv file for 2 MTDT samples:  
   ```
   sampleid,sample_files,spp_targets,gene_targets,target_size,fwd_primer,rev_primer
@@ -171,7 +179,7 @@ With the following parmaters specified in the params_example.json:
   
 - Specify the analysis mode: ```--analysis_mode clustering``` (this is set to clustering by default; haivng this parameter in place will enable us to add other analysis modes like mapping to ref down the track if required).  
 
-- Specify the ``--analyst_name`` and the ``--facility`` either on the nextflow command or in a config file.  The analysis cannot proceed without these being set.  
+- Specify the ``--analyst_name`` and the ``--facility`` either on the nextflow command or in your parameter file.  The analysis cannot proceed without these being set.  
 
 - To set additional parameters, you can either include these in your nextflow run command:
   ```
