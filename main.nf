@@ -196,7 +196,7 @@ process BLASTN_COI {
 }
 
 process BLASTN2 {
-  publishDir "${params.outdir}/${sampleid}/megablast", mode: 'copy', pattern: '*_megablast*.txt'
+  publishDir "${params.outdir}/${sampleid}/megablast", mode: 'copy', pattern: '*_megablast_top_10_hits.txt'
   tag "${sampleid}"
   containerOptions "${bindOptions}"
   label "setting_10"

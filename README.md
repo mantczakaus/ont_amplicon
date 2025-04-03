@@ -444,7 +444,14 @@ Example of report:
 | ONT141 | 10929 | 2338 | 21.39 | | | GREEN |
 | ONT142| 21849 | 4232 | 9.37 | | | GREEN |
 
-All the top hits derived for each contig are listed under the file **SampleName_assembly_blastn_top_hits.txt**. This file contains the following 26 columns:
+### Clustering step outputs  
+In this mode, the output from Rattle will be saved under **SampleName/clustering/rattle/SampleName_rattle.fasta**. The number of reads contributing to each clusters is listed in the header. The amplicon of interest is usually amongst the most abundant clusters (i.e. the ones represented by the most reads).  
+
+### Polishing step outputs 
+(in progress)  
+
+### Blast search outputs  
+All the top hits derived for each contig are listed in the file **SampleName/megablast/SampleName_final_polished_consensus_megablast_top_10_hits.txt**. This file contains the following 26 columns:
 ```
 - qseqid
 - sgi
@@ -474,12 +481,20 @@ All the top hits derived for each contig are listed under the file **SampleName_
 - sframe
 ```
 
+A separate blast output called **SampleName/megablast/SampleName_final_polished_consensus_megablast_top_hit.txt** is then derived using pytaxonkit, which outputs preliminary taxonomic assignment to the top blast hit for each consensus. The nucleotide sequence of qseq (ie consensus match) and sseq (ie reference match) are extracted to use when mapping reads back to consensus and reference respectively (see steps below). These are called **SampleName/megablast/SampleName_final_polished_consensus_match.fasta** and **SampleName/megablast/SampleName_reference_match.fasta** respectively.  
+
+# Outputs from the mapping reads back to consensus matches step
+(in progress)  
+
+# Outputs from mapping reads back to reference matches step
+(in progress)  
+
+# HTML report output
+(in progress)  
 
 ## Authors
 Marie-Emilie Gauthier gauthiem@qut.edu.au
 Cameron Hyde c.hyde@qcif.edu.au
-
-
 
 To do :
 Provide a quick start up  
