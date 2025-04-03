@@ -9,6 +9,9 @@ It takes compressed fastq files as input.
 
 
 ## Pipeline overview
+
+![diagram pipeline](docs/images/ont_amplicon_workflow.png)
+
 - Data quality check (QC) and preprocessing
   - Merge fastq files (Fascat, optional)
   - Raw fastq file QC (Nanoplot)
