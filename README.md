@@ -75,7 +75,7 @@ Download a local copy of the NCBI database of interest, following the detailed s
   tar -xzf taxdb.tar.gz
   ```
   
-  Specify the path of your local NCBI blast directories in your parameter file.
+  Specify the full path of your local NCBI blast name in your parameter file; **the path should include nt/core_nt**.
   For instance:
   ```
   blastn_db: /full/path/to/blastDB/20230930/nt
@@ -89,7 +89,7 @@ Download a local copy of the NCBI database of interest, following the detailed s
   #make a blast database from the fasta file
   singularity exec -B /scratch https://depot.galaxyproject.org/singularity/blast:2.16.0--h66d330f_4 makeblastdb -in MetaCOXI_Seqs.fasta -parse_seqids -dbtype prot
   ```
-Specify the path of your COI database in your in your parameter file.
+Specify the full path to your COI database name in your in your parameter file.
   For instance:
   ```
   blastn_COI: /full/path/to/MetaCOXI_Seqs.fasta
@@ -100,7 +100,7 @@ Specify the path of your COI database in your in your parameter file.
 ### Quick start
 The typical command for running the pipeline is as follows:
 ```
-nextflow run main.nf  -profile singularity -params-file params_mtdt_test.yml
+nextflow run main.nf -profile singularity -params-file params/params_mtdt_test.yml
 ```
 With the following parmaters specified in the params_mtdt_test.yml:
 ```
@@ -174,7 +174,7 @@ MP24-1096B_gyrB,/work/tests/mtdt_data/barcode19_MP24-1096B_gyrB/*fastq.gz,bacter
 
 - Provide a params.yml file with all your parameters:
 ```
-nextflow run main.nf  -profile singularity -params-file params_mtdt_test.yml
+nextflow run main.nf  -profile singularity -params-file params/params_mtdt_test.yml
 ```
 These are the default parameters set by the pipeline:
 ```
@@ -572,8 +572,11 @@ Cameron Hyde c.hyde@qcif.edu.au
 ## To do :
 Add an image depicting the current flow of the pipeline  
 Finish output section  
+Update the help me section in the main.nf file  
+Incorporate yml file with all default pipeline parameters
 
 Improve reporting errors when RATTLE fails to produce clusters and prevent pipeline from crashing, report in report that no clusters were generated.  
+
 Add additional flags (basecalling model, contamination flag, % long reads)  
 Force specification of COI database if COI gene specified  
 
@@ -586,3 +589,4 @@ Prevent pipeline from proceeding if fast basecalling model is detected?
 Generate a QC report even if preprocessing is not run to capture the raw read counts?  
 Provide option to run only map to ref  
 List current version of tools  
+

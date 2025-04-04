@@ -1,0 +1,30 @@
+samplesheet: 
+merge: true
+adapter_trimming: true
+qual_filt: false
+chopper_options: -q 8 -l 100
+polishing: true
+blastn_db:
+taxdump:
+blast_threads: 2
+analyst_name: 
+facility: 
+mapping_back_to_ref: true
+publish_dir: results
+outdir: results
+help: false
+qc_only: false
+preprocessing_only: false
+porechop_options: null
+porechop_custom_primers: false
+porechop_custom_primers_path: ~/ont_amplicon/bin/adapters.txt
+chopper_options: null
+analysis_mode: clustering
+rattle_clustering_options:
+rattle_clustering_min_length:
+rattle_clustering_max_length:
+rattle_raw: false
+rattle_clustering_max_variance: 10000
+rattle_polishing_options:
+blast_mode: ncbi
+blastn_COI:

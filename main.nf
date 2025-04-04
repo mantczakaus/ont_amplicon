@@ -6,14 +6,19 @@ def helpMessage () {
     log.info """
     ont_amplicon
     Marie-Emilie Gauthier
+    Cameron Hyde
 
     Usage:
     Run the command
-    nextflow run ont_amplicon {arguments}...
+    nextflow run main.nf -profile singularity -params-file {params.yml}
 
     Required arguments:
       --analysis_mode                 clustering, map2ref
-                                      Default: '' [required]
+                                      Default: 'clustering' [required]
+      --analyst_name                  Name of the analyst
+                                      Default: null [required]
+      --facility                      Name of the facililty where the analyst is performing the analysis
+                                      Default: null [required]
 
     Optional arguments:
       --help                          Will print this usage document
@@ -22,21 +27,20 @@ def helpMessage () {
                                       'results'
       --samplesheet '[path/to/file]'  Path to the csv file that contains the list of
                                       samples to be analysed by this pipeline.
-                                      Default:  'index.csv'
+                                      Default:  'index.csv'. Nees to have .csv suffix
  
 
     Contents of index.csv:
-      sampleid,sample_files
-      SAMPLE01,/user/folder/sample.fastq.gz
-      SAMPLE02,/user/folder/*.fastq.gz
+      sampleid,sample_files,spp_targets,gene_targets,target_size,fwd_primer,rev_primer
+      VE24-1279_COI,/work/tests/mtdt_data/barcode01_VE24-1279_COI/*fastq.gz,drosophilidae,COI,711,GGTCAACAAATCATAAAGATATTGG,ATTTTTTGGTCACCCTGAAGTTTA
 
       #### Pre-processing and QC options ####
       --merge                         Merge fastq files with the same sample name
+                                      Default: true
       --qc_only                       Only perform preliminary QC step using Nanoplot
                                       Default: false
       --preprocessing_only            Only perform preprocessing steps specied
                                       Default: false
-
       --adapter_trimming              Run porechop step
                                       Default: false
       --porechop_options              Porechop_ABI options
@@ -45,40 +49,47 @@ def helpMessage () {
                                       Default: ''
       --porechop_custom_primers_path  Path to custom adpaters for porechop
                                       Default: ''
-
       --qual_filt                     Run quality filtering step using chopper
                                       [False]
       --chopper_options               Chopper options
                                       Default: ''
 
+      #### Polishing ###
+      --polishing                     Run polishing step
+                                      Default: true                         
+
       #### Analysis mode and associated parameters ####
       ### Clustering (clustering) ###
-      --rattle_clustering_options     Rattle clustering options
-                                      Default: ''
-      --rattle_polishing_options      Rattle polishing options
-                                      Default: ''
-
-      ### Map to reference (map2ref) ###
-      --reference                     Path to the reference fasta file to map reads to
-                                      Default: ''
-      --medaka_consensus_options      Medaka options
-                                      Default: ''
-      --bcftools_min_coverage         Minimum coverage required by bcftools for annotation
-                                      Default: '20'
+      --rattle_clustering_min_length   Filter out reads shorter than this value
+                                       Default: ''
+      --rattle_clustering_max_length   Filter out reads longer than this value
+                                       Default: ''
+      --rattle_raw                     Use all the reads without any length filtering
+                                       Default: false
+      --rattle_clustering_max_variance Max allowed variance for two reads to be in the same gene cluster 
+                                       Default: '10000'
+      --attle_clustering_max_variance  Use all the reads without any length filtering
+                                       Default: false
+      --rattle_clustering_options      Rattle clustering options
+                                       Default: ''
+      --rattle_polishing_options       Rattle polishing options
+                                       Default: ''
 
       #### Blast options ####
-      --blast_mode                    Specify whether megablast search is against NCBI or a custom database
-                                      Default: ''. Select from 'ncbi' or 'localdb'
+      --blast_mode                    Blast mode to use
+                                      Default: 'ncbi'   
       --blast_threads                 Number of threads for megablast
-                                      Default: '4'
-      --blastn_db                     Path to blast database
-                                      Default: '4'
-      --blast_vs_ref                  blast versus reference specified in fasta file.
-                                      Default: 'false'
+                                      Default: '2'
+      --blastn_db                     Path to blast database [required if not performing qc_only or preprocessing_only]
+                                      Default: ''
+      --blastn_COI                    Path to blast database for COI [required if performing analysis on COI gene]
+                                      Default: ''
+      --taxdump                       Path to taxonomykit database directory [required if not performing qc_only or preprocessing_only]
+                                      Default: ''
 
-      ### Reporting ###
-      --contamination_flag_threshold  Percentage of maximum FPKM value to use as threshold for flagging detection as potential contamination
-                                      Default: '0.01'
+      #### Mapping back to ref options ####
+      --mapping_back_to_ref           Mapped back to reference blast match
+                                      Default: 'true'
 
     """.stripIndent()
 }
@@ -99,11 +110,12 @@ if (params.blastn_COI != null) {
 //if (params.taxdump != null) {
 //    taxdump_dir = file(params.taxdump).parent
 //}
-
+/*
 if (params.reference != null) {
     reference_name = file(params.reference).name
     reference_dir = file(params.reference).parent
 }
+*/
 //if (params.host_fasta != null) {
 //   host_fasta_dir = file(params.host_fasta).parent
 //}
@@ -124,9 +136,9 @@ switch (workflow.containerEngine) {
     if (params.taxdump != null) {
       bindbuild = (bindbuild + "-B ${params.taxdump} ")
     }
-    if (params.reference != null) {
-      bindbuild = (bindbuild + "-B ${reference_dir} ")
-    }
+//    if (params.reference != null) {
+//      bindbuild = (bindbuild + "-B ${reference_dir} ")
+//    }
 //   if (params.host_fasta != null) {
 //      bindbuild = (bindbuild + "-B ${host_fasta_dir} ")
 //    }
@@ -572,7 +584,6 @@ process MEDAKA2 {
    tuple val(sampleid), path("${sampleid}_samtools_consensus.fasta"), emit: consensus2
 
   script:
-  def medaka_consensus_options = (params.medaka_consensus_options) ? " ${params.medaka_consensus_options}" : ''
     """
     medaka_consensus -i ${fastq} -d ${assembly} -t ${task.cpus} -o ${sampleid}
     
@@ -1041,24 +1052,29 @@ workflow {
 
 
   if ( params.analysis_mode == 'clustering') {
+    /*
     if (!params.blast_vs_ref & !params.qc_only & !params.preprocessing_only) {
       if ( params.blastn_db == null) {
         error("Please provide the path to a blast database using the parameter --blastn_db.")
       }
+      */
       if ( params.taxdump == null) {
         error("Please provide the path to a taxonkit database using the parameter --taxdump.")
       }
     }
+    /*
     else if (params.blast_vs_ref ) {
       if ( params.reference == null) {
       error("Please provide the path to a reference fasta file with the parameter --reference.")
       }
     }
+    
   }
   else if ( params.analysis_mode == 'map2ref' ) {
     if ( params.reference == null) {
       error("Please provide the path to a reference fasta file with the parameter --reference.")
       }
+  */
   }
   
   if (params.merge) {
