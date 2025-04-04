@@ -149,18 +149,18 @@ def main():
     #GREY: If sgi == 0.
 
     blast_df_final["TARGET_ORGANISM_FLAG"] = np.where(
-        (blast_df_final['sgi'] != 0) & 
+        (blast_df_final['sacc'] != 0) & 
         (blast_df_final.target_organism_match.str.match("Y")) & 
         (blast_df_final['pident'] >= 90),
         "GREEN",
-        np.where((blast_df_final['sgi'] != 0) & 
+        np.where((blast_df_final['sacc'] != 0) & 
             (blast_df_final.target_organism_match.str.match("Y")) & 
             (blast_df_final['pident'] < 90),
             "ORANGE",
-            np.where((blast_df_final['sgi'] != 0) & 
+            np.where((blast_df_final['sacc'] != 0) & 
                 (blast_df_final.target_organism_match.str.match("N")),
                 "RED",
-                np.where((blast_df_final['sgi'] == 0), 
+                np.where((blast_df_final['sacc'] == 0), 
                     "GREY",
                     ""
                 )
@@ -177,25 +177,25 @@ def main():
     #GREY: If sgi == 0.
     
     blast_df_final["TARGET_SIZE_FLAG"] = np.where(
-        (blast_df_final['sgi'] != 0) &
+        (blast_df_final['sacc'] != 0) &
         (blast_df_final['query_match_length'] <= float(target_size) + (0.2 * float(target_size))) &
         (blast_df_final['query_match_length'] >= float(target_size) - (0.2 * float(target_size))),
         "GREEN",
          np.where(
-            ((blast_df_final['sgi'] != 0) &
+            ((blast_df_final['sacc'] != 0) &
             (blast_df_final['query_match_length'] > float(target_size) + (0.2 * float(target_size))) &
             (blast_df_final['query_match_length'] <= float(target_size) + (0.4 * float(target_size)))) |
-            ((blast_df_final['sgi'] != 0) &
+            ((blast_df_final['sacc'] != 0) &
             (blast_df_final['query_match_length'] < float(target_size) - (0.2 * float(target_size))) &
             (blast_df_final['query_match_length'] >= float(target_size) - (0.4 * float(target_size)))),
             "ORANGE",
             np.where(
-                (blast_df_final['sgi'] != 0) &
+                (blast_df_final['sacc'] != 0) &
                 ((blast_df_final['query_match_length'] < float(target_size) - (0.4 * float(target_size))) |
                 (blast_df_final['query_match_length'] > float(target_size) + (0.4 * float(target_size)))),
                 "RED",
                 np.where(
-                    blast_df_final['sgi'] == 0,
+                    blast_df_final['sacc'] == 0,
                     "GREY",
                     ""
                 )

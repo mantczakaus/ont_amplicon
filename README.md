@@ -570,18 +570,18 @@ Marie-Emilie Gauthier gauthiem@qut.edu.au
 Cameron Hyde c.hyde@qcif.edu.au  
 
 ## To do :
-Add an image depicting the current flow of the pipeline  
+Update image depicting the current flow of the pipeline  
 Finish output section  
 
 Add additional flags (basecalling model, contamination flag, % long reads)  
 Force specification of COI database if COI gene specified  
 
-Known bugs:
+**-html report specific**
 Fix bug in reporting of contigs returning a blast hit vs total in html report.  
 Incorporate basecalling model, analyst and facility in html report  
 Incorporate cluster match fasta file in html report.  
-Display colour for each flag in html report.  
-Improve reporting errors when RATTLE fails to produce clusters and prevent pipeline from crashing, report in report that no clusters were generated.  
+Improve reporting errors when RATTLE fails to produce clusters and prevent pipeline from crashing, add in report that no clusters were generated.  
+Add sample name to html_report.  
 
 
 Prevent pipeline from proceeding if fast basecalling model is detected?  
