@@ -110,12 +110,11 @@ if (params.blastn_COI != null) {
 //if (params.taxdump != null) {
 //    taxdump_dir = file(params.taxdump).parent
 //}
-/*
-if (params.reference != null) {
-    reference_name = file(params.reference).name
-    reference_dir = file(params.reference).parent
-}
-*/
+
+//if (params.reference != null) {
+//    reference_name = file(params.reference).name
+ //   reference_dir = file(params.reference).parent
+//}
 //if (params.host_fasta != null) {
 //   host_fasta_dir = file(params.host_fasta).parent
 //}
@@ -1052,29 +1051,24 @@ workflow {
 
 
   if ( params.analysis_mode == 'clustering') {
-    /*
     if (!params.blast_vs_ref & !params.qc_only & !params.preprocessing_only) {
       if ( params.blastn_db == null) {
         error("Please provide the path to a blast database using the parameter --blastn_db.")
       }
-      */
       if ( params.taxdump == null) {
         error("Please provide the path to a taxonkit database using the parameter --taxdump.")
       }
-
-    /*
-    else if (params.blast_vs_ref ) {
-      if ( params.reference == null) {
-      error("Please provide the path to a reference fasta file with the parameter --reference.")
-      }
     }
-    
+//    else if (params.blast_vs_ref ) {
+//      if ( params.reference == null) {
+//      error("Please provide the path to a reference fasta file with the parameter --reference.")
+//      }
+//    }
   }
   else if ( params.analysis_mode == 'map2ref' ) {
     if ( params.reference == null) {
       error("Please provide the path to a reference fasta file with the parameter --reference.")
       }
-  */
   }
   
   if (params.merge) {
