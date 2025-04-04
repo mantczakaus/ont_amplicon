@@ -8,13 +8,5 @@ cd $PBS_O_WORKDIR
 module load java
 NXF_OPTS='-Xms1g -Xmx4g'
 
-nextflow run maelyg/ont_amplicon -profile singularity -resume
-	--analysis_mode clustering \
-	--merge \
-	--adapter_trimming \
-	--qual_filt \
-	--chopper_options '-q 8 -l 100' \
-	--blast_threads 2 \
-	--blastn_db /full_path_to_blast_db_nt_files \
-	--blastn_COI /full_path_to_MetaCOXI_Seqs_fasta_file \
-	--taxdump /full_path_to_.taxonkit_file
+#passing parameters to a params file
+nextflow run maelyg/ont_amplicon -profile singularity -resume -params-file params_peq_test.yml
