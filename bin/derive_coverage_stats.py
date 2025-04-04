@@ -83,24 +83,17 @@ def main():
     #RED: If sgi != 0 and the qseq_pc_depth_30X is <75.
     #GREY: If sgi == 0.
 
-    blast_df_final['30X_DEPTH_FLAG'] = np.where(
-        (blast_df_final['sgi'] != 0) & 
-        (blast_df_final['qseq_pc_depth_30X'] >= 90), 
-        "GREEN",
-        np.where((blast_df_final['sgi'] != 0) & 
-            (blast_df_final['qseq_pc_depth_30X'] >= 75) & 
-            (blast_df_final['qseq_pc_depth_30X'] < 90), 
-            "ORANGE",
-            np.where((blast_df_final['sgi'] != 0) & 
-                (blast_df_final['qseq_pc_depth_30X'] < 75), 
-                "RED",
-                np.where((blast_df_final['sgi'] == 0) & 
-                    (blast_df_final['qseq_pc_depth_30X'] == 0), 
-                    "GREY", 
-                    ""
-                )
-            )
-        )
+    # Define the conditions for each flag
+    condition_green = (blast_df_final['sacc'] != 0) & (blast_df_final['qseq_pc_depth_30X'] >= 90)
+    condition_orange = (blast_df_final['sacc'] != 0) & (blast_df_final['qseq_pc_depth_30X'] >= 75) & (blast_df_final['qseq_pc_depth_30X'] < 90)
+    condition_red = (blast_df_final['sacc'] != 0) & (blast_df_final['qseq_pc_depth_30X'] < 75)
+    condition_grey = (blast_df_final['sacc'] == 0) & (blast_df_final['qseq_pc_depth_30X'] == 0)
+
+    # Assign the flags based on conditions
+    blast_df_final['30X_DEPTH_FLAG'] = np.select(
+        [condition_green, condition_orange, condition_red, condition_grey],
+        ['GREEN', 'ORANGE', 'RED', 'GREY'],
+        default=""
     )
     #######MAPPED_READ_COUNT_FLAG#######
     #Conditions:
@@ -110,17 +103,17 @@ def main():
     #GREY: If sgi == 0.
     
     blast_df_final['MAPPED_READ_COUNT_FLAG'] = np.where(
-        (blast_df_final['sgi'] != 0) & 
+        (blast_df_final['sacc'] != 0) & 
         (blast_df_final['qseq_mapping_read_count'] >= 1000), 
         "GREEN",
-        np.where((blast_df_final['sgi'] != 0) & 
+        np.where((blast_df_final['sacc'] != 0) & 
             (blast_df_final['qseq_mapping_read_count'] >= 200) & 
             (blast_df_final['qseq_mapping_read_count'] < 1000), 
             "ORANGE",
-            np.where((blast_df_final['sgi'] != 0) & 
+            np.where((blast_df_final['sacc'] != 0) & 
                 (blast_df_final['qseq_mapping_read_count'] < 200), 
                 "RED",
-                np.where((blast_df_final['sgi'] == 0) & 
+                np.where((blast_df_final['sacc'] == 0) & 
                     (blast_df_final['qseq_mapping_read_count'] == 0), 
                     "GREY", 
                     ""
@@ -131,17 +124,17 @@ def main():
 
 
     blast_df_final['MEAN_COVERAGE_FLAG'] = np.where(
-        (blast_df_final['sgi'] != 0) & 
+        (blast_df_final['sacc'] != 0) & 
         (blast_df_final['qseq_mean_depth'] >= 500), 
         "GREEN",
-        np.where((blast_df_final['sgi'] != 0) & 
+        np.where((blast_df_final['sacc'] != 0) & 
             (blast_df_final['qseq_mean_depth'] >= 100) & 
             (blast_df_final['qseq_mean_depth'] < 500), 
             "ORANGE",
-            np.where((blast_df_final['sgi'] != 0) & 
+            np.where((blast_df_final['sacc'] != 0) & 
                 (blast_df_final['qseq_mean_depth'] < 500), 
                 "RED",
-                np.where((blast_df_final['sgi'] == 0) & 
+                np.where((blast_df_final['sacc'] == 0) & 
                     (blast_df_final['qseq_mean_depth'] == 0), 
                     "GREY", 
                     ""
