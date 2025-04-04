@@ -134,7 +134,7 @@ MP24-1096B_gyrB,/work/tests/mtdt_data/barcode19_MP24-1096B_gyrB/*fastq.gz,bacter
   
 -  The source code can also be downloaded directly from GitHub using the git command:
   ```
-  git clone https://github.com/main.nf
+  git clone https://github.com/maelyg/ont_amplicon.git
   ```
   Once you have downloaded the pipeline, you can either move into the pipeline **ont_amplicon** directory or direct Nextflow to the pipeline code by providing the full path to the **main.nf** file within the **ont_amplicon**. **Please note that you can only run one Nextflow analysis at a time from a given folder.**  
 
