@@ -1061,7 +1061,7 @@ workflow {
       if ( params.taxdump == null) {
         error("Please provide the path to a taxonkit database using the parameter --taxdump.")
       }
-    }
+
     /*
     else if (params.blast_vs_ref ) {
       if ( params.reference == null) {
