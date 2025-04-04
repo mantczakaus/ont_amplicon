@@ -102,7 +102,7 @@ The typical command for running the pipeline is as follows:
 ```
 nextflow run main.nf -profile singularity -params-file params/params_mtdt_test.yml
 ```
-With the following parmaters specified in the params_mtdt_test.yml:
+With the following parmaters specified in the params_mtdt_test.yml. **Please update paths to databases to match your local set up**:
 ```
 {
 samplesheet: tests/index_mtdt.csv
