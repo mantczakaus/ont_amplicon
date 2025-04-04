@@ -86,6 +86,7 @@ def _get_report_context(samplesheet) -> dict:
     """Build the context for the report template."""
     blast_hits = _get_blast_hits()
     consensus_fasta = ConsensusFASTA(config.consensus_fasta_path)
+    consensus_match_fasta = ConsensusFASTA(config.consensus_match_fasta_path)
     return {
         'title': config.REPORT.TITLE,
         'subtitle_html': config.REPORT.SUBTITLE,
@@ -105,6 +106,7 @@ def _get_report_context(samplesheet) -> dict:
             'count': len(blast_hits),
         },
         'consensus_fasta': consensus_fasta,
+        'consensus_match_fasta': consensus_match_fasta,
     }
 
 

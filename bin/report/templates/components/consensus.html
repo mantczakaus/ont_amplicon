@@ -72,9 +72,18 @@
   type="button"
   class="btn btn-primary"
   data-bs-toggle="modal"
-  data-bs-target="#consensusFastaModal"
+  data-bs-target="#consensusMatchFastaModal"
 >
   Consensus sequences
+</button>
+
+<button
+  type="button"
+  class="btn btn-primary"
+  data-bs-toggle="modal"
+  data-bs-target="#consensusMatchFastaModal"
+>
+  Consensus match sequences
 </button>
 
 <a
@@ -87,3 +96,4 @@
 
 {% include 'components/consensus-blast-modal.html' %}
 {% include 'components/consensus-fasta-modal.html' %}
+{% include 'components/consensus-match-fasta-modal.html' %}
