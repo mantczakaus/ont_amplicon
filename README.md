@@ -2,8 +2,7 @@
 
 ## Introduction
 
-ont_amplicon is a Nextflow-based bioinformatics pipeline designed to derive consensus sequences from:
- amplicon sequencing data that was generated using rapid library preparation kit from Oxford nanopore Technologies. 
+ont_amplicon is a Nextflow-based bioinformatics pipeline designed to derive consensus sequences from **amplicon sequencing data** that was generated using **rapid library preparation kit** from **Oxford nanopore Technologies**. The pipeline expects the fastq files to have been generated using a **high accuracy (HAC)** basecalling model. 
 
 It takes compressed fastq files as input.
 
@@ -39,7 +38,7 @@ It takes compressed fastq files as input.
 If the pipeline is run on a local machine, it will require between 300-800Gb of space for the installation of required containers and databases alone. This includes:  
 - 80 Mb ont_amplicon pipeline  
 - ~ 3.8Gb for containers  
-- 600Mb for taxonkit  
+- 600Mb for taxonkit databases  
 - 280Gb/760Gb for the blast NCBI database coreNT/NT
 - 3.4Gb for the MetaCOXI database  
 
