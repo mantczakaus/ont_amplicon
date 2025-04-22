@@ -46,9 +46,9 @@ If the pipeline is run on a local machine, it will require between 300-800Gb of 
 To run the pipeline will also require at least 2 cores and ~40Gb of memory per sample.  
 The pipeline will generate ~5-100Mb of files per sample, depending on the number of consensuses recovered per sample and if mapping back to reference is required. Make sure you have enough space available on your local machine before running several samples at the same time.  
 
-1. Install Java if not already on your system. Follow the java download instructions provided on this page [`page`](https://www.nextflow.io/docs/latest/getstarted.html#installation).
+1. Install Java if not already on your system. Follow the java download instructions provided on this [`page`](https://www.nextflow.io/docs/latest/getstarted.html#installation).
 
-2. Install Nextflow [`Nextflow`](https://www.nextflow.io/docs/latest/getstarted.html#installation)
+2. Install [`Nextflow`](https://www.nextflow.io/docs/latest/getstarted.html#installation)
 
   Nextflow memory requirements
 
