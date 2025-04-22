@@ -579,7 +579,6 @@ Force specification of COI database if COI gene specified
 **-html report specific**
 Fix bug in reporting of contigs returning a blast hit vs total in html report.  
 Incorporate basecalling model, analyst and facility in html report  
-Incorporate cluster match fasta file in html report.  
 Improve reporting errors when RATTLE fails to produce clusters and prevent pipeline from crashing, add in report that no clusters were generated.  
 Add sample name to html_report.  
 
