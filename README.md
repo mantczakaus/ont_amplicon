@@ -59,7 +59,7 @@ The pipeline will generate ~5-100Mb of files per sample, depending on the number
 
 3. Install [`Singularity`](https://docs.sylabs.io/guides/3.0/user-guide/quick_start.html#quick-installation-steps) to suit your environment. The pipeline has been validated using singularity version 3.10.2-1 and apptainer version 1.3.6-1.el9 but has not yet been tested with singularity version 4.
 
-3. Install taxonkit using the script install_taxonkit.sh or follow the steps described on this page [`page`](https://bioinf.shenwei.me/taxonkit/download/).
+3. Install the taxonkit databases using the script install_taxonkit.sh located on the bin folder or follow the steps described on this page [`page`](https://bioinf.shenwei.me/taxonkit/download/).
 
 
 4. Install NCBI NT or coreNT.  
