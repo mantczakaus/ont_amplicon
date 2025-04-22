@@ -214,7 +214,7 @@ To use the tests, change directory to ont_amplicon and run the following command
   nextflow run main.nf -profile peq_test,singularity
   ```
 
-Please note that you will need to specify the location of the taxonkit databases folder in your command if it is not located where expected, at `~/.taxonkit` using the parameter `--taxdump path/to/taxonkit_db_folder/`. For example:
+Please note that you will need to specify the location of the taxonkit databases folder in your command if it is not located where expected, at `~/.taxonkit` using the parameter `--taxdump path/to/taxonkit_db_folder`. For example:
   ```
   nextflow run main.nf -profile mtdt_test,singularity --taxdump /full/path/to/taxonkit_db/folder 
   ```
