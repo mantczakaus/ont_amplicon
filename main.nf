@@ -925,10 +925,12 @@ process HTML_REPORT {
 
   output:
     path("*")
+    file("run_qc_report_tmp.html")
 
   script:
     """
     csv_file=\$(find . -name "*.csv")
+    cp run_qc_report_*html run_qc_report_tmp.html
     build_report.py --samplesheet \$csv_file --result_dir .
     """
 }
