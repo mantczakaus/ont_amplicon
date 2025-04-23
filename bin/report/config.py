@@ -55,7 +55,7 @@ class Config:
 
     @property
     def run_qc_html_file(self) -> str:
-        return self._get_file_by_pattern('run_qc_report_tmp.html').name
+        return self._get_file_by_pattern('run_qc_report.html').name
 
     @property
     def nanoplot_raw_html_path(self) -> Path:

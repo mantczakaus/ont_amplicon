@@ -380,7 +380,7 @@ process EXTRACT_BLAST_HITS {
 
   script:
     """
-    select_top_blast_hit.py --sample_name ${sampleid} --blastn_results ${sampleid}*_top_10_hits.txt --mode ${params.blast_mode} --spp_targets ${spp_targets}
+    select_top_blast_hit.py --sample_name ${sampleid} --blastn_results ${sampleid}*_top_10_hits.txt --mode ${params.blast_mode} --spp_targets ${spp_targets} --taxonkit_database_dir ${params.taxdump}
 
     # extract segment of consensus sequence that align to reference
     awk  -F  '\\t' 'NR>1 { printf ">%s\\n%s\\n",\$2,\$24 }' ${sampleid}*_top_hits_tmp.txt | sed 's/-//g' > ${sampleid}_final_polished_consensus_match.fasta
@@ -925,12 +925,13 @@ process HTML_REPORT {
 
   output:
     path("*")
-    file("run_qc_report_tmp.html")
+    file("run_qc_report.html")
 
   script:
     """
     csv_file=\$(find . -name "*.csv")
-    cp run_qc_report_*html run_qc_report_tmp.html
+    
+    cp run_qc_report_*html run_qc_report.html
     build_report.py --samplesheet \$csv_file --result_dir .
     """
 }
