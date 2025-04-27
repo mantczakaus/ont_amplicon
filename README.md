@@ -58,8 +58,7 @@ The pipeline will generate ~5-100Mb of files per sample, depending on the number
 
 3. Install [`Singularity`](https://docs.sylabs.io/guides/3.0/user-guide/quick_start.html#quick-installation-steps) to suit your environment. The pipeline has been validated using singularity version 3.10.2-1 and apptainer version 1.3.6-1.el9 but has not yet been tested with singularity version 4.
 
-4. Set your singularity container cache directory. Copy paste the code below and press enter.  
-Specify a different location if space is limited in your home directory.  
+4. Set your singularity container cache directory. Copy paste the code below and press enter:  
 ```
 [[ -d $HOME/.nextflow ]] || mkdir -p $HOME/.nextflow
 
@@ -69,6 +68,8 @@ singularity {
     autoMounts = true
 }
 ```
+Specify a different `cacheDir` location if space is limited in your home directory.  
+
 
 5. Install the taxonkit databases using the script install_taxonkit.sh located in the bin folder or follow the steps described on this [`page`](https://bioinf.shenwei.me/taxonkit/download/).
 
