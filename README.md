@@ -135,7 +135,7 @@ mapping_back_to_ref: true
 
 And below is an example of an index.file:
 ```
-sampleid,sample_files,spp_targets,gene_targets,target_size,fwd_primer,rev_primer
+sampleid,fastq_path,target_organism,target_gene,target_size,fwd_primer,rev_primer
 VE24-1279_COI,/work/tests/mtdt_data/barcode01_VE24-1279_COI/*fastq.gz,drosophilidae,COI,711,GGTCAACAAATCATAAAGATATTGG,ATTTTTTGGTCACCCTGAAGTTTA
 MP24-1051A_16S,/work/tests/mtdt_data/barcode06_MP24-1051A_16S/*fastq.gz,bacteria,16s,1509,AGAGTTTGATCATGGCTCAG,AAGTCGTAACAAGGTAACCGT
 MP24-1096B_gyrB,/work/tests/mtdt_data/barcode19_MP24-1096B_gyrB/*fastq.gz,bacteria,gyrB,1258,GAAGTCATCATGACCGTTCTGCAYGCNGGNGGNAARTTYGA,ATGACNGAYGCNGAYGTNGAYGGCTCGCACATCCGTACCCTGCT
@@ -155,12 +155,12 @@ MP24-1096B_gyrB,/work/tests/mtdt_data/barcode19_MP24-1096B_gyrB/*fastq.gz,bacter
   
   **Please note**: it is best to edit the csv file with an editor that does not add special characters/symbols (e.g. VSCode or Atom). If using other editors, check your files and if necessary, run [`dos2unix`](https://www.linuxfromscratch.org/blfs/view/git/general/dos2unix.html) on the file to get rid of these unwanted characters/symbols as they will cause the pipeline to fail.  
   
-  By default the pipeline will look for a file called “index.csv” in the base directory but you can specify any file name using the ```--samplesheet [filename]``` in the parameter file, as long as it has a **.csv** suffix. This text file requires the following columns (which need to be included as a header): ```sampleid,sample_files,spp_targets,gene_targets,target_size,fwd_primer,rev_primer``` 
+  By default the pipeline will look for a file called “index.csv” in the base directory but you can specify any file name using the ```--samplesheet [filename]``` in the parameter file, as long as it has a **.csv** suffix. This text file requires the following columns (which need to be included as a header): ```sampleid,fastq_path,target_organism,target_gene,target_size,fwd_primer,rev_primer``` 
 
    - **sampleid** will be the sample name that will be given to the files created by the pipeline (required).  
-   - **sample_path** is the full path to the fastq files that the pipeline requires as starting input (required).  
-   - **spp_targets** is the organism targetted by the PCR (required).  
-   - **gene_targets** is the gene targetted by the PCR (optional).  
+   - **fastq_path** is the full path to the fastq files that the pipeline requires as starting input (required).  
+   - **target_organism** is the organism targetted by the PCR (required).  
+   - **target_gene** is the gene targetted by the PCR (optional).  
    - **target_size** is the expected size of the amplicon (required).  
    - **fwd_primer** is the nucleotide sequence of the FWD primer (optional).  
    - **rev_primer** is the nucleotide sequence of the REV primer (optional). Please note that the reverse primer chas to be reverse complemented so it reads in the 5-3 direction.  
@@ -171,7 +171,7 @@ MP24-1096B_gyrB,/work/tests/mtdt_data/barcode19_MP24-1096B_gyrB/*fastq.gz,bacter
   If there are **multiple fastq.gz files per sample**, their full path can be specified on one line using **an asterisk (i.e. *fastq.gz)** and you will need to specify the parameter ```--merge``` in the parameter file (default setting).  
   See an example of an index.csv file for 2 MTDT samples:  
   ```
-  sampleid,sample_files,spp_targets,gene_targets,target_size
+  sampleid,fastq_path,target_organism,target_gene,target_size
   VE24-1279_COI,/work/tests/mtdt_data/barcode01_VE24-1279_COI/*fastq.gz,drosophilidae,COI,711,GGTCAACAAATCATAAAGATATTGG,ATTTTTTGGTCACCCTGAAGTTTA
   MP24-1051A_16S,/work/tests/mtdt_data/barcode06_MP24-1051A_16S/*fastq.gz,bacteria,16s,1509,AGAGTTTGATCATGGCTCAG,AAGTCGTAACAAGGTAACCGT
   MP24-1096B_gyrB,/work/tests/mtdt_data/barcode19_MP24-1096B_gyrB/*fastq.gz,bacteria,gyrB,1258,GAAGTCATCATGACCGTTCTGCAYGCNGGNGGNAARTTYGA,ATGACNGAYGCNGAYGTNGAYGGCTCGCACATCCGTACCCTGCT

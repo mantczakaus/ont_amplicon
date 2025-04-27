@@ -64,10 +64,10 @@ class Metadata(AbstractDataRow):
     """Report the sample metadata."""
 
     COLUMNS = [
-        ('sample_files', str),
+        ('fastq_path', str),
         ('target_size', int),
-        ('spp_targets', str),
-        ('gene_targets', str),
+        ('target_organism', str),
+        ('target_gene', str),
     ]
 
 

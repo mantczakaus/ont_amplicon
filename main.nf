@@ -31,7 +31,7 @@ def helpMessage () {
  
 
     Contents of index.csv:
-      sampleid,sample_files,spp_targets,gene_targets,target_size,fwd_primer,rev_primer
+      sampleid,fastq_path,target_organisms,target_gene,target_size,fwd_primer,rev_primer
       VE24-1279_COI,/work/tests/mtdt_data/barcode01_VE24-1279_COI/*fastq.gz,drosophilidae,COI,711,GGTCAACAAATCATAAAGATATTGG,ATTTTTTGGTCACCCTGAAGTTTA
 
       #### Pre-processing and QC options ####
@@ -364,7 +364,7 @@ process EXTRACT_BLAST_HITS {
   containerOptions "${bindOptions}"
 
   input:
-    tuple val(sampleid), path(blast_results), val(spp_targets), val(gene_targets), val(target_size)
+    tuple val(sampleid), path(blast_results), val(target_organism), val(target_gene), val(target_size)
 
   output:
     file "${sampleid}_final_polished_consensus_match.fasta"
@@ -377,7 +377,7 @@ process EXTRACT_BLAST_HITS {
 
   script:
     """
-    select_top_blast_hit.py --sample_name ${sampleid} --blastn_results ${sampleid}*_top_10_hits.txt --mode ${params.blast_mode} --spp_targets ${spp_targets} --taxonkit_database_dir ${params.taxdump}
+    select_top_blast_hit.py --sample_name ${sampleid} --blastn_results ${sampleid}*_top_10_hits.txt --mode ${params.blast_mode} --target_organism ${target_organism} --taxonkit_database_dir ${params.taxdump}
 
     # extract segment of consensus sequence that align to reference
     awk  -F  '\\t' 'NR>1 { printf ">%s\\n%s\\n",\$2,\$23 }' ${sampleid}*_top_hits_tmp.txt | sed 's/-//g' > ${sampleid}_final_polished_consensus_match.fasta
@@ -991,12 +991,12 @@ workflow {
     Channel
       .fromPath(params.samplesheet, checkIfExists: true)
       .splitCsv(header:true)
-      .map{ row-> tuple((row.sampleid), file(row.sample_files)) }
+      .map{ row-> tuple((row.sampleid), file(row.fastq_path)) }
       .set{ ch_sample }
     Channel
       .fromPath(params.samplesheet, checkIfExists: true)
       .splitCsv(header:true)
-      .map{ row-> tuple((row.sampleid), (row.spp_targets), (row.gene_targets), (row.target_size)) }
+      .map{ row-> tuple((row.sampleid), (row.target_organism), (row.target_gene), (row.target_size)) }
       .set{ ch_targets }
     Channel
       .fromPath(params.samplesheet, checkIfExists: true)
@@ -1006,8 +1006,8 @@ workflow {
     Channel
       .fromPath(params.samplesheet, checkIfExists: true)
       .splitCsv(header:true)
-      .map{ row-> tuple((row.sampleid), (row.gene_targets)) }
-      .set{ ch_gene_targets }
+      .map{ row-> tuple((row.sampleid), (row.target_gene)) }
+      .set{ ch_target_gene }
 
     Channel
       .fromPath(params.samplesheet, checkIfExists: true)
@@ -1018,15 +1018,15 @@ workflow {
     Channel
       .fromPath(params.samplesheet, checkIfExists: true)
       .splitCsv(header:true)
-      .map{ row-> tuple((row.sampleid), (row.gene_targets)) }
-      .filter { sampleid, gene_targets -> gene_targets.contains("COI") }
+      .map{ row-> tuple((row.sampleid), (row.target_gene)) }
+      .filter { sampleid, target_gene -> target_gene.contains("COI") }
       .set{ ch_coi }
 
     Channel
       .fromPath(params.samplesheet, checkIfExists: true)
       .splitCsv(header:true)
-      .map{ row-> tuple((row.sampleid), (row.gene_targets)) }
-      .filter { sampleid, gene_targets -> !gene_targets.contains("COI") }
+      .map{ row-> tuple((row.sampleid), (row.target_gene)) }
+      .filter { sampleid, target_gene -> !target_gene.contains("COI") }
       .set{ ch_other }
   
   } else { exit 1, "Input samplesheet file not specified!" }

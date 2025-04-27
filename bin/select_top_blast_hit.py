@@ -13,7 +13,7 @@ def parse_arguments():
     parser.add_argument("--blastn_results", required=True, type=str)
     parser.add_argument("--sample_name", required=True, type=str)
     parser.add_argument("--mode", required=True, choices=["ncbi", "localdb"], type=str)
-    parser.add_argument("--spp_targets", required=True, type=str)
+    parser.add_argument("--target_organism", required=True, type=str)
     parser.add_argument("--taxonkit_database_dir", required=True, type=str)
     return parser.parse_args()
 
@@ -113,18 +113,18 @@ def merge_taxonomy(dfs):
     """Merge taxonomy-enriched data."""
     return reduce(lambda left, right: pd.merge(left, right, on="staxids", how="outer"), dfs)
 
-def filter_and_format(df, sample_name, spp_targets):
+def filter_and_format(df, sample_name, target_organisms):
     """Final formatting, filtering, and matching."""
     df.insert(0, "sample_name", sample_name)
     df = df[~df["species"].str.contains("synthetic construct", na=False)]
 
     
-    spp_target_clean = spp_targets.lower().replace(" ", "_")
+    starget_organism_clean = target_organism.lower().replace(" ", "_")
 
     #top_hit = df.drop_duplicates(subset=["qseqid"], keep="first").copy()
     df["target_organism_match"] = np.where(
-        df["broad_taxonomic_category"].str.contains(spp_target_clean) |
-        df["FullLineage"].str.contains(spp_target_clean),
+        df["broad_taxonomic_category"].str.contains(target_organism_clean) |
+        df["FullLineage"].str.contains(target_organism_clean),
         "Y", "N"
     )
 
@@ -139,7 +139,7 @@ def main():
     args = parse_arguments()
     blastn_results_path = args.blastn_results
     sample_name = args.sample_name
-    spp_targets = args.spp_targets
+    target_organism = args.target_organism
     mode = args.mode
     tk_db_dir = args.taxonkit_database_dir
     #rank = os.path.join(tk_db_dir, "ranks.txt")
@@ -150,7 +150,7 @@ def main():
     blastn_results = load_blast_results(blastn_results_path, mode)
     enriched_dfs = enrich_with_taxonomy(blastn_results, tk_db_dir)
     merged_df = merge_taxonomy(enriched_dfs)
-    final_df = filter_and_format(merged_df, sample_name, spp_targets)
+    final_df = filter_and_format(merged_df, sample_name, target_organism)
     out_file = os.path.basename(args.blastn_results).replace("_top_10_hits.txt", "_top_hits_tmp.txt")
     final_df.to_csv(out_file, sep="\t", index=False)
     print(f"Results saved to {out_file}")
