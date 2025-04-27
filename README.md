@@ -508,7 +508,7 @@ preprocessing, blast results and coverage statistics. It also provides a link to
 The current proposed structure of the report can be found at: https://miro.com/app/board/uXjVLghknb4=/.  
 
 ## Output files
-The output files will be saved under the results fodler by default. This can be cahnged by setting the `publishDir` parameter.  
+The output files will be saved under the results folder by default. This can be changed by setting the `publishDir` parameter.  
 
 ### Preprocessing and host read filtering outputs
 If a merge step is required, fastcat will create a summary text file showing the read length distribution.  
