@@ -275,7 +275,9 @@ CPU hours   : 0.2
 Succeeded   : 76
 ```
 
-And the pipeline will have generated a results folder with the following structure:
+By default, the output files will be saved under the **results** fodler (this can be changed by setting the `publishDir` parameter to soemthign else).  
+
+The results folder has the following structure:  
 ```
 results/
 ├── barcode01_VE24-1279_COI
@@ -506,6 +508,7 @@ preprocessing, blast results and coverage statistics. It also provides a link to
 The current proposed structure of the report can be found at: https://miro.com/app/board/uXjVLghknb4=/.  
 
 ## Output files
+The output files will be saved under the results fodler by default. This can be cahnged by setting the `publishDir` parameter.  
 
 ### Preprocessing and host read filtering outputs
 If a merge step is required, fastcat will create a summary text file showing the read length distribution.  

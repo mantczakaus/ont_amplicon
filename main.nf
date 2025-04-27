@@ -371,7 +371,6 @@ process EXTRACT_BLAST_HITS {
   output:
     file "${sampleid}_final_polished_consensus_match.fasta"
     file "${sampleid}_reference_match.fasta"
-    path("${sampleid}*_megablast_top_hits_tmp.txt")
 
     tuple val(sampleid), path("${sampleid}*_megablast_top_hits_tmp.txt"), emit: topblast, optional: true
 //    tuple val(sampleid), file("${sampleid}*_megablast_top_hits.txt"), emit: blast_results, optional: true
@@ -383,10 +382,10 @@ process EXTRACT_BLAST_HITS {
     select_top_blast_hit.py --sample_name ${sampleid} --blastn_results ${sampleid}*_top_10_hits.txt --mode ${params.blast_mode} --spp_targets ${spp_targets} --taxonkit_database_dir ${params.taxdump}
 
     # extract segment of consensus sequence that align to reference
-    awk  -F  '\\t' 'NR>1 { printf ">%s\\n%s\\n",\$2,\$24 }' ${sampleid}*_top_hits_tmp.txt | sed 's/-//g' > ${sampleid}_final_polished_consensus_match.fasta
+    awk  -F  '\\t' 'NR>1 { printf ">%s\\n%s\\n",\$2,\$23 }' ${sampleid}*_top_hits_tmp.txt | sed 's/-//g' > ${sampleid}_final_polished_consensus_match.fasta
 
     # extract segment of reference that align to consensus sequence
-    awk  -F  '\\t' 'NR>1 { printf ">%s_%s\\n%s\\n",\$2,\$4,\$25 }' ${sampleid}*_top_hits_tmp.txt | sed 's/-//g' > ${sampleid}_reference_match.fasta
+    awk  -F  '\\t' 'NR>1 { printf ">%s_%s\\n%s\\n",\$2,\$4,\$24 }' ${sampleid}*_top_hits_tmp.txt | sed 's/-//g' > ${sampleid}_reference_match.fasta
     """
 }
 
