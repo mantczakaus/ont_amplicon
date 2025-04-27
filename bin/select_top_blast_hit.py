@@ -37,11 +37,13 @@ def load_blast_results(path, mode):
 
         df = pd.read_csv(path, sep="\t", header=0, usecols=columns, dtype=dtype)
         df["staxids"] = pd.to_numeric(df["staxids"].str.split(";").str[0], errors='coerce').fillna(0).astype(int)
-        return df
+        top_hit = df.drop_duplicates(subset=["qseqid"], keep="first").copy()
+
+        return top_hit
     else:
         raise NotImplementedError("Mode 'localdb' not implemented yet.")
 
-def enrich_with_taxonomy(df, taxonkit_dir, rank):
+def enrich_with_taxonomy(df, taxonkit_dir):
     """Add taxonomy information to the dataFrame."""
     #retain unique staxids
     staxids_l = df["staxids"].unique().tolist()
@@ -49,20 +51,63 @@ def enrich_with_taxonomy(df, taxonkit_dir, rank):
     lineage_df = pytaxonkit.lineage(staxids_l, data_dir=taxonkit_dir)[['TaxID', 'FullLineage']]
     lineage_df.columns = ["staxids", "FullLineage"]
     lineage_df["staxids"] = lineage_df["staxids"].astype(int)
-
-    kingdom_df = pytaxonkit.lineage(staxids_l, data_dir=taxonkit_dir, formatstr="{k}")
-    if "TaxID" not in kingdom_df or "Lineage" not in kingdom_df:
-        raise KeyError("Missing expected columns in lineage data.")
-    kingdom_df = kingdom_df[["TaxID", "Lineage"]]
-    kingdom_df.columns = ["staxids", "sskingdoms"]
-    kingdom_df["staxids"] = pd.to_numeric(kingdom_df["staxids"], errors='coerce').astype('Int64')
+    lineage_df["FullLineage"] = lineage_df["FullLineage"].str.lower().str.replace(" ", "_", regex=False)
+    lineage_df["broad_taxonomic_category"] = np.where(
+        lineage_df["FullLineage"].str.contains(";virus;"),
+        "virus",
+        np.where(
+            lineage_df["FullLineage"].str.contains(";candidatus_phytoplasma;"),
+            "bacteria;phytoplasma",
+            np.where(
+            (lineage_df["FullLineage"].str.contains(";bacteria;")) &
+            (~lineage_df["FullLineage"].str.contains(";candidatus_phytoplasma;")),
+            "bacteria;other",
+                np.where(
+                    lineage_df["FullLineage"].str.contains(";archaea;"),
+                    "archaea",
+                    np.where(
+                        lineage_df["FullLineage"].str.contains(";erysiphaceae;"),
+                        "eukaryota;fungi;powdery_mildew",
+                        np.where(
+                            (lineage_df["FullLineage"].str.contains(";fungi;")) &
+                            (~lineage_df["FullLineage"].str.contains(";erysiphaceae;")),
+                            "eukaryota;fungi",
+                            np.where(
+                                (lineage_df["FullLineage"].str.contains(";deuterostomia;")),
+                                "eukaryota;deuterostomia",
+                                np.where(
+                                    (lineage_df["FullLineage"].str.contains(";protostomia;")),
+                                    "eukaryota;protostomia",
+                                    np.where(
+                                        (lineage_df["FullLineage"].str.contains(";eukaryota;")) &
+                                        (~lineage_df["FullLineage"].str.contains(";fungi;")) &
+                                        (~lineage_df["FullLineage"].str.contains(";deuterostomia;")) &
+                                        (~lineage_df["FullLineage"].str.contains(";protostomia;")),
+                                        "eukaryota;other",
+                                        "unknown"
+                                    )
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+        )
+    )
+    print(lineage_df)
+    #kingdom_df = pytaxonkit.lineage(staxids_l, data_dir=taxonkit_dir, formatstr="{r}")
+    #if "TaxID" not in kingdom_df or "Lineage" not in kingdom_df:
+    #    raise KeyError("Missing expected columns in lineage data.")
+    #kingdom_df = kingdom_df[["TaxID", "Lineage"]]
+    #kingdom_df.columns = ["staxids", "sskingdoms"]
+    #kingdom_df["staxids"] = pd.to_numeric(kingdom_df["staxids"], errors='coerce').astype('Int64')
 
     #names_df = pytaxonkit.filter(staxids_l, equal_to="species", rank_file=rank, debug=True)
     names_df = pytaxonkit.name(staxids_l, data_dir=taxonkit_dir)[['TaxID', 'Name']]
     names_df.columns = ["staxids", "species"]
     names_df["staxids"] = names_df["staxids"].astype(int)
 
-    return [df, names_df, kingdom_df, lineage_df]
+    return [df, names_df, lineage_df]
 
 def merge_taxonomy(dfs):
     """Merge taxonomy-enriched data."""
@@ -73,23 +118,22 @@ def filter_and_format(df, sample_name, spp_targets):
     df.insert(0, "sample_name", sample_name)
     df = df[~df["species"].str.contains("synthetic construct", na=False)]
 
-    df["FullLineage"] = df["FullLineage"].str.lower().str.replace(" ", "_", regex=False)
-    df["sskingdoms"] = df["sskingdoms"].str.lower()
+    
     spp_target_clean = spp_targets.lower().replace(" ", "_")
 
-    top_hit = df.drop_duplicates(subset=["qseqid"], keep="first").copy()
-    top_hit["target_organism_match"] = np.where(
-        top_hit["sskingdoms"].str.contains(spp_target_clean) |
-        top_hit["FullLineage"].str.contains(spp_target_clean),
+    #top_hit = df.drop_duplicates(subset=["qseqid"], keep="first").copy()
+    df["target_organism_match"] = np.where(
+        df["broad_taxonomic_category"].str.contains(spp_target_clean) |
+        df["FullLineage"].str.contains(spp_target_clean),
         "Y", "N"
     )
 
     final_columns = ["sample_name", "qseqid", "sgi", "sacc", "length", "nident", "pident", "mismatch", "gaps",
                      "gapopen", "qstart", "qend", "qlen", "sstart", "send", "slen", "sstrand", "evalue", "bitscore",
                      "qcovhsp", "stitle", "staxids", "qseq", "sseq", "sseqid", "qcovs", "qframe", "sframe",
-                     "species", "sskingdoms", "FullLineage", "target_organism_match"]
+                     "species", "broad_taxonomic_category", "FullLineage", "target_organism_match"]
 
-    return top_hit[final_columns]
+    return df[final_columns]
 
 def main():
     args = parse_arguments()
@@ -98,14 +142,13 @@ def main():
     spp_targets = args.spp_targets
     mode = args.mode
     tk_db_dir = args.taxonkit_database_dir
-    rank = os.path.join(tk_db_dir, "ranks.txt")
-    print(rank)
+    #rank = os.path.join(tk_db_dir, "ranks.txt")
 
     if not os.path.isfile(blastn_results_path):
         raise FileNotFoundError(f"{blastn_results_path} does not exist.")
 
     blastn_results = load_blast_results(blastn_results_path, mode)
-    enriched_dfs = enrich_with_taxonomy(blastn_results, tk_db_dir, rank)
+    enriched_dfs = enrich_with_taxonomy(blastn_results, tk_db_dir)
     merged_df = merge_taxonomy(enriched_dfs)
     final_df = filter_and_format(merged_df, sample_name, spp_targets)
     out_file = os.path.basename(args.blastn_results).replace("_top_10_hits.txt", "_top_hits_tmp.txt")

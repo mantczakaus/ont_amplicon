@@ -23,9 +23,9 @@ switch (workflow.containerEngine) {
 }
 
 process NANOPLOT {
-  publishDir "${params.outdir}/${sampleid}/qc/nanoplot",  pattern: '{*NanoPlot-report.html}', mode: 'link'
-  publishDir "${params.outdir}/${sampleid}/qc/nanoplot",  pattern: '{*NanoStats.txt}', mode: 'link'
-  publishDir "${params.outdir}/${sampleid}/qc/nanoplot",  pattern: '{*LengthvsQualityScatterPlot_dot.html}', mode: 'link'
+  publishDir "${params.outdir}/${sampleid}/01_QC/nanoplot",  pattern: '{*NanoPlot-report.html}', mode: 'link'
+  publishDir "${params.outdir}/${sampleid}/01_QC/nanoplot",  pattern: '{*NanoStats.txt}', mode: 'link'
+  publishDir "${params.outdir}/${sampleid}/01_QC/nanoplot",  pattern: '{*LengthvsQualityScatterPlot_dot.html}', mode: 'link'
   tag "${sampleid}"
   label "setting_2"
 

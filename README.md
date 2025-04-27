@@ -578,18 +578,14 @@ Cameron Hyde c.hyde@qcif.edu.au
 Update image depicting the current flow of the pipeline  
 Finish output section  
 
-Add additional flags (basecalling model, contamination flag, % long reads)  
-Force specification of COI database if COI gene specified  
+Add additional flags (basecalling model flag)  
 
 **-html report specific**
-Fix bug in reporting of contigs returning a blast hit vs total in html report.  
-Incorporate basecalling model, analyst and facility in html report  
+Incorporate basecalling model in html report  
 Improve reporting errors when RATTLE fails to produce clusters and prevent pipeline from crashing, add in report that no clusters were generated.  
-Add sample name to html_report.  
 
 
 Prevent pipeline from proceeding if fast basecalling model is detected?  
 Generate a QC report even if preprocessing is not run to capture the raw read counts?  
 Provide option to run only map to ref  
-List current version of tools  
 

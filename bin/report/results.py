@@ -226,7 +226,7 @@ class BlastHitsPolished(AbstractResultRows):
         'qframe',
         'sframe',
         'species',
-        'sskingdoms',
+        'broad_taxonomic_category',
     ]
 
 
