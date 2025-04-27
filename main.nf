@@ -148,7 +148,7 @@ switch (workflow.containerEngine) {
 }
 
 process BLASTN {
-  publishDir "${params.outdir}/${sampleid}/04_megablast", mode: 'copy', pattern: '*_megablast*.txt'
+  publishDir "${params.outdir}/${sampleid}/04_megablast", mode: 'copy', pattern: '*_megablast*.top_10_hits.txt'
   tag "${sampleid}"
   containerOptions "${bindOptions}"
   label "setting_10"
@@ -188,7 +188,6 @@ process BLASTN_COI {
   input:
     tuple val(sampleid), path(assembly), val(gene_target)
   output:
-    path("${sampleid}*_megablast_COI_top_hit.txt")
     tuple val(sampleid), path("${sampleid}_ids_to_reverse_complement.txt"), emit: coi_blast_results, optional: true
 
   script:
