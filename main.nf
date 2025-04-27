@@ -419,8 +419,6 @@ process FASTCAT {
     tuple val(sampleid), path(fastq)
 
   output:
-    path("${sampleid}_stats.tsv")
-    path("histograms/*")
     path("${sampleid}_basecalling_model_inference.txt")
 
     tuple val(sampleid), path("${sampleid}.fastq.gz"), emit: merged
@@ -650,13 +648,11 @@ process MINIMAP2_REF {
 process MOSDEPTH {
   tag "$sampleid"
   label "setting_3"
-  publishDir "${params.outdir}/${sampleid}/05_mapping_to_consensus", mode: 'copy', pattern: '{*.per-base.bed,*.mosdepth.summary.txt}'
 
   input:
     tuple val(sampleid), path(consensus), path(bam), path(bai), path(bed)
 
   output:
-    path("*.per-base.bed"), optional: true
     tuple val(sampleid), path("${sampleid}.thresholds.bed"), emit: mosdepth_results, optional: true
 
   script:
@@ -852,6 +848,7 @@ process SAMTOOLS {
   output:
     path "${sampleid}_aln.sorted.bam"
     path "${sampleid}_aln.sorted.bam.bai"
+    path "${sampleid}_coverage.txt"
     path "${sampleid}_samtools_consensus_from_ref.fasta"
     tuple val(sampleid), path(ref), path("${sampleid}_aln.sorted.bam"), path("${sampleid}_aln.sorted.bam.bai"), emit: sorted_sample
 
@@ -866,7 +863,7 @@ process SAMTOOLS {
 }
 
 process SAMTOOLS_CONSENSUS {
-  publishDir "${params.outdir}/${sampleid}/05_mapping_to_consensus", mode: 'copy', pattern: '{*.bam,*.bai,*_coverage.txt,*_histogram.txt,*final_polished_consensus_match.fasta}'
+  publishDir "${params.outdir}/${sampleid}/05_mapping_to_consensus", mode: 'copy', pattern: '{*.bam,*.bai,*_coverage.txt,*final_polished_consensus_match.fasta}'
   tag "${sampleid}"
   label 'setting_2'
 
@@ -878,7 +875,6 @@ process SAMTOOLS_CONSENSUS {
     path "${sampleid}_aln.sorted.bam"
     path "${sampleid}_aln.sorted.bam.bai"
     path "${sampleid}_coverage.txt"
-    path "${sampleid}_histogram.txt"
     tuple val(sampleid), path(consensus), path("${sampleid}_aln.sorted.bam"), path("${sampleid}_aln.sorted.bam.bai"), emit: sorted_bams
     tuple val(sampleid), path("${sampleid}_coverage.txt"), emit: coverage
     tuple val(sampleid), path("${sampleid}_contigs_reads_ids.txt"), emit: contig_seqids

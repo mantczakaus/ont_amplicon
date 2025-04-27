@@ -113,13 +113,13 @@ def merge_taxonomy(dfs):
     """Merge taxonomy-enriched data."""
     return reduce(lambda left, right: pd.merge(left, right, on="staxids", how="outer"), dfs)
 
-def filter_and_format(df, sample_name, target_organisms):
+def filter_and_format(df, sample_name, target_organism):
     """Final formatting, filtering, and matching."""
     df.insert(0, "sample_name", sample_name)
     df = df[~df["species"].str.contains("synthetic construct", na=False)]
 
     
-    starget_organism_clean = target_organism.lower().replace(" ", "_")
+    target_organism_clean = target_organism.lower().replace(" ", "_")
 
     #top_hit = df.drop_duplicates(subset=["qseqid"], keep="first").copy()
     df["target_organism_match"] = np.where(

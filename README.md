@@ -2,7 +2,7 @@
 
 ## Introduction
 
-ont_amplicon is a Nextflow-based bioinformatics pipeline designed to derive consensus sequences from **amplicon sequencing data** that was generated using **rapid library preparation kit** from **Oxford nanopore Technologies**. The pipeline expects the fastq files to have been generated using a **high accuracy (HAC)** basecalling model.  **The pipeline will fail to run if fastq files are generated with Fast basecalling model.**
+ont_amplicon is a Nextflow-based bioinformatics pipeline designed to derive consensus sequences from **amplicon sequencing data** that was generated using **rapid library preparation kit** from **Oxford nanopore Technologies**. The pipeline expects the fastq files to have been generated using a **high accuracy (HAC)** basecalling model.  **The pipeline will fail to run if the fastq files provided are generated with a Fast basecalling model.**
 
 It takes compressed fastq files as input.
 
@@ -12,10 +12,10 @@ It takes compressed fastq files as input.
 ![diagram pipeline](docs/images/ont_amplicon_workflow.png)
 
 - Data quality check (QC) and preprocessing
-  - Merge fastq files (Fascat, optional)
+  - Merge fastq files (Fascat) - optional
   - Raw fastq file QC (Nanoplot)
-  - Trim adaptors (PoreChop ABI - optional)
-  - Filter reads based on length and/or quality (Chopper - optional)
+  - Trim adaptors (PoreChop ABI) - optional
+  - Filter reads based on length and/or quality (Chopper) - optional
   - Reformat fastq files so read names are trimmed after the first whitespace (bbmap)
   - Processed fastq file QC (if PoreChop and/or Chopper is run) (Nanoplot)
 - QC report
@@ -29,7 +29,7 @@ It takes compressed fastq files as input.
   - Megablast homology search against NCBI database
   - Derive top candidate hits, assign preliminary taxonomy and target organism flag (pytaxonkit)
   - Map reads back to segment of consensus sequence that align to reference and derive BAM file and alignment statistics (Minimap2, Samtools and Mosdepth)
-  - Map reads to segment of NCBI reference sequence that align to consensus and derive BAM file and consensus (Minimap2, Samtools)
+  - Map reads to segment of NCBI reference sequence that align to consensus and derive BAM file and consensus (Minimap2, Samtools) - optional
 
 
 ## Installation
@@ -279,69 +279,65 @@ By default, the output files will be saved under the **results** folder (this ca
 
 The results folder has the following structure:  
 ```
-results/
+├── 00_qc_report
+│   ├── run_qc_report_20250428-091847.html
+│   └── run_qc_report_20250428-091847.txt
+├── 01_pipeline_info
+│   ├── 20250428091444_nextflow_start_timestamp.txt
+│   ├── 20250428092534_nextflow_start_timestamp.txt
+│   ├── execution_report_2025-04-28_09-14-26.html
+│   ├── execution_timeline_2025-04-28_09-14-26.html
+│   ├── execution_trace_2025-04-28_09-14-26.txt
+│   ├── execution_trace_2025-04-28_09-25-22.txt
+│   └── pipeline_dag_2025-04-28_09-14-26.html
 ├── barcode01_VE24-1279_COI
-│   ├── clustering
-│   │   └── barcode01_VE24-1279_COI_rattle.fasta
-│   ├── html_report
-│   │   ├── bam-alignment.html
-│   │   ├── example_report_context.json
-│   │   └── report.html
-│   ├── mapping_to_consensus
-│   │   ├── barcode01_VE24-1279_COI_aln.sorted.bam
-│   │   ├── barcode01_VE24-1279_COI_aln.sorted.bam.bai
-│   │   ├── barcode01_VE24-1279_COI_coverage.txt
-│   │   ├── barcode01_VE24-1279_COI_final_polished_consensus_match.fasta
-│   │   ├── barcode01_VE24-1279_COI_histogram.txt
-│   │   ├── barcode01_VE24-1279_COI.per-base.bed
-│   │   └── barcode01_VE24-1279_COI_top_blast_with_cov_stats.txt
-│   ├── mapping_to_ref
-│   │   ├── barcode01_VE24-1279_COI_aln.sorted.bam
-│   │   ├── barcode01_VE24-1279_COI_aln.sorted.bam.bai
-│   │   ├── barcode01_VE24-1279_COI_coverage.txt
-│   │   ├── barcode01_VE24-1279_COI_histogram.txt
-│   │   ├── barcode01_VE24-1279_COI_reference_match.fasta
-│   │   └── barcode01_VE24-1279_COI_samtools_consensus_from_ref.fasta
-│   ├── megablast
-│   │   ├── barcode01_VE24-1279_COI_final_polished_consensus_match.fasta
-│   │   ├── barcode01_VE24-1279_COI_final_polished_consensus_megablast_COI_top_hit.txt
-│   │   ├── barcode01_VE24-1279_COI_final_polished_consensus_rc.fasta
-│   │   ├── barcode01_VE24-1279_COI_final_polished_consensus_rc_megablast_top_10_hits.txt
-│   │   ├── barcode01_VE24-1279_COI_final_polished_consensus_rc_megablast_top_hits.txt
-│   │   └── barcode01_VE24-1279_COI_reference_match.fasta
-│   ├── polishing
-│   │   ├── barcode01_VE24-1279_COI_cutadapt.log
-│   │   ├── barcode01_VE24-1279_COI_final_polished_consensus.fasta
-│   │   ├── barcode01_VE24-1279_COI_medaka_consensus.bam
-│   │   ├── barcode01_VE24-1279_COI_medaka_consensus.bam.bai
-│   │   ├── barcode01_VE24-1279_COI_medaka_consensus.fasta
-│   │   ├── barcode01_VE24-1279_COI_preprocessed.fastq.gz
-│   │   ├── barcode01_VE24-1279_COI_racon_polished.fasta
-│   │   └── barcode01_VE24-1279_COI_samtools_consensus.fasta
-│   ├── preprocessing
-│   │   ├── barcode01_VE24-1279_COI_basecalling_model_inference.txt
+│   ├── 00_preprocessing
 │   │   ├── barcode01_VE24-1279_COI_preprocessed.fastq.gz
 │   │   ├── chopper
 │   │   │   └── barcode01_VE24-1279_COI_chopper.log
 │   │   └── porechop
 │   │       └── barcode01_VE24-1279_COI_porechop.log
-│   └── qc
-│       ├── fastcat
-│       │   ├── barcode01_VE24-1279_COI.fastq.gz
-│       │   ├── barcode01_VE24-1279_COI_stats.tsv
-│       │   └── histograms
-│       │       ├── length.hist
-│       │       └── quality.hist
-│       └── nanoplot
-│           ├── barcode01_VE24-1279_COI_filtered_LengthvsQualityScatterPlot_dot.html
-│           ├── barcode01_VE24-1279_COI_filtered_NanoPlot-report.html
-│           ├── barcode01_VE24-1279_COI_filtered_NanoStats.txt
-│           ├── barcode01_VE24-1279_COI_raw_LengthvsQualityScatterPlot_dot.html
-│           ├── barcode01_VE24-1279_COI_raw_NanoPlot-report.html
-│           └── barcode01_VE24-1279_COI_raw_NanoStats.txt
-└── qc_report
-    ├── run_qc_report_20250401-210340.html
-    └── run_qc_report_20250401-210340.txt
+│   ├── 01_QC
+│   │   ├── fastcat
+│   │   │   ├── barcode01_VE24-1279_COI_basecalling_model_inference.txt
+│   │   │   └── barcode01_VE24-1279_COI.fastq.gz
+│   │   └── nanoplot
+│   │       ├── barcode01_VE24-1279_COI_filtered_LengthvsQualityScatterPlot_dot.html
+│   │       ├── barcode01_VE24-1279_COI_filtered_NanoPlot-report.html
+│   │       ├── barcode01_VE24-1279_COI_filtered_NanoStats.txt
+│   │       ├── barcode01_VE24-1279_COI_raw_LengthvsQualityScatterPlot_dot.html
+│   │       ├── barcode01_VE24-1279_COI_raw_NanoPlot-report.html
+│   │       └── barcode01_VE24-1279_COI_raw_NanoStats.txt
+│   ├── 02_clustering
+│   │   └── barcode01_VE24-1279_COI_rattle.fasta
+│   ├── 03_polishing
+│   │   ├── barcode01_VE24-1279_COI_cutadapt.log
+│   │   ├── barcode01_VE24-1279_COI_final_polished_consensus.fasta
+│   │   ├── barcode01_VE24-1279_COI_medaka_consensus.fasta
+│   │   ├── barcode01_VE24-1279_COI_racon_polished.fasta
+│   │   └── barcode01_VE24-1279_COI_samtools_consensus.fasta
+│   ├── 04_megablast
+│   │   ├── barcode01_VE24-1279_COI_final_polished_consensus_match.fasta
+│   │   ├── barcode01_VE24-1279_COI_final_polished_consensus_rc.fasta
+│   │   ├── barcode01_VE24-1279_COI_final_polished_consensus_rc_megablast_top_10_hits.txt
+│   │   ├── barcode01_VE24-1279_COI_final_polished_consensus_rc_megablast_top_hits.txt
+│   │   └── barcode01_VE24-1279_COI_reference_match.fasta
+│   ├── 05_mapping_to_consensus
+│   │   ├── barcode01_VE24-1279_COI_aln.sorted.bam
+│   │   ├── barcode01_VE24-1279_COI_aln.sorted.bam.bai
+│   │   ├── barcode01_VE24-1279_COI_coverage.txt
+│   │   ├── barcode01_VE24-1279_COI_final_polished_consensus_match.fasta
+│   │   └── barcode01_VE24-1279_COI_top_blast_with_cov_stats.txt
+│   ├── 06_mapping_to_ref
+│   │   ├── barcode01_VE24-1279_COI_aln.sorted.bam
+│   │   ├── barcode01_VE24-1279_COI_aln.sorted.bam.bai
+│   │   ├── barcode01_VE24-1279_COI_reference_match.fasta
+│   │   └── barcode01_VE24-1279_COI_samtools_consensus_from_ref.fasta
+│   └── 07_html_report
+│       ├── bam-alignment.html
+│       ├── example_report_context.json
+│       ├── report.html
+│       └── run_qc_report.html
 ```
 
 ### QC step
