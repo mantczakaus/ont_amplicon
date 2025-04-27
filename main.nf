@@ -148,7 +148,7 @@ switch (workflow.containerEngine) {
 }
 
 process BLASTN {
-  publishDir "${params.outdir}/${sampleid}/04_megablast", mode: 'copy', pattern: '*_megablast*.top_10_hits.txt'
+  publishDir "${params.outdir}/${sampleid}/04_megablast", mode: 'copy', pattern: '*_megablast_top_10_hits.txt'
   tag "${sampleid}"
   containerOptions "${bindOptions}"
   label "setting_10"
@@ -156,7 +156,7 @@ process BLASTN {
   input:
     tuple val(sampleid), path(assembly)
   output:
-    path("${sampleid}*_megablast*.txt")
+    path("${sampleid}*_megablast_top_10_hits.txt")
     tuple val(sampleid), path("${sampleid}*_megablast_top_10_hits.txt"), emit: blast_results
 
   script:
@@ -180,7 +180,6 @@ process BLASTN {
 }
 
 process BLASTN_COI {
-  publishDir "${params.outdir}/${sampleid}/04_megablast", mode: 'copy', pattern: '*_megablast*.txt'
   tag "${sampleid}"
   containerOptions "${bindOptions}"
   label "setting_10"
@@ -214,7 +213,7 @@ process BLASTN2 {
   input:
     tuple val(sampleid), path(assembly), val(gene_target)
   output:
-    path("${sampleid}*_megablast*.txt")
+    path("${sampleid}*_megablast_top_10_hits.txt")
     tuple val(sampleid), path("${sampleid}*_megablast_top_10_hits.txt"), emit: blast_results
 
   script:
