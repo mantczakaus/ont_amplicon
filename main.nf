@@ -424,6 +424,8 @@ process FASTCAT {
   output:
     path("${sampleid}_stats.tsv")
     path("histograms/*")
+    path("${sampleid}_basecalling_model_inference.txt")
+
     tuple val(sampleid), path("${sampleid}.fastq.gz"), emit: merged
 
   script:
@@ -434,6 +436,11 @@ process FASTCAT {
         --histograms histograms \
         ${fastq} \
         | bgzip > ${sampleid}.fastq.gz
+    zcat ${sampleid}.fastq.gz | head -n1 | sed 's/^.*basecall_model_version_id=//' > ${sampleid}_basecalling_model_inference.txt
+    if (grep -q 'fast' ${sampleid}_basecalling_model_inference.txt) ; then
+      echo "A Fast basecalling model was used for this sample! Please rerun the basecalling step using High accuracy." >&2
+      exit 1
+    fi
     """
 }
 
@@ -808,14 +815,12 @@ process REFORMAT {
 
   output:
     path("${sampleid}_preprocessed.fastq.gz")
-    path("${sampleid}_basecalling_model_inference.txt")
     tuple val(sampleid), path("${sampleid}_preprocessed.fastq.gz"), emit: reformatted_fq
     tuple val(sampleid), path("${sampleid}_preprocessed.fastq.gz"), emit: cov_derivation_ch
 
   script:
     """
     reformat.sh in=${fastq} out=${sampleid}_preprocessed.fastq.gz trd qin=33
-    zcat ${fastq} | head -n1 | sed 's/^.*basecall_model_version_id=//' > ${sampleid}_basecalling_model_inference.txt
     """
 }
 

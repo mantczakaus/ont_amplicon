@@ -2,7 +2,7 @@
 
 ## Introduction
 
-ont_amplicon is a Nextflow-based bioinformatics pipeline designed to derive consensus sequences from **amplicon sequencing data** that was generated using **rapid library preparation kit** from **Oxford nanopore Technologies**. The pipeline expects the fastq files to have been generated using a **high accuracy (HAC)** basecalling model. 
+ont_amplicon is a Nextflow-based bioinformatics pipeline designed to derive consensus sequences from **amplicon sequencing data** that was generated using **rapid library preparation kit** from **Oxford nanopore Technologies**. The pipeline expects the fastq files to have been generated using a **high accuracy (HAC)** basecalling model.  **The pipeline will fail to run if fastq files are generated with Fast basecalling model.**
 
 It takes compressed fastq files as input.
 
@@ -58,10 +58,22 @@ The pipeline will generate ~5-100Mb of files per sample, depending on the number
 
 3. Install [`Singularity`](https://docs.sylabs.io/guides/3.0/user-guide/quick_start.html#quick-installation-steps) to suit your environment. The pipeline has been validated using singularity version 3.10.2-1 and apptainer version 1.3.6-1.el9 but has not yet been tested with singularity version 4.
 
-3. Install the taxonkit databases using the script install_taxonkit.sh located in the bin folder or follow the steps described on this [`page`](https://bioinf.shenwei.me/taxonkit/download/).
+4. Set your singularity container cache directory. Copy paste the code below and press enter.  
+Specify a different location if space is limited in your home directory.  
+```
+[[ -d $HOME/.nextflow ]] || mkdir -p $HOME/.nextflow
+
+cat <<EOF > $HOME/.nextflow/config
+singularity {
+    cacheDir = '$HOME/.nextflow/NXF_SINGULARITY_CACHEDIR'
+    autoMounts = true
+}
+```
+
+5. Install the taxonkit databases using the script install_taxonkit.sh located in the bin folder or follow the steps described on this [`page`](https://bioinf.shenwei.me/taxonkit/download/).
 
 
-4. Install NCBI NT or coreNT.  
+6. Install NCBI NT or coreNT.  
 Download a local copy of the NCBI database of interest, following the detailed steps available at https://www.ncbi.nlm.nih.gov/books/NBK569850/. Create a folder where you will store your NCBI databases. It is good practice to include the date of download. For instance:
   ```
   mkdir blastDB/20230930
@@ -80,7 +92,7 @@ Download a local copy of the NCBI database of interest, following the detailed s
   blastn_db: /full/path/to/blastDB/20230930/nt
   ```
 
-5. Download the Cytochrome oxydase 1 (COI1) database if you are planning to analyse COI samples.
+6. Download the Cytochrome oxydase 1 (COI1) database if you are planning to analyse COI samples.
   ```
   git clone https://github.com/bachob5/MetaCOXI.git
   #extract MetaCOXI_Seqs.fasta from the MetaCOXI_Seqs.tar.gz file
@@ -394,7 +406,7 @@ In the clustering mode, the tool [`RATTLE`](https://github.com/comprna/RATTLE#De
 - The ont_amplicon pipeline will automatically set a **lower read length** of **100** bp during the RATTLE clustering step if the amplicon target_size specified in the csv file is **<=300 bp**.  
 - If the amplicon target_size specified in the csv file is **>300 bp**, the lower read length of **150 bp** (Rattle default) will be applied at the RATTLE clustering step instead.  
 - For poor quality samples (i.e. failed the QC_FLAG) or if your amplicon is known to be shorter than 150 bp, use the parameter `rattle_raw: true` to use all the reads without any length filtering during the RATTLE clustering step.  
-- Finally, the `rattle_clustering_max_variance` is set by default to 10000. It is recommended to drop it to 10 if analysing fastq files that were generated using a **fast** basecalling model.  
+- Finally, the `rattle_clustering_max_variance` is set by default to 1,000,000.  
 
   **Special usage:**
   The parameters `rattle_clustering_min_length: [number]` (by default: 150) and `rattle_clustering_max_length: [number]` (by default: 100,000) can also be specified in the parameter file to restrict read size more strictly.  
@@ -585,7 +597,6 @@ Incorporate basecalling model in html report
 Improve reporting errors when RATTLE fails to produce clusters and prevent pipeline from crashing, add in report that no clusters were generated.  
 
 
-Prevent pipeline from proceeding if fast basecalling model is detected?  
 Generate a QC report even if preprocessing is not run to capture the raw read counts?  
 Provide option to run only map to ref  
 
