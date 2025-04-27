@@ -275,7 +275,7 @@ CPU hours   : 0.2
 Succeeded   : 76
 ```
 
-By default, the output files will be saved under the **results** fodler (this can be changed by setting the `publishDir` parameter to soemthign else).  
+By default, the output files will be saved under the **results** folder (this can be changed by setting the `publishDir` parameter to soemthing else).  
 
 The results folder has the following structure:  
 ```
