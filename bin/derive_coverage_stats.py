@@ -42,7 +42,7 @@ def main():
     blastn_results = pd.read_csv(blast, sep="\t", header=0)
     blast_df = blastn_results.copy()
     blast_df.rename(columns={"length": "alignment_length"}, inplace=True)
-#        blast_df = blastn_results[["sample_name", "qseqid", "consensus_seq", "qlen", "qseq", "stitle", "sacc", "length", "pident", "mismatch", "gapopen", "evalue", "bitscore", "qcovs", "sstrand", "species", "sskingdoms", "FullLineage", "target_organism_match"]]
+#        blast_df = blastn_results[["sample_name", "qseqid", "consensus_seq", "qlen", "qseq", "stitle", "sacc", "length", "pident", "mismatch", "gapopen", "evalue", "bitscore", "qcovs", "sstrand", "species", "broad_taxonomic_category", "FullLineage", "target_organism_match"]]
 #        blast_df.columns = ["sample_name", "qseqid", "full_consensus_seq", "full_consensus_length", "qseq", "reference_title", "reference_accession", "reference_length", "pc_ident", "mismatch", "gapopen", "evalue", "bitscore", "query_coverage", "orientation", "species", "kingdom", "full_lineage", "target_organism_match"]
 #        print(blast_df)
 #        blast_df.loc[:,"qseqid2"]  = '>' + blast_df["qseqid"].astype(str).copy()

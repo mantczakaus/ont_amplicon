@@ -148,7 +148,7 @@ switch (workflow.containerEngine) {
 }
 
 process BLASTN {
-  publishDir "${params.outdir}/${sampleid}/megablast", mode: 'copy', pattern: '*_megablast*.txt'
+  publishDir "${params.outdir}/${sampleid}/04_megablast", mode: 'copy', pattern: '*_megablast*.txt'
   tag "${sampleid}"
   containerOptions "${bindOptions}"
   label "setting_10"
@@ -180,7 +180,7 @@ process BLASTN {
 }
 
 process BLASTN_COI {
-  publishDir "${params.outdir}/${sampleid}/megablast", mode: 'copy', pattern: '*_megablast*.txt'
+  publishDir "${params.outdir}/${sampleid}/04_megablast", mode: 'copy', pattern: '*_megablast*.txt'
   tag "${sampleid}"
   containerOptions "${bindOptions}"
   label "setting_10"
@@ -238,7 +238,7 @@ process BLASTN2 {
 }
 
 process CHOPPER {
-  publishDir "${params.outdir}/${sampleid}/preprocessing/chopper", pattern: '*_chopper.log', mode: 'link'
+  publishDir "${params.outdir}/${sampleid}/00_preprocessing/chopper", pattern: '*_chopper.log', mode: 'link'
   tag "${sampleid}"
   label 'setting_3'
 
@@ -288,7 +288,7 @@ process FASTPLONG {
 process COVSTATS {
   tag "$sampleid"
   label "setting_1"
-  publishDir "${params.outdir}/${sampleid}/mapping_to_consensus", mode: 'copy'
+  publishDir "${params.outdir}/${sampleid}/05_mapping_to_consensus", mode: 'copy'
 
   input:
     tuple val(sampleid), path(bed), path(consensus), path(coverage), path(top_hits), path(nanostats), val(target_size)
@@ -331,7 +331,7 @@ process EXTRACT_READS {
 process CUTADAPT {
   tag "$sampleid"
   label "setting_1"
-  publishDir "${params.outdir}/${sampleid}/polishing", pattern: '{*.fasta,*_cutadapt.log}', mode: 'copy'
+  publishDir "${params.outdir}/${sampleid}/03_polishing", pattern: '{*.fasta,*_cutadapt.log}', mode: 'copy'
   tag "${sampleid}"
   label 'setting_1'
   
@@ -360,7 +360,7 @@ process CUTADAPT {
 //cutadapt -n 2 -j ${task.cpus} -g "${fwd_primer_trimmed};max_error_rate=0.1;min_overlap=10" -a "${rev_primer_trimmed};max_error_rate=0.1;min_overlap=10" --trim-n -o ${sampleid}_final_polished_consensus.fasta ${consensus} > ${sampleid}_cutadapt.log
 
 process EXTRACT_BLAST_HITS {
-  publishDir "${params.outdir}/${sampleid}/megablast", mode: 'copy', pattern: '{*fasta}'
+  publishDir "${params.outdir}/${sampleid}/04_megablast", mode: 'copy', pattern: '{*fasta}'
   tag "${sampleid}"
   label "setting_1"
   containerOptions "${bindOptions}"
@@ -414,7 +414,7 @@ process EXTRACT_REF_FASTA {
 */
 
 process FASTCAT {
-  publishDir "${params.outdir}/${sampleid}/qc/fastcat", mode: 'copy'
+  publishDir "${params.outdir}/${sampleid}/01_QC/fastcat", mode: 'copy'
   tag "${sampleid}"
   label "setting_1"
 
@@ -438,7 +438,7 @@ process FASTCAT {
 }
 
 process FASTQ2FASTA {
-  publishDir "${params.outdir}/${sampleid}/clustering", mode: 'copy', pattern: '*_rattle.fasta'
+  publishDir "${params.outdir}/${sampleid}/02_clustering", mode: 'copy', pattern: '*_rattle.fasta'
   tag "${sampleid}"
   label "setting_1"
 
@@ -458,7 +458,7 @@ process FASTQ2FASTA {
 process FASTA2TABLE {
   tag "$sampleid"
   label "setting_1"
-  publishDir "${params.outdir}/${sampleid}/megablast", mode: 'copy'
+  publishDir "${params.outdir}/${sampleid}/04_megablast", mode: 'copy'
 
   input:
     tuple val(sampleid), path(tophits), path(fasta)
@@ -568,7 +568,7 @@ process MEDAKA1 {
 */
 
 process MEDAKA2 {
-  publishDir "${params.outdir}/${sampleid}/polishing", mode: 'copy', pattern: '*_consensus.fasta'
+  publishDir "${params.outdir}/${sampleid}/03_polishing", mode: 'copy', pattern: '*_consensus.fasta'
   tag "${sampleid}"
   label 'setting_3'
 
@@ -646,14 +646,13 @@ process MINIMAP2_REF {
 process MOSDEPTH {
   tag "$sampleid"
   label "setting_3"
-  publishDir "${params.outdir}/${sampleid}/mapping_to_consensus", mode: 'copy', pattern: '{*.per-base.bed,*.mosdepth.summary.txt}'
+  publishDir "${params.outdir}/${sampleid}/05_mapping_to_consensus", mode: 'copy', pattern: '{*.per-base.bed,*.mosdepth.summary.txt}'
 
   input:
     tuple val(sampleid), path(consensus), path(bam), path(bai), path(bed)
 
   output:
     path("*.per-base.bed"), optional: true
-    path("*.mosdepth.summary.txt"), optional: true
     tuple val(sampleid), path("${sampleid}.thresholds.bed"), emit: mosdepth_results, optional: true
 
   script:
@@ -682,7 +681,7 @@ process PYFAIDX {
 
 process PORECHOP_ABI {
   tag "${sampleid}"
-  publishDir "$params.outdir/${sampleid}/preprocessing/porechop",  mode: 'copy', pattern: '*_porechop.log'
+  publishDir "$params.outdir/${sampleid}/00_preprocessing/porechop",  mode: 'copy', pattern: '*_porechop.log'
   label "setting_2"
 
   input:
@@ -705,7 +704,7 @@ process PORECHOP_ABI {
 }
 
 process QCREPORT {
-  publishDir "${params.outdir}/qc_report", mode: 'copy', overwrite: true
+  publishDir "${params.outdir}/00_qc_report", mode: 'copy', overwrite: true
   containerOptions "${bindOptions}"
 
   input:
@@ -724,7 +723,7 @@ process QCREPORT {
 }
 
 process RACON {
-  publishDir "${params.outdir}/${sampleid}/polishing", mode: 'copy', pattern: '*_racon_polished.fasta'
+  publishDir "${params.outdir}/${sampleid}/03_polishing", mode: 'copy', pattern: '*_racon_polished.fasta'
   tag "${sampleid}"
   label 'setting_2'
 
@@ -802,7 +801,7 @@ process RATTLE {
 process REFORMAT {
   tag "${sampleid}"
   label "setting_3"
-  publishDir "$params.outdir/${sampleid}/preprocessing", mode: 'copy'
+  publishDir "$params.outdir/${sampleid}/00_preprocessing", mode: 'copy'
 
   input:
     tuple val(sampleid), path(fastq)
@@ -821,7 +820,7 @@ process REFORMAT {
 }
 
 process REVCOMP {
-  publishDir "${params.outdir}/${sampleid}/megablast", mode: 'copy', pattern: '{*fasta}'
+  publishDir "${params.outdir}/${sampleid}/04_megablast", mode: 'copy', pattern: '{*fasta}'
   tag "${sampleid}"
   label "setting_1"
   containerOptions "${bindOptions}"
@@ -841,7 +840,7 @@ process REVCOMP {
 }
 
 process SAMTOOLS {
-  publishDir "${params.outdir}/${sampleid}/mapping_to_ref", mode: 'copy'
+  publishDir "${params.outdir}/${sampleid}/06_mapping_to_ref", mode: 'copy'
   tag "${sampleid}"
   label 'setting_2'
 
@@ -851,8 +850,6 @@ process SAMTOOLS {
   output:
     path "${sampleid}_aln.sorted.bam"
     path "${sampleid}_aln.sorted.bam.bai"
-    path "${sampleid}_coverage.txt"
-    path "${sampleid}_histogram.txt"
     path "${sampleid}_samtools_consensus_from_ref.fasta"
     tuple val(sampleid), path(ref), path("${sampleid}_aln.sorted.bam"), path("${sampleid}_aln.sorted.bam.bai"), emit: sorted_sample
 
@@ -867,7 +864,7 @@ process SAMTOOLS {
 }
 
 process SAMTOOLS_CONSENSUS {
-  publishDir "${params.outdir}/${sampleid}/mapping_to_consensus", mode: 'copy', pattern: '{*.bam,*.bai,*_coverage.txt,*_histogram.txt,*final_polished_consensus_match.fasta}'
+  publishDir "${params.outdir}/${sampleid}/05_mapping_to_consensus", mode: 'copy', pattern: '{*.bam,*.bai,*_coverage.txt,*_histogram.txt,*final_polished_consensus_match.fasta}'
   tag "${sampleid}"
   label 'setting_2'
 
@@ -901,7 +898,7 @@ samtools view -S -F 4 ${sample} | cut -f3 | sort | uniq > contigs_id.txt
       done
 */
 process TIMESTAMP_START {
-    publishDir "${params.outdir}/logs", mode: 'copy', overwrite: true
+    publishDir "${params.outdir}/01_pipeline_info", mode: 'copy', overwrite: true
     cache false
     output:
     path "*nextflow_start_timestamp.txt"
@@ -915,7 +912,7 @@ process TIMESTAMP_START {
 }
 
 process HTML_REPORT {
-  publishDir "${params.outdir}/${sampleid}/html_report", mode: 'copy', overwrite: true
+  publishDir "${params.outdir}/${sampleid}/07_html_report", mode: 'copy', overwrite: true
   containerOptions "${bindOptions}"
   label 'setting_3'
 
