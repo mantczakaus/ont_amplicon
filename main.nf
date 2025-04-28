@@ -185,7 +185,7 @@ process BLASTN_COI {
   label "setting_10"
 
   input:
-    tuple val(sampleid), path(assembly), val(gene_target)
+    tuple val(sampleid), path(assembly), val(target_gene)
   output:
     tuple val(sampleid), path("${sampleid}_ids_to_reverse_complement.txt"), emit: coi_blast_results, optional: true
 
@@ -211,7 +211,7 @@ process BLASTN2 {
   label "setting_10"
 
   input:
-    tuple val(sampleid), path(assembly), val(gene_target)
+    tuple val(sampleid), path(assembly), val(target_gene)
   output:
     path("${sampleid}*_megablast_top_10_hits.txt")
     tuple val(sampleid), path("${sampleid}*_megablast_top_10_hits.txt"), emit: blast_results
@@ -387,29 +387,6 @@ process EXTRACT_BLAST_HITS {
     """
 }
 
-/*
-process EXTRACT_REF_FASTA {
-  tag "$sampleid"
-  label "setting_1"
-  publishDir "${params.outdir}/${sampleid}/mapping_back_to_ref", mode: 'copy', pattern: '*fasta'
-  containerOptions "${bindOptions}"
-
-  input:
-    tuple val(sampleid), path(blast_results)
-
-  output:
-    path("*fasta"), optional: true
-    tuple val(sampleid), path("*fasta"), emit: fasta_files, optional: true
-  
-  script:
-    """
-    cut -f 3 ${blast_results} | grep -v sacc | sed 's/^/>/' > seq_name.txt
-    cut -f21  ${blast_results} | grep -v 'qseq' | sed 's/-//g' > sequence.txt
-    cat seq_name.txt sequence.txt > reference.fasta
-    """
-}
-*/
-
 process FASTCAT {
   publishDir "${params.outdir}/${sampleid}/01_QC/fastcat", mode: 'copy'
   tag "${sampleid}"
@@ -473,101 +450,6 @@ process FASTA2TABLE {
     fasta2table.py --fasta ${fasta} --sample ${sampleid} --tophits ${tophits}
     """
 }
-/*
-process DERIVE_MASKED_CONSENSUS {
-  publishDir "${params.outdir}/${sampleid}/mapping_back_to_ref", mode: 'copy'
-  tag "${sampleid}"
-  label 'setting_3'
-
-  input:
-   tuple val(sampleid), path(ref), path(bam), path(bai), path(vcf)
-
-  output:
-    tuple val(sampleid), path("${sampleid}_masked.fasta"), path(bam), path(bai), path(vcf), emit: masked_fasta
-
-  script:
-    """
-    # Get consensus fasta file
-    bedtools genomecov -ibam ${bam} -bga > ${sampleid}_genome_cov.bed
-    # Assign N to nucleotide positions that have zero coverage
-    awk '\$4==0 {print}' ${sampleid}_genome_cov.bed > ${sampleid}_zero_cov_genome_cov.bed
-    bedtools maskfasta -fi ${ref} -bed ${sampleid}_zero_cov_genome_cov.bed -fo ${sampleid}_masked.fasta
-    """
-}
-
-process FILTER_VCF {
-  publishDir "${params.outdir}/${sampleid}/mapping_back_to_ref", mode: 'copy'
-  tag "${sampleid}"
-  label 'setting_3'
-
-  input:
-   tuple val(sampleid), path(ref), path(bam), path(bai), path(vcf)
-
-  output:
-    path("${sampleid}_medaka.consensus.fasta")
-    path("${sampleid}_medaka.annotated.vcf.gz")
-
-  script:
-    """
-    bcftools reheader ${vcf} -s <(echo '${sampleid}') \
-    | bcftools filter \
-        -e 'INFO/DP < ${params.bcftools_min_coverage}' \
-        -s LOW_DEPTH \
-        -Oz -o ${sampleid}_medaka.annotated.vcf.gz
-
-    # create consensus
-    bcftools index ${sampleid}_medaka.annotated.vcf.gz
-    bcftools consensus -f ${ref} -i 'FILTER="PASS"' ${sampleid}_medaka.annotated.vcf.gz --iupac-codes -H I -o ${sampleid}_medaka.consensus.fasta
-    """
-}
-
-process MAPPING_BACK_TO_REF {
-  tag "$sampleid"
-  label "setting_3"
-  publishDir "${params.outdir}/${sampleid}/alignments", mode: 'copy', pattern: '*sorted.bam*'
-  //publishDir "${params.outdir}/01_VirReport/${sampleid}/alignments/NT", mode: 'link', overwrite: true, pattern: "*{.fa*,.fasta,metrics.txt,scores.txt,targets.txt,stats.txt,log.txt,.bcf*,.vcf.gz*,.bam*}"
-
-  input:
-    tuple val(sampleid), path(results)
-
-  output:
-    path("*bam"), optional: true
-    path("*bam.bai"), optional: true
-    tuple val(sampleid), path("*sorted.bam"), emit: bam_files, optional: true
-    tuple val(sampleid), path("*sorted.bam.bai"), emit: bai_files, optional: true
-
-  script:
-    """
-    if compgen -G "*.fasta" > /dev/null;
-      then
-        mapping_back_to_ref.py --fastq ${sampleid}_preprocessed.fastq.gz
-    fi
-    """
-}
-
-process MEDAKA1 {
-  tag "${sampleid}"
-  label 'setting_3'
-
-  input:
-   tuple val(sampleid), path(ref), path(bam), path(bai)
-
-  output:
-    tuple val(sampleid), path(ref), path(bam), path(bai), path("${sampleid}_medaka.annotated.unfiltered_sorted.vcf"), emit: unfilt_vcf
-
-  script:
-  def medaka_consensus_options = (params.medaka_consensus_options) ? " ${params.medaka_consensus_options}" : ''
-    """
-    medaka consensus ${bam} ${sampleid}_medaka_consensus_probs.hdf \
-      ${medaka_consensus_options} --threads ${task.cpus}
-
-    medaka variant ${ref} ${sampleid}_medaka_consensus_probs.hdf ${sampleid}_medaka.vcf
-    medaka tools annotate --dpsp ${sampleid}_medaka.vcf ${ref} ${bam} \
-          ${sampleid}_medaka.annotated.unfiltered.vcf
-    cat ${sampleid}_medaka.annotated.unfiltered.vcf | awk '\$1 ~ /^#/ {print \$0;next} {print \$0 | "sort -k1,1 -k2,2n"}' > ${sampleid}_medaka.annotated.unfiltered_sorted.vcf
-    """
-}
-*/
 
 process MEDAKA2 {
   publishDir "${params.outdir}/${sampleid}/03_polishing", mode: 'copy', pattern: '*_consensus.fasta'
@@ -948,18 +830,7 @@ process SEQTK {
   seqtk subseq ${sampleid}_all_reads.fasta reads_ids.txt > ${sampleid}.fasta
   """
 }
-
 /*
-cut -f2 ${contig_seqids} | sort | uniq > contigs.txt
-  
-  for id in `cat contigs.txt`;
-    do
-      grep ${id} ${contig_seqids} | cut -f1 >  ${sampleid}_${id}_aligning_ids.txt;
-      seqtk subseq ${sampleid}.fasta ${sampleid}_${id}_aligning_ids.txt > ${sampleid}_${id}.fasta
-    done
-
-
-
 process EXTRACT_READ_LENGTHS {
   tag "${sampleid}"
   label "setting_2"
@@ -1004,20 +875,17 @@ workflow {
       .splitCsv(header:true)
       .map{ row-> tuple((row.sampleid), (row.target_gene)) }
       .set{ ch_target_gene }
-
     Channel
       .fromPath(params.samplesheet, checkIfExists: true)
       .splitCsv(header:true)
       .map{ row-> tuple((row.sampleid), (row.fwd_primer), (row.rev_primer)) }
       .set{ ch_primers }
-    
     Channel
       .fromPath(params.samplesheet, checkIfExists: true)
       .splitCsv(header:true)
       .map{ row-> tuple((row.sampleid), (row.target_gene)) }
       .filter { sampleid, target_gene -> target_gene.contains("COI") }
       .set{ ch_coi }
-
     Channel
       .fromPath(params.samplesheet, checkIfExists: true)
       .splitCsv(header:true)
@@ -1097,7 +965,7 @@ workflow {
       CHOPPER ( trimmed_fq)
       filtered_fq = CHOPPER.out.chopper_filtered_fq
 //      FASTPLONG ( trimmed_fq.join(ch_primers))
- //     filtered_fq = FASTPLONG.out.fastp_filtered_fq
+//      filtered_fq = FASTPLONG.out.fastp_filtered_fq
     }
     else { filtered_fq = trimmed_fq
     }
@@ -1252,8 +1120,6 @@ workflow {
       else {
         error("Analysis mode (clustering) not specified with e.g. '--analysis_mode clustering' or via a detectable config file.")
       }
-      
     }
   }
-//  TIMESTAMP_END ()
 }

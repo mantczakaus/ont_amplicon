@@ -331,6 +331,7 @@ The results folder has the following structure:
 │   ├── 06_mapping_to_ref
 │   │   ├── barcode01_VE24-1279_COI_aln.sorted.bam
 │   │   ├── barcode01_VE24-1279_COI_aln.sorted.bam.bai
+│   │   ├── barcode01_VE24-1279_COI_coverage.txt
 │   │   ├── barcode01_VE24-1279_COI_reference_match.fasta
 │   │   └── barcode01_VE24-1279_COI_samtools_consensus_from_ref.fasta
 │   └── 07_html_report
