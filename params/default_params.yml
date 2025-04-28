@@ -1,4 +1,4 @@
-samplesheet: 
+samplesheet: index.csv
 merge: true
 adapter_trimming: true
 qual_filt: false
@@ -10,7 +10,6 @@ blast_threads: 2
 analyst_name: 
 facility: 
 mapping_back_to_ref: true
-publish_dir: results
 outdir: results
 help: false
 qc_only: false
@@ -24,7 +23,7 @@ rattle_clustering_options:
 rattle_clustering_min_length:
 rattle_clustering_max_length:
 rattle_raw: false
-rattle_clustering_max_variance: 10000
+rattle_clustering_max_variance: 1000000
 rattle_polishing_options:
 blast_mode: ncbi
 blastn_COI:

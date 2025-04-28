@@ -275,7 +275,7 @@ CPU hours   : 0.2
 Succeeded   : 76
 ```
 
-By default, the output files will be saved under the **results** folder (this can be changed by setting the `publishDir` parameter to soemthing else).  
+By default, the output files will be saved under the **results** folder (this can be changed by setting the `outdir` parameter to soemthing else).  
 
 The results folder has the following structure:  
 ```
@@ -505,7 +505,7 @@ preprocessing, blast results and coverage statistics. It also provides a link to
 The current proposed structure of the report can be found at: https://miro.com/app/board/uXjVLghknb4=/.  
 
 ## Output files
-The output files will be saved under the results folder by default. This can be changed by setting the `publishDir` parameter.  
+The output files will be saved under the results folder by default. This can be changed by setting the `outdir` parameter.  
 
 ### Preprocessing and host read filtering outputs
 If a merge step is required, fastcat will create a summary text file showing the read length distribution.  
@@ -591,13 +591,10 @@ Cameron Hyde c.hyde@qcif.edu.au
 Update image depicting the current flow of the pipeline  
 Finish output section  
 
-Add additional flags (basecalling model flag)  
-
 **-html report specific**
 Incorporate basecalling model in html report  
 Improve reporting errors when RATTLE fails to produce clusters and prevent pipeline from crashing, add in report that no clusters were generated.  
 
 
 Generate a QC report even if preprocessing is not run to capture the raw read counts?  
-Provide option to run only map to ref  
-
+Provide option to run only map to ref
