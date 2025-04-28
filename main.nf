@@ -873,11 +873,6 @@ workflow {
     Channel
       .fromPath(params.samplesheet, checkIfExists: true)
       .splitCsv(header:true)
-      .map{ row-> tuple((row.sampleid), (row.target_gene)) }
-      .set{ ch_target_gene }
-    Channel
-      .fromPath(params.samplesheet, checkIfExists: true)
-      .splitCsv(header:true)
       .map{ row-> tuple((row.sampleid), (row.fwd_primer), (row.rev_primer)) }
       .set{ ch_primers }
     Channel

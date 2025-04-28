@@ -507,6 +507,28 @@ preprocessing, blast results and coverage statistics. It also provides a link to
 ## Output files
 The output files will be saved under the results folder by default. This can be changed by setting the `outdir` parameter.  
 
+### Nextflow reports
+Nextflow outputs several outputs which are stored under the **01_pipeline_info** folder. Please find detailed information about these on this [page](https://www.nextflow.io/docs/latest/reports.html).  
+
+#### HTML execution report
+Nextflow outputs an **HTML execution report** which includes general metrics about the run. The report is organised into 3 main sections:  
+- The summary section reports the execution status, the launch command, overall execution time and some other workflow metadata.  
+- The resources section plots the distribution of resource usage for each workflow process. Plots are shown for CPU, memory, job duration and disk I/O. They have two (or three) tabs with the raw values and a percentage representation showing what proportion of the requested resources were used. These plots are very helpful to check that task resources are used efficiently.  
+- The Tasks section lists all executed tasks, reporting for each of them the status, the actual command script, and many other metrics.  
+
+#### Trace file
+Nextflow creates an execution tracing file that contains some useful information about each process executed in your pipeline script, including: submission time, start time, completion time, cpu and memory used.  
+
+#### Execution timeline
+Nextflow can render an HTML timeline for all processes executed in your pipeline. Each bar represents a process run in the pipeline execution. The bar length represents the task duration time (wall-time). The colored area in each bar represents the real execution time. The grey area to the left of the colored area represents the task scheduling wait time. The grey area to the right of the colored area represents the task termination time (clean-up and file un-staging). The numbers on the x-axis represent the time in absolute units e.g. minutes, hours, etc.  
+
+Each bar displays two numbers: the task duration time and the virtual memory size peak.  
+
+As each process can spawn many tasks, colors are used to identify those tasks belonging to the same process.  
+
+#### Workflow diagram
+A Nextflow pipeline can be represented as a direct acyclic graph (DAG). The vertices in the graph represent the pipeline’s processes and operators, while the edges represent the data dependencies (i.e. channels) between them.
+
 ### Preprocessing and host read filtering outputs
 If a merge step is required, fastcat will create a summary text file showing the read length distribution.  
 Quality check will be performed on the raw fastq file using [NanoPlot](https://github.com/wdecoster/NanoPlot) which is a tool that can be used to produce general quality metrics e.g. quality score distribution, read lengths and other general stats. A NanoPlot-report.html file will be saved under the **SampleName/qc/nanoplot** folder with the prefix **raw**. This report displays 6 plots as well as a table of summary statistics.  
