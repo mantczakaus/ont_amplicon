@@ -309,7 +309,8 @@ The results folder has the following structure:
 │   │       ├── barcode01_VE24-1279_COI_raw_NanoPlot-report.html
 │   │       └── barcode01_VE24-1279_COI_raw_NanoStats.txt
 │   ├── 02_clustering
-│   │   └── barcode01_VE24-1279_COI_rattle.fasta
+│   │   ├── barcode01_VE24-1279_COI_rattle.fasta
+│   │   └── barcode01_VE24-1279_COI_rattle.log
 │   ├── 03_polishing
 │   │   ├── barcode01_VE24-1279_COI_cutadapt.log
 │   │   ├── barcode01_VE24-1279_COI_final_polished_consensus.fasta
@@ -502,7 +503,6 @@ reference blast match and Samtools consensus is used to derive independent guide
 ### HTML report
 An html summary report is generated for each sample, incorporating sample metadata, QC before and after 
 preprocessing, blast results and coverage statistics. It also provides a link to the bam files generated when ampping back to consensus.  
-The current proposed structure of the report can be found at: https://miro.com/app/board/uXjVLghknb4=/.  
 
 ## Output files
 The output files will be saved under the results folder by default. This can be changed by setting the `outdir` parameter.  

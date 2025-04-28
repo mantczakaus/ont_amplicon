@@ -628,12 +628,13 @@ process RACON {
 process RATTLE {
   tag "${sampleid}"
   label 'setting_10'
+  publishDir "${params.outdir}/${sampleid}/02_clustering", mode: 'copy', pattern: '*_rattle.log'
 
   input:
     tuple val(sampleid), path(fastq), val(target_size)
 
   output:
-    file("transcriptome.fq")
+    file("${sampleid}_rattle.log")
     tuple val(sampleid), path("transcriptome.fq"), emit: clusters
     tuple val(sampleid), path("${fastq}"), path("transcriptome.fq"), emit: clusters2
 
@@ -668,12 +669,11 @@ process RATTLE {
     ) 2>&1 | tee ${sampleid}_rattle.log
 
     
-    if [[ ! -s transcriptome.fq ]]
-    then
-        touch transcriptome.fq
-        echo "Rattle clustering and polishing failed."
+    if [[ ! -s transcriptome.fq ]]; then
+      touch transcriptome.fq
+      echo "Rattle clustering and polishing failed." >> ${sampleid}_rattle.log
     else
-      echo "Rattle clustering and polishing completed successfully."
+      echo "Rattle clustering and polishing completed successfully." >> ${sampleid}_rattle.log
     fi
     """
 }
