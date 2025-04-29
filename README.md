@@ -35,6 +35,8 @@ It takes compressed fastq files as input.
 ## Installation
 ### Requirements  
 
+Make sure you are using Windows subsystem for Linux if you are on a Windows machine. Please follow these [`steps`](https://www.ssl.com/how-to/enable-linux-subsystem-install-ubuntu-windows-10/).
+
 If the pipeline is run on a local machine, it will require between 300-800Gb of space for the installation of required containers and databases alone. This includes:  
 - 80 Mb ont_amplicon pipeline  
 - ~ 3.8Gb for containers  
@@ -93,13 +95,13 @@ Download a local copy of the NCBI database of interest, following the detailed s
   blastn_db: /full/path/to/blastDB/20230930/nt
   ```
 
-6. Download the Cytochrome oxydase 1 (COI1) database if you are planning to analyse COI samples.
+7. Download the Cytochrome oxydase 1 (COI1) database if you are planning to analyse COI samples.
   ```
-  git clone https://github.com/bachob5/MetaCOXI.git
+  wget https://zenodo.org/record/6246634/files/MetaCOXI_Seqs_1.tar.gz
   #extract MetaCOXI_Seqs.fasta from the MetaCOXI_Seqs.tar.gz file
-  tar -xvf MetaCOXI_Seqs.tar.gz
+  tar -xvzf MetaCOXI_Seqs.tar.gz
   #make a blast database from the fasta file
-  singularity exec -B /scratch https://depot.galaxyproject.org/singularity/blast:2.16.0--h66d330f_4 makeblastdb -in MetaCOXI_Seqs.fasta -parse_seqids -dbtype prot
+  singularity exec https://depot.galaxyproject.org/singularity/blast:2.16.0--h66d330f_4 makeblastdb -in MetaCOXI_Seqs.fasta -parse_seqids -dbtype nucl
   ```
 Specify the full path to your COI database name in your in your parameter file.
   For instance:

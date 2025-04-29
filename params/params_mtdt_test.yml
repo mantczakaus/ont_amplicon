@@ -1,4 +1,4 @@
-samplesheet: tests/index_mtdt.csv
+samplesheet: index_mtdt.csv
 merge: true
 adapter_trimming: true
 qual_filt: true
@@ -8,6 +8,6 @@ blastn_db: /home/gauthiem/ont_amplicon/tests/blastdb/reference.fasta
 blastn_COI: /home/gauthiem/ont_amplicon/tests/COIdb/MetaCOXI_Seqs.fasta
 taxdump: ~/.taxonkit
 blast_threads: 2
-analyst_name: Grase Sun
+analyst_name: Grace Sun
 facility: MTDT
 mapping_back_to_ref: true

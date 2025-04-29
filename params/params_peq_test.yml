@@ -1,4 +1,4 @@
-samplesheet: tests/index_peq.csv
+samplesheet: index_peq.csv
 merge: true
 adapter_trimming: true
 qual_filt: true
