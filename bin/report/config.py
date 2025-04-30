@@ -5,15 +5,18 @@ from datetime import datetime
 from functools import cached_property
 from pathlib import Path
 
+import yaml
+
 ROOT_DIR = Path(__file__).parent
 GITHUB_URL = 'https://github.com/maelyg/ont_amplicon'
 
 
 class Config:
 
-    #METADATA_FILE = 'index.csv'
+    # METADATA_FILE = 'index.csv'
     TIMESTAMP_FILE = '*_start_timestamp.txt'
     REPORT_FILE = 'report.html'
+    DEFAULT_PARAMS_PATH = ROOT_DIR.parents[1] / 'params/default_params.yml'
 
     class SCHEMA:
         BLAST_HITS_FIELD_CSV = ROOT_DIR / 'schema/blast_hits_columns.csv'
@@ -33,6 +36,12 @@ class Config:
         MIN_FILTERED_READS = 1000
 
     @property
+    def default_params(self) -> dict[str, str]:
+        """Return dict of default workflow parameters."""
+        with self.DEFAULT_PARAMS_PATH.open() as f:
+            return yaml.safe_load(f)
+
+    @property
     def result_dir(self) -> Path:
         """Ensure that result dir is propagated between Config instances."""
         return Path(os.environ['RESULT_DIR'])
@@ -44,10 +53,6 @@ class Config:
     @property
     def metadata_path(self) -> Path:
         return self.result_dir / self.METADATA_FILE
-
-    @property
-    def parameters_path(self) -> Path:
-        return self.result_dir / self.PARAMS_FILE  # TODO: not available yet
 
     @property
     def run_qc_path(self) -> Path:

@@ -45,7 +45,7 @@
   aria-labelledby="paramsModalLabel"
   aria-hidden="true"
 >
-  <div class="modal-dialog modal-dialog-scrollable">
+  <div class="modal-dialog modal-dialog-scrollable modal-xl">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="paramsModalLabel">All parameters</h5>
@@ -61,13 +61,19 @@
           <thead>
             <th>Name</th>
             <th>Default</th>
-            <th>Provided</th>
+            <th>User</th>
           </thead>
           {% for key, value in parameters.items() %}
             <tr>
-              <td class="fw-bold">{{ key }}</td>
-              <td>{{ value.default }}</td>
-              <td>{{ value.provided }}</td>
+              <td class="fw-bold">
+                <small>{{ key }}</small>
+              </td>
+              <td>
+                <small>{{ value.default }}</small>
+              </td>
+              <td>
+                <small>{{ value.user or "-" }}</small>
+              </td>
             </tr>
           {% endfor %}
         </table>

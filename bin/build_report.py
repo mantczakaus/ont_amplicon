@@ -11,14 +11,38 @@ from report.utils import existing_path
 def main():
     """Parse the command line arguments and build the report."""
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--samplesheet", type=str)
+    parser.add_argument(
+        "--samplesheet",
+        type=existing_path,
+        help="Path to the samplesheet CSV file.",
+    )
+    parser.add_argument(
+        "--params_file",
+        type=existing_path,
+        help=("Path to the user parameters YAML file. If no params were"
+              " modified, pass an empty file."),
+    )
+    parser.add_argument(
+        "--analyst",
+        help="The name of the analyst running the workflow.",
+    )
+    parser.add_argument(
+        "--facility",
+        help="The name of the facility where the workflow was submitted from.",
+    )
     parser.add_argument(
         '--result_dir',
         type=existing_path,
         help="The directory containing the output data.",
     )
     args = parser.parse_args()
-    report.render(args.result_dir, args.samplesheet)
+    report.render(
+        args.result_dir,
+        args.samplesheet,
+        args.params_file,
+        args.analyst,
+        args.facility,
+    )
 
 
 if __name__ == '__main__':

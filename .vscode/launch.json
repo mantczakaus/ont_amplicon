@@ -5,7 +5,13 @@
             "request": "launch",
             "name": "Workflow report",
             "program": "bin/build_report.py",
-            "args": ["results/barcode02_VE24-1280_COI"],
+            "args": [
+                "--result_dir", "results/barcode02_VE24-1280_COI",
+                "--samplesheet", "results/barcode02_VE24-1280_COI/index.csv",
+                "--params_file", "params/params_mtdt_test.yml",
+                "--analyst", "John Doe",
+                "--facility", "Mock facility",
+            ],
         }
     ]
 }

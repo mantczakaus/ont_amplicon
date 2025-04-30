@@ -136,6 +136,7 @@ class AbstractResultRows:
                     )
                 )
                 for colname in self.COLUMNS
+                if colname in row
             }
             for row in rows
         ]

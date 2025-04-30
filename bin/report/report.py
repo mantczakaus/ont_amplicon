@@ -1,15 +1,18 @@
 """Render a workflow report from output files."""
 
 import base64
+import csv
 import json
 import logging
 import os
-import csv
 from datetime import datetime
-from jinja2 import Environment, FileSystemLoader
 from pathlib import Path
 
+import yaml
+from jinja2 import Environment, FileSystemLoader
+
 from . import config
+from .bam import render_bam_html
 from .results import (
     BlastHits,
     ConsensusFASTA,
@@ -17,7 +20,6 @@ from .results import (
     RunQC,
 )
 from .utils import serialize
-from .bam import render_bam_html
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -27,13 +29,24 @@ TEMPLATE_DIR = Path(__file__).parent / 'templates'
 STATIC_DIR = Path(__file__).parent / 'static'
 
 
-def render(result_dir: Path, samplesheet: Path):
+def render(
+    result_dir: Path,
+    samplesheet_file: Path,
+    params_file: Path,
+    analyst_name: str = None,
+    facility: str = None,
+):
     """Render to HTML report to the configured output directory."""
     config.load(result_dir)
     render_bam_html()
     j2 = Environment(loader=FileSystemLoader(TEMPLATE_DIR))
     template = j2.get_template('index.html')
-    context = _get_report_context(samplesheet)
+    context = _get_report_context(
+        samplesheet_file,
+        params_file,
+        analyst_name,
+        facility,
+    )
 
     # ! TODO: Remove this
     path = config.result_dir / 'example_report_context.json'
@@ -82,7 +95,12 @@ def _get_img_src(path):
     )
 
 
-def _get_report_context(samplesheet) -> dict:
+def _get_report_context(
+    samplesheet_file: Path,
+    params_file: Path,
+    analyst_name: str,
+    facility: str,
+) -> dict:
     """Build the context for the report template."""
     blast_hits = _get_blast_hits()
     consensus_fasta = ConsensusFASTA(config.consensus_fasta_path)
@@ -91,13 +109,15 @@ def _get_report_context(samplesheet) -> dict:
         'title': config.REPORT.TITLE,
         'subtitle_html': config.REPORT.SUBTITLE,
         'sample_id': config.sample_id,
+        'analyst_name': analyst_name or '-',
+        'facility': facility or '-',
         'facility': "Hogwarts",  # ! TODO
         'analyst_name': "John Doe",  # ! TODO
         'start_time': _get_start_time(),
         'end_time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         'wall_time': _get_walltime(),
-        'metadata': _get_metadata(samplesheet),
-        'parameters': {},  # _get_parameters(),  # TODO: doesn't exist yet
+        'metadata': _get_metadata(samplesheet_file),
+        'parameters': _get_parameters(params_file),
         'run_qc': _get_run_qc(),
         'bam_html_file': config.bam_html_output_path.name,
         'consensus_blast_hits': blast_hits,
@@ -132,23 +152,26 @@ def _get_walltime():
     }
 
 
-def _get_metadata(samplesheet):
+def _get_metadata(samplesheet_file: Path):
     """Return the metadata as a dict."""
-    with open(samplesheet) as f:
+    with open(samplesheet_file) as f:
         reader = csv.DictReader(f)
         for row in reader:
             if row['sampleid'] == config.sample_id:
                 return Metadata(row)
 
 
-def _get_parameters() -> dict[str, dict[str, str]]:
+def _get_parameters(params_file: Path) -> dict[str, dict[str, str]]:
     """Return the parameters as a dict."""
-    with config.parameters_path.open() as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            if row['Sampleid'] == config.sample_id:
-                return row
-    return {}
+    defaults = config.default_params
+    with params_file.open() as f:
+        user_params = yaml.safe_load(f)
+    return {
+        k: {
+            'default': defaults[k],
+            'user': user_params.get(k, None),
+        } for k in defaults
+    }
 
 
 def _get_run_qc() -> dict:
