@@ -16,6 +16,7 @@ class Config:
     # METADATA_FILE = 'index.csv'
     TIMESTAMP_FILE = '*_start_timestamp.txt'
     REPORT_FILE = 'report.html'
+    VERSIONS_PATH = ROOT_DIR.parents[1] / 'versions.yml'
     DEFAULT_PARAMS_PATH = ROOT_DIR.parents[1] / 'params/default_params.yml'
 
     class SCHEMA:
@@ -34,6 +35,12 @@ class Config:
     class CRITERIA:
         MIN_RAW_READS = 5000
         MIN_FILTERED_READS = 1000
+
+    @property
+    def versions(self) -> dict[str, str]:
+        """Return dict of program versions used in the workflow."""
+        with self.VERSIONS_PATH.open() as f:
+            return yaml.safe_load(f)
 
     @property
     def default_params(self) -> dict[str, str]:

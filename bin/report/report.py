@@ -111,8 +111,7 @@ def _get_report_context(
         'sample_id': config.sample_id,
         'analyst_name': analyst_name or '-',
         'facility': facility or '-',
-        'facility': "Hogwarts",  # ! TODO
-        'analyst_name': "John Doe",  # ! TODO
+        'versions': config.versions,
         'start_time': _get_start_time(),
         'end_time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         'wall_time': _get_walltime(),
