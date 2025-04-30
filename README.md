@@ -571,6 +571,7 @@ All the top hits derived for each contig are listed in the file **SampleName/meg
 - sgi
 - sacc
 - length
+- nident
 - pident
 - mismatch
 - gaps
@@ -595,7 +596,22 @@ All the top hits derived for each contig are listed in the file **SampleName/meg
 - sframe
 ```
 
-A separate blast output called **SampleName/megablast/SampleName_final_polished_consensus_megablast_top_hit.txt** is then derived using pytaxonkit, which outputs preliminary taxonomic assignment to the top blast hit for each consensus. The nucleotide sequence of qseq (ie consensus match) and sseq (ie reference match) are extracted to use when mapping reads back to consensus and reference respectively (see steps below). These are called **SampleName/megablast/SampleName_final_polished_consensus_match.fasta** and **SampleName/megablast/SampleName_reference_match.fasta** respectively.  
+A separate blast output called **SampleName/megablast/SampleName_final_polished_consensus_megablast_top_hit.txt** is then derived using pytaxonkit, which outputs preliminary taxonomic assignment to the top blast hit for each consensus. A **broad_taxonomic_category** column is generated which matches the cluster to broad taxon categories:
+- virus  
+- bacteria;phytoplasma  
+- bacteria;other  
+- archea  
+- eukaryota;fungi;powdery_mildew  
+- eukaryota;fungi;other  
+- eukaryota;deuterostomia  
+- eukaryota;protostomia  
+- eukaryota; other  
+- other  
+A column called **FullLineage** provides the full taxonomic lineage derivde from taxonkit.  
+The colum **target_organism_match** specifies whether there is a taxon match between the target_organism specified in the samplesheet and the full taxonomic lineage. 
+The **n_read_cont_cluster** captures the number of reads that originally contributed to build the clusters during the RATTLE step.  
+
+The nucleotide sequence of qseq (ie consensus match) and sseq (ie reference match) are extracted to use when mapping reads back to consensus and reference respectively (see steps below). These are called **SampleName/megablast/SampleName_final_polished_consensus_match.fasta** and **SampleName/megablast/SampleName_reference_match.fasta** respectively.  
 
 ### Outputs from the mapping reads back to consensus matches step
 (in progress)

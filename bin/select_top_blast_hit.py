@@ -84,7 +84,7 @@ def enrich_with_taxonomy(df, taxonkit_dir):
                                         (~lineage_df["FullLineage"].str.contains(";deuterostomia;")) &
                                         (~lineage_df["FullLineage"].str.contains(";protostomia;")),
                                         "eukaryota;other",
-                                        "unknown"
+                                        "other"
                                     )
                                 )
                             )
