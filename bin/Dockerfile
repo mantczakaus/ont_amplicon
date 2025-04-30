@@ -1,6 +1,12 @@
-FROM python:3.12
+FROM python:3.12-slim
 
 RUN apt-get update \
-    && apt-get install -y procps
+    && apt-get install -y \
+    procps \
+    build-essential \
+    python3-dev \
+    cython
+
 COPY ./requirements.txt /tmp/requirements.txt
+
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
