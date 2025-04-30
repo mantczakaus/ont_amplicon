@@ -607,8 +607,9 @@ A separate blast output called **SampleName/megablast/SampleName_final_polished_
 - eukaryota;protostomia  
 - eukaryota; other  
 - other  
-A column called **FullLineage** provides the full taxonomic lineage derivde from taxonkit.  
-The colum **target_organism_match** specifies whether there is a taxon match between the target_organism specified in the samplesheet and the full taxonomic lineage. 
+
+A column called **FullLineage** provides the full taxonomic lineage derived from taxonkit.  
+The colum **target_organism_match** indicates whether there is a taxon match between the target_organism specified in the samplesheet and the full taxonomic lineage.  
 The **n_read_cont_cluster** captures the number of reads that originally contributed to build the clusters during the RATTLE step.  
 
 The nucleotide sequence of qseq (ie consensus match) and sseq (ie reference match) are extracted to use when mapping reads back to consensus and reference respectively (see steps below). These are called **SampleName/megablast/SampleName_final_polished_consensus_match.fasta** and **SampleName/megablast/SampleName_reference_match.fasta** respectively.  
