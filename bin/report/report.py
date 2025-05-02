@@ -32,9 +32,11 @@ STATIC_DIR = Path(__file__).parent / 'static'
 def render(
     result_dir: Path,
     samplesheet_file: Path,
+    default_params_file: Path,
     params_file: Path,
+    versions: Path,
     analyst_name: str = None,
-    facility: str = None,
+    facility: str = None
 ):
     """Render to HTML report to the configured output directory."""
     config.load(result_dir)
@@ -42,7 +44,9 @@ def render(
     template = j2.get_template('index.html')
     context = _get_report_context(
         samplesheet_file,
+        default_params_file,
         params_file,
+        versions,
         analyst_name,
         facility,
     )
@@ -98,7 +102,9 @@ def _get_img_src(path):
 
 def _get_report_context(
     samplesheet_file: Path,
+    default_params_file: Path,
     params_file: Path,
+    versions: Path,
     analyst_name: str,
     facility: str,
 ) -> dict:
@@ -112,12 +118,12 @@ def _get_report_context(
         'sample_id': config.sample_id,
         'analyst_name': analyst_name or '-',
         'facility': facility or '-',
-        'versions': config.versions,
+        'versions': _get_versions(versions),
         'start_time': _get_start_time(),
         'end_time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         'wall_time': _get_walltime(),
         'metadata': _get_metadata(samplesheet_file),
-        'parameters': _get_parameters(params_file),
+        'parameters': _get_parameters(default_params_file, params_file),
         'run_qc': _get_run_qc(),
         'bam_html_file': config.bam_html_path,
         'consensus_blast_hits': blast_hits,
@@ -160,10 +166,14 @@ def _get_metadata(samplesheet_file: Path):
             if row['sampleid'] == config.sample_id:
                 return Metadata(row)
 
+def _get_default_parameters(default_params_file: Path) -> dict[str, str]:
+    """Return the default_parameters as a dict."""
+    with default_params_file.open() as f:
+        return yaml.safe_load(f)
 
-def _get_parameters(params_file: Path) -> dict[str, dict[str, str]]:
+def _get_parameters(default_params_file:Path, params_file: Path) -> dict[str, dict[str, str]]:
     """Return the parameters as a dict."""
-    defaults = config.default_params
+    defaults = _get_default_parameters(default_params_file)
     with params_file.open() as f:
         user_params = yaml.safe_load(f)
     return {
@@ -173,6 +183,10 @@ def _get_parameters(params_file: Path) -> dict[str, dict[str, str]]:
         } for k in defaults
     }
 
+def _get_versions(versions: Path) -> dict[str, str]:
+        """Return dict of program versions used in the workflow."""
+        with versions.open() as f:
+            return yaml.safe_load(f)
 
 def _get_run_qc() -> dict:
     """Return the runs stats as a dict.

@@ -39,12 +39,6 @@ class Config:
         MIN_FILTERED_READS = 1000
 
     @property
-    def versions(self) -> dict[str, str]:
-        """Return dict of program versions used in the workflow."""
-        with self.VERSIONS_PATH.open() as f:
-            return yaml.safe_load(f)
-
-    @property
     def default_params(self) -> dict[str, str]:
         """Return dict of default workflow parameters."""
         with self.DEFAULT_PARAMS_PATH.open() as f:

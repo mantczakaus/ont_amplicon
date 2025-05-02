@@ -16,11 +16,23 @@ def main():
         type=existing_path,
         help="Path to the samplesheet CSV file.",
     )
+    
+    parser.add_argument(
+        "--default_params_file",
+        type=existing_path,
+        help=("Path to the default parameters YAML file."),
+    )
+    
     parser.add_argument(
         "--params_file",
         type=existing_path,
         help=("Path to the user parameters YAML file. If no params were"
               " modified, pass an empty file."),
+    )
+    parser.add_argument(
+        '--versions',
+        type=existing_path,
+        help="The yml file containing the versions of all the tools used in the pipeline.",
     )
     parser.add_argument(
         "--analyst",
@@ -35,11 +47,14 @@ def main():
         type=existing_path,
         help="The directory containing the output data.",
     )
+
     args = parser.parse_args()
     report.render(
         args.result_dir,
         args.samplesheet,
+        args.default_params_file,
         args.params_file,
+        args.versions,
         args.analyst,
         args.facility,
     )

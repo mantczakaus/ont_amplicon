@@ -1,12 +1,6 @@
-samplesheet: index_peq.csv
-merge: true
-adapter_trimming: true
 qual_filt: true
 chopper_options: -q 8 -l 100
-polishing: true
-blastn_db: /home/gauthiem/ont_amplicon/tests/blastdb/reference.fasta
+polishing: false
 taxdump: ~/.taxonkit
-blast_threads: 2
-analyst_name: Ruvini Lelwala
+analyst_name:  Lelwala
 facility: PEQ
-mapping_back_to_ref: true

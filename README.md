@@ -193,19 +193,17 @@ nextflow run main.nf  -profile singularity -params-file params/params_mtdt_test.
 These are the default parameters set by the pipeline:
 ```
 {
-samplesheet: tests/index_mtdt.csv
+samplesheet: /full/path/to/index.csv
 merge: true
 adapter_trimming: true
 qual_filt: true
 chopper_options: -q 8 -l 100
 polishing: true
-blastn_db: $HOME/ont_amplicon/tests/blastdb/reference.fasta
-blastn_COI: $HOME/ont_amplicon/tests/COIdb/MetaCOXI_Seqs.fasta
+blastn_db: /full/path/to/NCBI/core_nt
+blastn_COI: /full/path/to/MetaCOXI_Seqs.fasta
 taxdump: ~/.taxonkit
-blast_threads: 2
-analyst_name: John Smith
+analyst_name: Gauthier
 facility: MTDT
-mapping_back_to_ref: true
 }
 ```
 - Specify the path to your blast and taxonkit databases in your parameter file.  The analysis cannot proceed without these being set.  
@@ -221,16 +219,16 @@ A small NCBI blast database and COI database have been derived to speed up the a
 
 To use the tests, change directory to ont_amplicon and run the following command for the MTDT test:
   ```
-  nextflow run main.nf -profile mtdt_test,singularity
+  nextflow run main.nf -profile singularity,mtdt_test -resume -params-file params/params_mtdt_test.yml
   ```
   and this command for the PEQ test:  
   ```
-  nextflow run main.nf -profile peq_test,singularity
+  nextflow run main.nf -profile singularity,peq_test -resume -params-file params/params_peq_test.yml
   ```
 
 Please note that you will need to specify the location of the taxonkit databases folder in your command if it is not located where expected, at `~/.taxonkit` using the parameter `--taxdump path/to/taxonkit_db_folder`. For example:
   ```
-  nextflow run main.nf -profile mtdt_test,singularity --taxdump /full/path/to/taxonkit_db/folder 
+  nextflow run main.nf -profile singularity,peq_test -resume -params-file params/params_peq_test.yml --taxdump /full/path/to/taxonkit_db/folder 
   ```
 
 The tests should take less than 5 minutes to run to completion.
