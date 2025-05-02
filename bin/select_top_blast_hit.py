@@ -53,7 +53,7 @@ def enrich_with_taxonomy(df, taxonkit_dir):
     lineage_df["staxids"] = lineage_df["staxids"].astype(int)
     lineage_df["FullLineage"] = lineage_df["FullLineage"].str.lower().str.replace(" ", "_", regex=False)
     lineage_df["broad_taxonomic_category"] = np.where(
-        lineage_df["FullLineage"].str.contains(";virus;"),
+        lineage_df["FullLineage"].str.contains("viruses;"),
         "virus",
         np.where(
             lineage_df["FullLineage"].str.contains(";candidatus_phytoplasma;"),

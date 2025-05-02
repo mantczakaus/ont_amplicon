@@ -797,8 +797,13 @@ process HTML_REPORT {
   label 'setting_3'
 
   input:
-    tuple val(sampleid), path(consensus_fasta), path(consensus_match_fasta), path(aln_sorted_bam), path(aln_sorted_bam_bai), path(raw_nanoplot), path(filtered_nanoplot), path(top_blast_hits), path(blast_with_cov_stats)
-    path("*")
+    tuple val(sampleid), path(consensus_fasta), path(consensus_match_fasta), path(aln_sorted_bam), path(aln_sorted_bam_bai), path(raw_nanoplot), path(filtered_nanoplot), path(top_blast_hits), path(blast_with_cov_stats),
+    path(timestamp),
+    path(qcreport_html),
+    path(qcreport_txt),
+    path(configyaml),
+    path(samplesheet)
+    
 
   output:
     path("*")
@@ -806,10 +811,12 @@ process HTML_REPORT {
 
   script:
     """
-    csv_file=\$(find . -name "*.csv")
-    
-    cp run_qc_report_*html run_qc_report.html
-    build_report.py --samplesheet \$csv_file --result_dir .
+    cp ${qcreport_html} run_qc_report.html
+    cp ${params.tool_versions} versions.yml
+    cp ${params.default_params} default_params.yml
+
+    build_report.py --samplesheet ${samplesheet} --result_dir . --params_file ${configyaml} --analyst ${params.analyst_name} --facility ${params.facility} --versions versions.yml --default_params_file default_params.yml
+  
     """
 }
 
@@ -890,6 +897,7 @@ workflow {
   
   } else { exit 1, "Input samplesheet file not specified!" }
 
+  configyaml = Channel.fromPath(workflow.commandLine.split(" -params-file ")[1].split(" ")[0])
   // Collect the elements in the channel to a list to check if it is empty or not
   //If not empty, ensure a path to a MetaCOXI database has been specified
   //def elements = ch_coi.toList()
@@ -909,6 +917,7 @@ workflow {
   if ( params.facility == null) {
     error("Please provide the name of the facility where the analysis was performed.")
       }
+
 
 
   if ( params.analysis_mode == 'clustering') {
@@ -1083,14 +1092,16 @@ workflow {
                                                                             .join(QC_POST_DATA_PROCESSING.out.filtnanoplot)
                                                                             .join(ch_blast_merged)
                                                                             .join(COVSTATS.out.detections_summary)
-
         files_for_report_global_ch = TIMESTAMP_START.out.timestamp
             .concat(QCREPORT.out.qc_report_html)
             .concat(QCREPORT.out.qc_report_txt)
+            .concat(configyaml)
             .concat(Channel.from(params.samplesheet).map { file(it) }).toList()
 
-        HTML_REPORT(files_for_report_ind_samples_ch, files_for_report_global_ch)
-
+        //HTML_REPORT(files_for_report_ind_samples_ch, files_for_report_global_ch)
+        //samplesheet_ch = Channel.fromPath(params.samplesheet)
+        HTML_REPORT(files_for_report_ind_samples_ch
+            .combine(files_for_report_global_ch))
         //MAPPING BACK TO REFERENCE
         if (params.mapping_back_to_ref) {
           mapping_ch = (EXTRACT_BLAST_HITS.out.reference_fasta_files.join(REFORMAT.out.cov_derivation_ch))

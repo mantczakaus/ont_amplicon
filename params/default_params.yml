@@ -2,13 +2,13 @@ samplesheet: index.csv
 merge: true
 adapter_trimming: true
 qual_filt: false
-chopper_options: -q 8 -l 100
+chopper_options: null
 polishing: true
-blastn_db:
-taxdump:
+blastn_db: null
+taxdump: null
 blast_threads: 2
-analyst_name: 
-facility: 
+analyst_name: null
+facility: null
 mapping_back_to_ref: true
 outdir: results
 help: false
@@ -19,11 +19,11 @@ porechop_custom_primers: false
 porechop_custom_primers_path: ~/ont_amplicon/bin/adapters.txt
 chopper_options: null
 analysis_mode: clustering
-rattle_clustering_options:
-rattle_clustering_min_length:
-rattle_clustering_max_length:
+rattle_clustering_options: null
+rattle_clustering_min_length: null 
+rattle_clustering_max_length: null
 rattle_raw: false
 rattle_clustering_max_variance: 1000000
-rattle_polishing_options:
+rattle_polishing_options: null
 blast_mode: ncbi
-blastn_COI:
+blastn_COI: null
