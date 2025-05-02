@@ -38,7 +38,6 @@ def render(
 ):
     """Render to HTML report to the configured output directory."""
     config.load(result_dir)
-    render_bam_html()
     j2 = Environment(loader=FileSystemLoader(TEMPLATE_DIR))
     template = j2.get_template('index.html')
     context = _get_report_context(
@@ -58,9 +57,11 @@ def render(
     static_files = _get_static_file_contents()
     rendered_html = template.render(**context, **static_files)
 
-    with open(config.report_path, 'w') as f:
+    path = config.report_path
+    with open(path, 'w') as f:
         f.write(rendered_html)
-    logger.info(f"HTML document written to {config.report_path}")
+    logger.info(f"HTML document written to {path}")
+    render_bam_html()
 
 
 def _get_static_file_contents():
@@ -118,7 +119,7 @@ def _get_report_context(
         'metadata': _get_metadata(samplesheet_file),
         'parameters': _get_parameters(params_file),
         'run_qc': _get_run_qc(),
-        'bam_html_file': config.bam_html_output_path.name,
+        'bam_html_file': config.bam_html_path,
         'consensus_blast_hits': blast_hits,
         'consensus_blast_stats': {
             'percent': round(100 * len(blast_hits) / len(consensus_fasta)),

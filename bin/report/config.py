@@ -7,6 +7,8 @@ from pathlib import Path
 
 import yaml
 
+from .utils import path_safe
+
 ROOT_DIR = Path(__file__).parent
 GITHUB_URL = 'https://github.com/maelyg/ont_amplicon'
 
@@ -15,7 +17,6 @@ class Config:
 
     # METADATA_FILE = 'index.csv'
     TIMESTAMP_FILE = '*_start_timestamp.txt'
-    REPORT_FILE = 'report.html'
     VERSIONS_PATH = ROOT_DIR.parents[1] / 'versions.yml'
     DEFAULT_PARAMS_PATH = ROOT_DIR.parents[1] / 'params/default_params.yml'
 
@@ -23,7 +24,8 @@ class Config:
         BLAST_HITS_FIELD_CSV = ROOT_DIR / 'schema/blast_hits_columns.csv'
 
     class OUTPUTS:
-        BAM_HTML_FILENAME = 'bam-alignment.html'
+        REPORT_FILE_TEMPLATE = 'report-{sample_id}.html'
+        BAM_HTML_FILE_TEMPLATE = 'bam-alignment-{sample_id}.html'
 
     class REPORT:
         TITLE = "Amplicon sequencing assembly report"
@@ -55,7 +57,15 @@ class Config:
 
     @property
     def report_path(self) -> Path:
-        return self.result_dir / self.REPORT_FILE
+        return self.result_dir / self.OUTPUTS.REPORT_FILE_TEMPLATE.format(
+            sample_id=path_safe(self.sample_id),
+        )
+
+    @property
+    def bam_html_path(self) -> Path:
+        return self.result_dir / self.OUTPUTS.BAM_HTML_FILE_TEMPLATE.format(
+            sample_id=path_safe(self.sample_id),
+        )
 
     @property
     def metadata_path(self) -> Path:
@@ -76,10 +86,6 @@ class Config:
     @property
     def nanoplot_filtered_html_path(self) -> Path:
         return self._get_file_by_pattern('*filtered_nanoplot-report.html')
-
-    @property
-    def bam_html_output_path(self) -> Path:
-        return self.result_dir / self.OUTPUTS.BAM_HTML_FILENAME
 
     @property
     def bam_path(self) -> Path:

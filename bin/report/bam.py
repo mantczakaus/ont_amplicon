@@ -36,6 +36,6 @@ def render_bam_html():
         'bootstrap_css': (STATIC_DIR / 'css/bootstrap.min.css').read_text(),
     })
     rendered_html = template.render(**context)
-    path = config.bam_html_output_path
+    path = config.bam_html_path
     path.write_text(rendered_html)
     logger.info(f"BAM Viewer HTML generated: {path}")
