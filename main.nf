@@ -68,7 +68,7 @@ def helpMessage () {
                                        Default: false
       --rattle_clustering_max_variance Max allowed variance for two reads to be in the same gene cluster 
                                        Default: '10000'
-      --attle_clustering_max_variance  Use all the reads without any length filtering
+      --rattle_clustering_max_variance  Use all the reads without any length filtering
                                        Default: false
       --rattle_clustering_options      Rattle clustering options
                                        Default: ''
@@ -121,6 +121,10 @@ if (params.blastn_COI != null) {
 
 if (params.porechop_custom_primers == true) {
     porechop_custom_primers_dir = file(params.porechop_custom_primers_path).parent
+}
+
+def isNonEmptyFile(file) {
+    return file.exists() && file.size() > 0
 }
 
 switch (workflow.containerEngine) {
@@ -293,6 +297,7 @@ process COVSTATS {
   output:
     path("*top_blast_with_cov_stats.txt"), optional: true
     tuple val(sampleid), path("*top_blast_with_cov_stats.txt"), emit: detections_summary, optional: true
+    path("*top_blast_with_cov_stats.txt"), emit: detections_summary2, optional: true
 
   script:
     """
@@ -423,6 +428,10 @@ process FASTQ2FASTA {
 
   input:
   tuple val(sampleid), path(fastq), path(assembly)
+
+  when:
+  isNonEmptyFile(assembly)
+
   output:
   tuple val(sampleid), path(fastq), path("${sampleid}_rattle.fasta"), emit: fasta
   tuple val(sampleid), path("${sampleid}_rattle.fasta"), emit: fasta2
@@ -635,8 +644,7 @@ process RATTLE {
 
   output:
     file("${sampleid}_rattle.log")
-    tuple val(sampleid), path("transcriptome.fq"), emit: clusters
-    tuple val(sampleid), path("${fastq}"), path("transcriptome.fq"), emit: clusters2
+    tuple val(sampleid), path(fastq), path("transcriptome.fq"), env(STATUS), emit: clusters
 
   script:
   def rattle_clustering_options = params.rattle_clustering_options ?: ''
@@ -653,6 +661,7 @@ process RATTLE {
       rattle_clustering_min_length_set = '150'}
   }
     """
+    STATUS=failed
     (
       set +eo pipefail
       if [[ ${params.rattle_raw} == true ]]; then
@@ -674,6 +683,7 @@ process RATTLE {
       echo "Rattle clustering and polishing failed." >> ${sampleid}_rattle.log
     else
       echo "Rattle clustering and polishing completed successfully." >> ${sampleid}_rattle.log
+      STATUS=passed
     fi
     """
 }
@@ -803,7 +813,6 @@ process HTML_REPORT {
     path(qcreport_txt),
     path(configyaml),
     path(samplesheet)
-    
 
   output:
     path("*")
@@ -838,6 +847,22 @@ process SEQTK {
   seqtk subseq ${sampleid}_all_reads.fasta reads_ids.txt > ${sampleid}.fasta
   """
 }
+/*
+process CONTAMINATION_PREDICTION {
+  label "local"
+
+  input:
+    path('*')
+
+  output:
+    path("detection_summary*.txt")
+
+  script:
+    """
+    contamination_prediction.py --threshold ${params.contamination_flag_threshold}
+    """
+}
+
 /*
 process EXTRACT_READ_LENGTHS {
   tag "${sampleid}"
@@ -1013,9 +1038,23 @@ workflow {
       //We have had talks about including an option to just a map to a reference of interest, but this is not implemented yet
       if ( params.analysis_mode == 'clustering' ) {
         //Perform clustering using Rattle and convert to fasta file
+        //Branch outputs of Rattle into passed and failed
+        //If the clustering step succeeds, it will proceed to the polishing step
         ch_fq_target_size = (final_fq.join(ch_target_size))
         RATTLE ( ch_fq_target_size )
-        FASTQ2FASTA( RATTLE.out.clusters2 )
+        ch_branched = RATTLE.out.clusters
+        | branch { sampleid, fastq, transcriptome, status ->
+            passed: status == "passed"
+            failed: status == "failed"
+        }
+
+        ch_passed = ch_branched.passed
+            | map { sampleid, fastq, assembly, status -> [sampleid, fastq, assembly] }
+            | FASTQ2FASTA
+            // failed samples will be re-tried with SPOA in `main.nf`
+        ch_failed = ch_branched.failed
+
+        //FASTQ2FASTA( RATTLE.out.clusters )
 
         //Polish consensus sequence using Racon followed by Medaka and samtools consensus
         if (params.polishing) {
@@ -1098,6 +1137,8 @@ workflow {
         //samplesheet_ch = Channel.fromPath(params.samplesheet)
         HTML_REPORT(files_for_report_ind_samples_ch
             .combine(files_for_report_global_ch))
+        //CONTAMINATION_PREDICTION(COVSTATS.out.detections_summary2.collect().ifEmpty([]))
+
         //MAPPING BACK TO REFERENCE
         if (params.mapping_back_to_ref) {
           mapping_ch = (EXTRACT_BLAST_HITS.out.reference_fasta_files.join(REFORMAT.out.cov_derivation_ch))
