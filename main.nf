@@ -891,12 +891,33 @@ workflow {
     Channel
       .fromPath(params.samplesheet, checkIfExists: true)
       .splitCsv(header:true)
-      .map{ row-> tuple((row.sampleid), file(row.fastq_path)) }
+      //.map{ row-> tuple((row.sampleid), file(row.fastq_path)) }
+      .map { row ->
+        // Check required fields
+        if (!row.sampleid || !row.fastq_path)  {
+          exit 1, "ERROR: samplesheet is missing required fields for sample_id."
+        }
+        else if (!row.fastq_path)  {
+          exit 1, "ERROR: samplesheet is missing required field for fastq_path."
+        }
+        // Return parsed row
+        tuple((row.sampleid), file(row.fastq_path)) }
       .set{ ch_sample }
+      
     Channel
       .fromPath(params.samplesheet, checkIfExists: true)
       .splitCsv(header:true)
-      .map{ row-> tuple((row.sampleid), (row.target_organism).replaceAll(' ', '_'), (row.target_gene).replaceAll(' ', '_'), (row.target_size)) }
+      .map{ row-> 
+        if (!row.target_size)  {
+          exit 1, "ERROR: samplesheet is missing required field for target_size."
+        }
+        else if (!row.target_organism)  {
+          exit 1, "ERROR: samplesheet is missing required field for target_organism."
+        }
+        else if (!row.target_gene)  {
+          exit 1, "ERROR: samplesheet is missing required field for target_gene."
+        }
+        tuple((row.sampleid), (row.target_organism).replaceAll(' ', '_'), (row.target_gene).replaceAll(' ', '_'), (row.target_size)) }
       .set{ ch_targets }
     Channel
       .fromPath(params.samplesheet, checkIfExists: true)
