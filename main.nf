@@ -847,6 +847,24 @@ process SEQTK {
   seqtk subseq ${sampleid}_all_reads.fasta reads_ids.txt > ${sampleid}.fasta
   """
 }
+
+process SUBSAMPLE {
+  tag "${sampleid}"
+  label "setting_2"
+  
+  input:
+    tuple val(sampleid), path(fastq)
+  
+  output: 
+    tuple val(sampleid), path("${sampleid}_downsampled.fastq.gz"), emit: subsampled_fq
+  
+  script:
+  """
+  seqkit sample -2 ${fastq} -n ${params.reads_downsampling_size} \
+  | gzip  > ${sampleid}_downsampled.fastq.gz
+  """
+}
+
 /*
 process CONTAMINATION_PREDICTION {
   label "local"
@@ -1037,6 +1055,7 @@ workflow {
 
     //Reformat fastq read names after the first whitespace
     REFORMAT( filtered_fq )
+    
 
     //Run Nanoplot on merged raw fastq files after data processing
     if ( params.qual_filt & params.adapter_trimming | !params.qual_filt & params.adapter_trimming | params.qual_filt & !params.adapter_trimming) {
@@ -1059,8 +1078,17 @@ workflow {
       final_fq = REFORMAT.out.reformatted_fq
     }
 */
+    if (params.subsample) {
+      SUBSAMPLE ( REFORMAT.out.reformatted_fq )
+      final_fq = SUBSAMPLE.out.subsampled_fq
+    }
+    else {
+      final_fq = REFORMAT.out.reformatted_fq
+    }
 
-    final_fq = REFORMAT.out.reformatted_fq
+
+    //final_fq = REFORMAT.out.reformatted_fq
+    
     //Derive QC report if any preprocessing steps were performed
     //if ( params.qual_filt & params.host_filtering | params.adapter_trimming & params.host_filtering ) {
     if ( params.qual_filt | params.adapter_trimming ) {
