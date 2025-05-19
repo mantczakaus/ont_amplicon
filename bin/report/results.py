@@ -68,6 +68,10 @@ class Metadata(AbstractDataRow):
         ('target_size', int),
         ('target_organism', str),
         ('target_gene', str),
+        ('fwd_primer', str),
+        ('rev_primer', str),
+        ('test', str),
+        ('method', str),
     ]
 
 

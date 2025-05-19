@@ -942,7 +942,6 @@ workflow {
         }
     }
 
-
   if ( params.analyst_name == null) {
     error("Please provide the name of the analyst who is performing the analysis.")
   }

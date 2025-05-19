@@ -22,8 +22,20 @@
     <td>{{ metadata['target_size'] }}</td>
   </tr>
   <tr>
-    <td class="fw-bold">Primer sequences</td>
-    <td>TBC</td>
+    <td class="fw-bold">FWD primer sequence</td>
+    <td>{{ metadata['fwd_primer'] }}</td>
+  </tr>
+  <tr>
+    <td class="fw-bold">PEV primer sequences</td>
+    <td>{{ metadata['rev_primer'] }}</td>
+  </tr>
+    <tr>
+    <td class="fw-bold">Test</td>
+    <td>{{ metadata['test'] }}</td>
+  </tr>
+  <tr>
+    <td class="fw-bold">Method</td>
+    <td>{{ metadata['method'] }}</td>
   </tr>
 </table>
 
