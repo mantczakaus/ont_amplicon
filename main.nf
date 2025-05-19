@@ -929,11 +929,19 @@ workflow {
   //def elements = ch_coi.toList()
   //println "The channel 'ch_coi' contains: ${elements}"
 
-  //if (!elements.size() == 0) {
-  //  if ( params.blastn_COI == null) {
-  //    error("Please provide the path to a MetaCOXI database using the parameter --blastn_COI.")
-  //  }
-  //}
+  ch_coi
+    .filter { it[1] != null }    // Ensure target_gene is not null
+    .first()
+    .ifEmpty {
+        // ch_coi is empty — do nothing or log if needed
+    }
+    .subscribe { item ->
+        // ch_coi is NOT empty
+        if (params.blastn_COI == null) {
+            error("Please provide path to the MetaCOXI database.")
+        }
+    }
+
 
   if ( params.analyst_name == null) {
     error("Please provide the name of the analyst who is performing the analysis.")
