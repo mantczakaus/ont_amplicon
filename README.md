@@ -162,10 +162,12 @@ MP24-1096B_gyrB,/work/tests/mtdt_data/barcode19_MP24-1096B_gyrB/*fastq.gz,bacter
    - **sampleid** will be the sample name that will be given to the files created by the pipeline (required).  
    - **fastq_path** is the full path to the fastq files that the pipeline requires as starting input (required).  
    - **target_organism** is the organism targetted by the PCR (required).  
-   - **target_gene** is the gene targetted by the PCR (optional).  
+   - **target_gene** is the gene targetted by the PCR (required).  
    - **target_size** is the expected size of the amplicon (required).  
    - **fwd_primer** is the nucleotide sequence of the FWD primer (optional).  
    - **rev_primer** is the nucleotide sequence of the REV primer (optional). Please note that the reverse primer chas to be reverse complemented so it reads in the 5-3 direction.  
+   - **test** is a field specific to NAQS LIMS (optional)
+   - **method** is a field specific to NAQS LIMS (optional)
 
   To specify parameters, we recommend that you use a parameter file. Please refer to this document for additional information on how to pass parameters and how parameter passing priority works (https://software.pixelgen.com/nf-core-pixelator/1.3.x/usage/passing-parameters/).  
 

@@ -908,15 +908,25 @@ workflow {
       .fromPath(params.samplesheet, checkIfExists: true)
       .splitCsv(header:true)
       .map{ row-> 
-        if (!row.target_size)  {
-          exit 1, "ERROR: samplesheet is missing required field for target_size."
+        //if (!row.target_size)  {
+        //  exit 1, "ERROR: samplesheet is missing required field for target_size."
+        //}
+        //else if (!row.target_organism)  {
+        //  exit 1, "ERROR: samplesheet is missing required field for target_organism."
+        //}
+        //else if (!row.target_gene)  {
+        //  exit 1, "ERROR: samplesheet is missing required field for target_gene."
+        //}
+        def requiredFields = ['sampleid', 'target_organism', 'target_gene', 'target_size']
+        
+        // Loop through required fields and check if any are null or empty
+        for (field in requiredFields) {
+            def value = row[field]
+            if (value == null || value.toString().trim() == '') {
+                exit 1, "ERROR: samplesheet is missing or has empty value for required field '${field}'."
+            }
         }
-        else if (!row.target_organism)  {
-          exit 1, "ERROR: samplesheet is missing required field for target_organism."
-        }
-        else if (!row.target_gene)  {
-          exit 1, "ERROR: samplesheet is missing required field for target_gene."
-        }
+
         tuple((row.sampleid), (row.target_organism).replaceAll(' ', '_'), (row.target_gene).replaceAll(' ', '_'), (row.target_size)) }
       .set{ ch_targets }
     Channel
