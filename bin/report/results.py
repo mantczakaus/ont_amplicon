@@ -3,6 +3,7 @@
 import base64
 import csv
 from Bio import SeqIO
+from typing import get_origin, get_args, Union, Optional
 
 from .config import Config
 
@@ -45,12 +46,23 @@ class AbstractDataRow:
 
     def __init__(self, row):
         for colname, _type in self.COLUMNS:
-            try:
-                value = _type(row[colname].strip())
-            except KeyError:
-                raise KeyError(f"Column '{colname}' not found in"
-                               f" {self.__class__.__name__} row - got:"
-                               f" {row.keys()}")
+            raw_value = row.get(colname, None)
+
+            if raw_value is None:
+                value = None
+            else:
+                # If it's an Optional (i.e., Union[..., NoneType])
+                origin = get_origin(_type)
+                if origin is Union:
+                    # Extract actual type from Optional[Type]
+                    allowed_types = [t for t in get_args(_type) if t is not type(None)]
+                    if allowed_types:
+                        value = allowed_types[0](raw_value.strip())
+                    else:
+                        value = None
+                else:
+                    value = _type(raw_value.strip())
+
             setattr(self, colname, value)
 
     def to_json(self):
@@ -68,10 +80,10 @@ class Metadata(AbstractDataRow):
         ('target_size', int),
         ('target_organism', str),
         ('target_gene', str),
-        ('fwd_primer', str),
-        ('rev_primer', str),
-        ('test', str),
-        ('method', str),
+        ('fwd_primer', Optional[str]),
+        ('rev_primer', Optional[str]),
+        ('test', Optional[str]),
+        ('method', Optional[str]),
     ]
 
 

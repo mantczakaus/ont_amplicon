@@ -6,6 +6,7 @@ import os
 from functools import reduce
 import pytaxonkit
 import numpy as np
+import re
 
 def parse_arguments():
     """Parse command-line arguments."""
@@ -118,16 +119,27 @@ def filter_and_format(df, sample_name, target_organism):
     df.insert(0, "sample_name", sample_name)
     df = df[~df["species"].str.contains("synthetic construct", na=False)]
 
+    # Enable to have a list of target organisms.
+    # Normalise target_organism to a list of lowercase, underscored strings
+    if ';' in target_organism:
+        target_organism = [s.strip().strip("'\"") for s in target_organism.split(';')]
+        target_organisms = [org.lower().replace(" ", "_") for org in target_organism]
+    else:
+        target_organisms = [target_organism.lower().replace(" ", "_")]
+
+    # Create a combined mask for all target organisms
+    mask = False
+    # Check if the target organism is in the broad taxonomic category or in the full lineage
+    for org in target_organisms:
+        pattern = rf"\b{re.escape(org)}\b"  # \b ensures word boundary match
+
+        exact_broad_match = df["broad_taxonomic_category"].str.lower().str.contains(pattern, na=False, regex=True)
+        exact_lineage_match = df["FullLineage"].apply(lambda x: org in [s.strip().lower() for s in str(x).split(';')]
+        )
+        mask |= exact_broad_match | exact_lineage_match
+    df["target_organism_match"] = np.where(mask, "Y", "N")
+
     
-    target_organism_clean = target_organism.lower().replace(" ", "_")
-
-    #top_hit = df.drop_duplicates(subset=["qseqid"], keep="first").copy()
-    df["target_organism_match"] = np.where(
-        df["broad_taxonomic_category"].str.contains(target_organism_clean) |
-        df["FullLineage"].str.contains(target_organism_clean),
-        "Y", "N"
-    )
-
     final_columns = ["sample_name", "qseqid", "sgi", "sacc", "length", "nident", "pident", "mismatch", "gaps",
                      "gapopen", "qstart", "qend", "qlen", "sstart", "send", "slen", "sstrand", "evalue", "bitscore",
                      "qcovhsp", "stitle", "staxids", "qseq", "sseq", "sseqid", "qcovs", "qframe", "sframe",

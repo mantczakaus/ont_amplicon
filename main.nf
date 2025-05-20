@@ -367,7 +367,7 @@ process EXTRACT_BLAST_HITS {
   tag "${sampleid}"
   label "setting_1"
   containerOptions "${bindOptions}"
-
+  
   input:
     tuple val(sampleid), path(blast_results), val(target_organism), val(target_gene), val(target_size)
 
@@ -381,8 +381,13 @@ process EXTRACT_BLAST_HITS {
     tuple val(sampleid), path("${sampleid}_final_polished_consensus_match.fasta"), emit: consensus_fasta_files, optional: true
 
   script:
+//    target_organism_str = (target_organism instanceof List) ? target_organism.join(';') : target_organism
+
+    target_organism_str = (target_organism instanceof List)
+    ? "\"${target_organism.join(';')}\""
+    : "\"${target_organism}\""
     """
-    select_top_blast_hit.py --sample_name ${sampleid} --blastn_results ${sampleid}*_top_10_hits.txt --mode ${params.blast_mode} --target_organism ${target_organism} --taxonkit_database_dir ${params.taxdump}
+    select_top_blast_hit.py --sample_name ${sampleid} --blastn_results ${sampleid}*_top_10_hits.txt --mode ${params.blast_mode} --target_organism ${target_organism_str} --taxonkit_database_dir ${params.taxdump}
 
     # extract segment of consensus sequence that align to reference
     awk  -F  '\\t' 'NR>1 { printf ">%s\\n%s\\n",\$2,\$23 }' ${sampleid}*_top_hits_tmp.txt | sed 's/-//g' > ${sampleid}_final_polished_consensus_match.fasta
@@ -945,8 +950,23 @@ workflow {
             }
         }
 
-        tuple((row.sampleid), (row.target_organism).replaceAll(' ', '_'), (row.target_gene).replaceAll(' ', '_'), (row.target_size)) }
+        def intFields = ['target_size']
+        for (field in intFields) {
+            try {
+                row[field] = row[field].toInteger()
+            } catch (Exception e) {
+                throw new IllegalArgumentException("Invalid integer in field '${field}': '${row[field]}' in row: ${row}")
+            }
+        }
+        def raw_val = row['target_organism']
+          if (raw_val.contains(';')) {
+              row['target_organism'] = raw_val.split(';')*.trim()
+          } else {
+              row['target_organism'] = [raw_val.trim()]
+          }
+        tuple((row.sampleid), (row.target_organism), (row.target_gene).replaceAll(' ', '_'), (row.target_size)) }
       .set{ ch_targets }
+    ch_targets.view()
     Channel
       .fromPath(params.samplesheet, checkIfExists: true)
       .splitCsv(header:true)
