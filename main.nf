@@ -966,7 +966,6 @@ workflow {
           }
         tuple((row.sampleid), (row.target_organism), (row.target_gene).replaceAll(' ', '_'), (row.target_size)) }
       .set{ ch_targets }
-    ch_targets.view()
     Channel
       .fromPath(params.samplesheet, checkIfExists: true)
       .splitCsv(header:true)

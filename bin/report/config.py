@@ -24,8 +24,8 @@ class Config:
         BLAST_HITS_FIELD_CSV = ROOT_DIR / 'schema/blast_hits_columns.csv'
 
     class OUTPUTS:
-        REPORT_FILE_TEMPLATE = 'report-{sample_id}.html'
-        BAM_HTML_FILE_TEMPLATE = 'bam-alignment-{sample_id}.html'
+        REPORT_FILE_TEMPLATE = '{sample_id}_report.html'
+        BAM_HTML_FILE_TEMPLATE = '{sample_id}_bam-alignment.html'
 
     class REPORT:
         TITLE = "Amplicon sequencing assembly report"
