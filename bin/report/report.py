@@ -166,12 +166,19 @@ def _get_metadata(samplesheet_file: Path):
             if row['sampleid'] == config.sample_id:
                 return Metadata(row)
 
+
 def _get_default_parameters(default_params_file: Path) -> dict[str, str]:
     """Return the default_parameters as a dict."""
+    if not default_params_file or not default_params_file.exists():
+        return {}
     with default_params_file.open() as f:
         return yaml.safe_load(f)
 
-def _get_parameters(default_params_file:Path, params_file: Path) -> dict[str, dict[str, str]]:
+
+def _get_parameters(
+    default_params_file: Path,
+    params_file: Path,
+) -> dict[str, dict[str, str]]:
     """Return the parameters as a dict."""
     defaults = _get_default_parameters(default_params_file)
     with params_file.open() as f:
@@ -183,10 +190,14 @@ def _get_parameters(default_params_file:Path, params_file: Path) -> dict[str, di
         } for k in defaults
     }
 
+
 def _get_versions(versions: Path) -> dict[str, str]:
-        """Return dict of program versions used in the workflow."""
-        with versions.open() as f:
-            return yaml.safe_load(f)
+    """Return dict of program versions used in the workflow."""
+    if not versions or not versions.exists():
+        return {}
+    with versions.open() as f:
+        return yaml.safe_load(f)
+
 
 def _get_run_qc() -> dict:
     """Return the runs stats as a dict.
