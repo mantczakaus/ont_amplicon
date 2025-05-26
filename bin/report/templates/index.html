@@ -30,6 +30,9 @@
         {{ render_subjective_input(2) }}
       </section>
     </div>
+
+    {% include 'components/save-modal.html' %}
+
   </body>
 
   {% for script in static.js %}
