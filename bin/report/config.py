@@ -51,15 +51,17 @@ class Config:
 
     @property
     def report_path(self) -> Path:
-        return self.result_dir / self.OUTPUTS.REPORT_FILE_TEMPLATE.format(
+        path = self.result_dir / self.OUTPUTS.REPORT_FILE_TEMPLATE.format(
             sample_id=path_safe(self.sample_id),
         )
+        return path.absolute()
 
     @property
     def bam_html_path(self) -> Path:
-        return self.result_dir / self.OUTPUTS.BAM_HTML_FILE_TEMPLATE.format(
+        path = self.result_dir / self.OUTPUTS.BAM_HTML_FILE_TEMPLATE.format(
             sample_id=path_safe(self.sample_id),
         )
+        return path.absolute()
 
     @property
     def metadata_path(self) -> Path:
