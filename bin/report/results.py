@@ -191,7 +191,8 @@ class BlastHits(AbstractResultRows):
             c for c in self.columns_display
             if self.COLUMN_METADATA[c]['primary_display']
         ]
-        self.rows = self.set_bs_class()
+        self.set_bs_class()
+        self.set_null_rows()
 
     @property
     def positive_hits(self):
@@ -214,13 +215,20 @@ class BlastHits(AbstractResultRows):
                 return 'secondary'
             return 'success'
 
-        return [
+        self.rows = [
             {
                 **row,
                 'bs_class': _get_bs_class(row),
             }
             for row in self.rows
         ]
+
+    def set_null_rows(self):
+        """Set rows with no hits to have a null value."""
+        for row in self.rows:
+            if not row['sacc'] or row['sacc'] == '0':
+                for colname in self.COLUMNS[3:33]:
+                    row[colname] = '-'
 
 
 class BlastHitsPolished(AbstractResultRows):
