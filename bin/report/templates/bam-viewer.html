@@ -38,6 +38,7 @@
 
       document.addEventListener("DOMContentLoaded", () => {
         igv.createBrowser(document.getElementById("igv-container"), {
+          loadDefaultGenomes: false,
           reference: {
             id: "{{ sample_id }}",
             fastaURL: urls.fasta,

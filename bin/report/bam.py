@@ -32,7 +32,7 @@ def render_bam_html():
     context.update({
         'sample_id': config.sample_id,
         'loading_svg': (STATIC_DIR / 'img/spinner.svg').read_text(),
-        'igv_js': (STATIC_DIR / 'js/igv.min.js').read_text(),
+        'igv_js': (STATIC_DIR / 'js/igv-3.3.0.min.js').read_text(),
         'bootstrap_css': (STATIC_DIR / 'css/bootstrap.min.css').read_text(),
     })
     rendered_html = template.render(**context)
