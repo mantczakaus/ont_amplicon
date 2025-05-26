@@ -2,8 +2,9 @@
 
 import base64
 import csv
+from typing import Optional, Union, get_args, get_origin
+
 from Bio import SeqIO
-from typing import get_origin, get_args, Union, Optional
 
 from .config import Config
 
@@ -47,7 +48,6 @@ class AbstractDataRow:
     def __init__(self, row):
         for colname, _type in self.COLUMNS:
             raw_value = row.get(colname, None)
-
             if raw_value is None:
                 value = None
             else:
@@ -55,7 +55,10 @@ class AbstractDataRow:
                 origin = get_origin(_type)
                 if origin is Union:
                     # Extract actual type from Optional[Type]
-                    allowed_types = [t for t in get_args(_type) if t is not type(None)]
+                    allowed_types = [
+                        t for t in get_args(_type)
+                        if t is not type(None)
+                    ]
                     if allowed_types:
                         value = allowed_types[0](raw_value.strip())
                     else:
@@ -189,6 +192,13 @@ class BlastHits(AbstractResultRows):
             if self.COLUMN_METADATA[c]['primary_display']
         ]
         self.rows = self.set_bs_class()
+
+    @property
+    def positive_hits(self):
+        return [
+            row for row in self.rows
+            if row['sacc'] and row['sacc'] != '0'
+        ]
 
     def set_bs_class(self):
         def _get_bs_class(row):

@@ -50,13 +50,10 @@ def render(
         analyst_name,
         facility,
     )
-
-    # ! TODO: Remove this
     path = config.result_dir / 'example_report_context.json'
     with path.open('w') as f:
         logger.info(f"Writing report context to {path}")
         json.dump(context, f, indent=2, default=serialize)
-    # ! ~~~
 
     static_files = _get_static_file_contents()
     rendered_html = template.render(**context, **static_files)
@@ -127,10 +124,10 @@ def _get_report_context(
         'run_qc': _get_run_qc(),
         'bam_html_file': config.bam_html_path,
         'consensus_blast_hits': blast_hits,
-        'consensus_blast_stats': {
-            'percent': round(100 * len(blast_hits) / len(consensus_fasta)),
-            'count': len(blast_hits),
-        },
+        'consensus_blast_stats': _calculate_blast_stats(
+            blast_hits,
+            consensus_fasta,
+        ),
         'consensus_fasta': consensus_fasta,
         'consensus_match_fasta': consensus_match_fasta,
     }
@@ -223,3 +220,15 @@ def _get_blast_hits() -> BlastHits:
     with config.blast_hits_path.open() as f:
         reader = csv.DictReader(f, delimiter='\t')
         return BlastHits(reader)
+
+
+def _calculate_blast_stats(
+    blast_hits: BlastHits,
+    consensus_fasta: ConsensusFASTA,
+) -> dict:
+    return {
+        'count': len(blast_hits.positive_hits),
+        'percent': round(
+            100 * len(blast_hits.positive_hits) / len(consensus_fasta)
+        ),
+    }
