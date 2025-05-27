@@ -122,7 +122,7 @@ def _get_report_context(
         'metadata': _get_metadata(samplesheet_file),
         'parameters': _get_parameters(default_params_file, params_file),
         'run_qc': _get_run_qc(),
-        'bam_html_file': config.bam_html_path,
+        'bam_html_file': config.bam_html_path.name,
         'consensus_blast_hits': blast_hits,
         'consensus_blast_stats': _calculate_blast_stats(
             blast_hits,
