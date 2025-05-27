@@ -36,6 +36,11 @@ async function saveReport(readonly = false) {
     }
   });
 
+  // Remove links to external pages
+  clone.querySelectorAll('.hide-broken').forEach(link => {
+    link.remove();
+  });
+
   // Create a Blob with the modified HTML
   const doctype = '<!DOCTYPE html>';
   const htmlContent = doctype + '\n' + clone.outerHTML;
