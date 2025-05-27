@@ -198,7 +198,8 @@ class BlastHits(AbstractResultRows):
     def positive_hits(self):
         return [
             row for row in self.rows
-            if row['sacc'] and row['sacc'] != '0'
+            #if row['sacc'] and row['sacc'] != '0'
+            if row.get('sacc') not in [None, '', '0', '-']
         ]
 
     def set_bs_class(self):
