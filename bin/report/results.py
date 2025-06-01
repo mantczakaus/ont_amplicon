@@ -204,18 +204,21 @@ class BlastHits(AbstractResultRows):
 
     def set_bs_class(self):
         def _get_bs_class(row):
-            flags = (
-                row['30X_DEPTH_FLAG'],
-                row['MAPPED_READ_COUNT_FLAG'],
-            )
-            if 'ORANGE' in flags:
-                return 'warning'
-            if 'RED' in flags:
-                return 'danger'
-            if 'GREY' in flags:
-                return 'secondary'
-            return 'success'
+            # Extract numeric scores (expected in the range 0 to 1)
+            conf_score = row.get('NORMALISED_CONF_SCORE', 1)
 
+ 
+            # Define thresholds (customize as needed)
+            if conf_score < 0.5:
+                return 'danger'      # red
+            elif conf_score < 0.8:
+                return 'warning'     # orange
+            elif conf_score == 0:
+                return 'secondary'   # grey
+            else:
+                return 'success'     # green
+
+        # Add 'bs_class' to each row based on score logic
         self.rows = [
             {
                 **row,
@@ -223,6 +226,31 @@ class BlastHits(AbstractResultRows):
             }
             for row in self.rows
         ]
+    
+    
+    # def set_bs_class(self):
+    #     def _get_bs_class(row):
+    #         flags = (
+    #             row['30X_DEPTH_FLAG'],
+    #             row['MAPPED_READ_COUNT_FLAG'],
+    #             row['TARGET_SIZE_FLAG'],
+    #             row['MEAN_MQ_FLAG'],
+    #         )
+    #         if 'ORANGE' in flags:
+    #             return 'warning'
+    #         if 'RED' in flags:
+    #             return 'danger'
+    #         if 'GREY' in flags:
+    #             return 'secondary'
+    #         return 'success'
+
+    #     self.rows = [
+    #         {
+    #             **row,
+    #             'bs_class': _get_bs_class(row),
+    #         }
+    #         for row in self.rows
+    #     ]
 
     def set_null_rows(self):
         """Set rows with no hits to have a null value."""

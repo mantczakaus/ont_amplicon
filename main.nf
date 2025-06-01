@@ -293,7 +293,7 @@ process COVSTATS {
   publishDir "${params.outdir}/${sampleid}/05_mapping_to_consensus", mode: 'copy'
 
   input:
-    tuple val(sampleid), path(bed), path(consensus), path(coverage), path(top_hits), path(nanostats), val(target_size), path(reads_fasta), path(contig_seqids)
+    tuple val(sampleid), path(bed), path(consensus), path(coverage), path(mapping_qual), path(top_hits), path(nanostats), val(target_size), path(reads_fasta), path(contig_seqids)
   output:
     path("*top_blast_with_cov_stats.txt"), optional: true
     tuple val(sampleid), path("*top_blast_with_cov_stats.txt"), emit: detections_summary, optional: true
@@ -303,7 +303,7 @@ process COVSTATS {
     """
     if compgen -G "*_coverage.txt" > /dev/null;
       then
-        derive_coverage_stats.py --sample ${sampleid} --blastn_results ${top_hits} --nanostat ${nanostats} --coverage ${coverage} --bed ${bed} --target_size ${target_size} --contig_seqids ${contig_seqids} --reads_fasta ${reads_fasta} --consensus ${consensus}
+        derive_coverage_stats.py --sample ${sampleid} --blastn_results ${top_hits} --nanostat ${nanostats} --coverage ${coverage} --bed ${bed} --target_size ${target_size} --contig_seqids ${contig_seqids} --reads_fasta ${reads_fasta} --consensus ${consensus} --mapping_quality ${mapping_qual}
     fi
     """
 }
@@ -499,14 +499,15 @@ process MEDAKA2 {
 
   script:
     """
-    medaka_consensus -i ${fastq} -d ${assembly} -t ${task.cpus} -o ${sampleid}
+    medaka_consensus -M 10 -i ${fastq} -d ${assembly} -t ${task.cpus} -o ${sampleid}
     
     cp ${sampleid}/calls_to_draft.bam ${sampleid}_medaka_consensus.bam
     cp ${sampleid}/calls_to_draft.bam.bai ${sampleid}_medaka_consensus.bam.bai
     cp ${sampleid}/consensus.fasta ${sampleid}_medaka_consensus.fasta
-    samtools consensus -f fasta -a -A ${sampleid}_medaka_consensus.bam --call-fract 0.5 -H 0.5 -o ${sampleid}_samtools_consensus.fasta
+    samtools consensus -f fasta -a -A --low-MQ 30 --het-scale 0.37 --min-depth 5 --homopoly-score 0.1 -p -o ${sampleid}_samtools_consensus.fasta ${sampleid}_medaka_consensus.bam
     """
 }
+
 
 process MINIMAP2_CONSENSUS {
   tag "${sampleid}"
@@ -791,6 +792,7 @@ process SAMTOOLS_CONSENSUS {
     path "${sampleid}_coverage.txt"
     tuple val(sampleid), path(consensus), path("${sampleid}_aln.sorted.bam"), path("${sampleid}_aln.sorted.bam.bai"), emit: sorted_bams
     tuple val(sampleid), path("${sampleid}_coverage.txt"), emit: coverage
+    tuple val(sampleid), path("${sampleid}_mapq.txt"), emit: mapping_quality
     tuple val(sampleid), path("${sampleid}_contigs_reads_ids.txt"), emit: contig_seqids
   script:
     """
@@ -799,6 +801,7 @@ process SAMTOOLS_CONSENSUS {
     samtools index ${sampleid}_aln.sorted.bam
     samtools coverage ${sampleid}_aln.sorted.bam  > ${sampleid}_coverage.txt
     samtools coverage -A -w 50 ${sampleid}_aln.sorted.bam > ${sampleid}_histogram.txt
+    samtools view ${sampleid}_aln.sorted.bam | awk '{mapq[\$3]+=\$5; count[\$3]++} END {for (chr in mapq) printf "%s\\t%.2f\\n", chr, mapq[chr]/count[chr]}' > ${sampleid}_mapq.txt
     """
 }
 
@@ -1016,14 +1019,22 @@ workflow {
     Channel
       .fromPath(params.samplesheet, checkIfExists: true)
       .splitCsv(header:true)
-      .map{ row-> tuple((row.sampleid), (row.target_gene)) }
-      .filter { sampleid, target_gene -> target_gene.contains("COI") }
-      .set{ ch_coi }
+      .map { row -> 
+          def sampleid = row.sampleid
+          def gene = row.target_gene?.trim()?.toUpperCase()
+          tuple(sampleid, gene)
+      }
+      .filter { sampleid, gene -> 
+          ['COI', 'CO1'].contains(gene)
+      }
+      .set { ch_coi }
+//    ch_coi.view()
+
     Channel
       .fromPath(params.samplesheet, checkIfExists: true)
       .splitCsv(header:true)
       .map{ row-> tuple((row.sampleid), (row.target_gene)) }
-      .filter { sampleid, target_gene -> !target_gene.contains("COI") }
+      .filter { sampleid, target_gene -> !['COI', 'CO1'].contains(target_gene?.toUpperCase()) }
       .set{ ch_other }
   
   } else { exit 1, "Input samplesheet file not specified!" }
@@ -1034,16 +1045,16 @@ workflow {
   //def elements = ch_coi.toList()
   //println "The channel 'ch_coi' contains: ${elements}"
   
+// Conditional logic to require database if needed
   ch_coi
-    .filter { it[1] != null }    // Ensure target_gene is not null
-    .first()
-    .ifEmpty {
-        // ch_coi is empty — do nothing or log if needed
-    }
-    .subscribe { item ->
-        // ch_coi is NOT empty
-        if (params.blastn_COI == null) {
-            error("Please provide path to the MetaCOXI database.")
+    .collect()
+    .subscribe { items ->
+        if (items && !items.isEmpty()) {
+            if (params.blastn_COI == null) {
+                error("Please provide path to the MetaCOXI database.")
+            }
+        } else {
+            println "[Info] No COI/CO1 samples detected — database not required."
         }
     }
 
@@ -1236,6 +1247,7 @@ workflow {
         //Derive summary file presenting coverage statistics alongside blast results
         cov_stats_summary_ch = MOSDEPTH.out.mosdepth_results.join(EXTRACT_BLAST_HITS.out.consensus_fasta_files)
                                                              .join(SAMTOOLS_CONSENSUS.out.coverage)
+                                                             .join(SAMTOOLS_CONSENSUS.out.mapping_quality)
                                                              .join(FASTA2TABLE.out.blast_results)
                                                              .join(QC_POST_DATA_PROCESSING.out.filtstats)
                                                              .join(ch_target_size)
