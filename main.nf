@@ -504,7 +504,7 @@ process MEDAKA2 {
     cp ${sampleid}/calls_to_draft.bam ${sampleid}_medaka_consensus.bam
     cp ${sampleid}/calls_to_draft.bam.bai ${sampleid}_medaka_consensus.bam.bai
     cp ${sampleid}/consensus.fasta ${sampleid}_medaka_consensus.fasta
-    samtools consensus -f fasta -a -A --low-MQ 30 --het-scale 0.37 --min-depth 5 --homopoly-score 0.1 -p -o ${sampleid}_samtools_consensus.fasta ${sampleid}_medaka_consensus.bam
+    samtools consensus -f fasta -a -A --low-MQ 5 --het-scale 0.37 -p -o ${sampleid}_samtools_consensus.fasta ${sampleid}_medaka_consensus.bam
     """
 }
 
