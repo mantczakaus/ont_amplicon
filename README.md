@@ -483,9 +483,9 @@ A separate blast output is then derived using pytaxonkit, which outputs prelimin
 The quality filtered reads derived during the pre-processing step are mapped back to the consensus matches using Mimimap2. Samtools and Mosdepth are then used to derive bam files and coverage statistics. A summary of the blast results, preliminary taxonomic assignment, coverage statistics and associated flags are then derived for each consensus using python.  
 Eight flags are providded to help wiht interpretation:  
 
-| FLAG | GREEN | ORANGE | GREY |
+| FLAG | GREEN | ORANGE | RED | GREY |
 | --- | --- | --- | --- |
-| 30X DEPTH FLAG | when mapping back to consensus match (ie qseq), the percentage of bases that attained at least 30X sequence coverage > 90 |  when mapping back to consensus match (ie qseq), the percentage of bases that attained at least 30X sequence coverage is between 75 and 90 | when mapping back to consensus match (ie qseq), the percentage of bases that attained at least 30X sequence coverage is < 75 | consensus returned no blast hits |
+| 30X DEPTH FLAG | When mapping back to consensus match (ie qseq), the percentage of bases that attained at least 30X sequence coverage > 90 |  When mapping back to consensus match (ie qseq), the percentage of bases that attained at least 30X sequence coverage is between 75 and 90 | When mapping back to consensus match (ie qseq), the percentage of bases that attained at least 30X sequence coverage is < 75 | consensus returned no blast hits |
 | TARGET ORGANISM FLAG | The target organism detected and % blast identity > 90% | The target organism detected and % blast identity is < 90% | The target organism was not detected | The consensus returned no blast hits |
 | TARGET SIZE FLAG | The consensus match length is within ±20% of the target_size | The consensus match length is ±20% to ±40% of target size | The consensus match length is outside the range of ±40% of the target_size |
 
