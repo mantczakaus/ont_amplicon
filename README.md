@@ -481,7 +481,12 @@ A separate blast output is then derived using pytaxonkit, which outputs prelimin
 
 ### Mapping back to consensus
 The quality filtered reads derived during the pre-processing step are mapped back to the consensus matches using Mimimap2. Samtools and Mosdepth are then used to derive bam files and coverage statistics. A summary of the blast results, preliminary taxonomic assignment, coverage statistics and associated flags are then derived for each consensus using python.  
-Currently applied flags include:  
+Eight flags are providded to help wiht interpretation:  
+
+| FLAG | GREEN | ORANGE | GREY |
+| --- | --- | --- | --- |
+| 30X DEPTH FLAG | when mapping back to consensus match (ie qseq), the percentage of bases that attained at least 30X sequence coverage > 90 |  when mapping back to consensus match (ie qseq), the percentage of bases that attained at least 30X sequence coverage is between 75 and 90 | when mapping back to consensus match (ie qseq), the percentage of bases that attained at least 30X sequence coverage is < 7 | consensus returned no blast hits |
+
 1) 30X DEPTH FLAG:
   - GREEN = when mapping back to consensus match (ie qseq), the percentage of bases that attained at least 30X sequence coverage > 90
   - ORANGE = when mapping back to consensus match (ie qseq), the percentage of bases that attained at least 30X sequence coverage is between 75 and 90
