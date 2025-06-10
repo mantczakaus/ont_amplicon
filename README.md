@@ -482,7 +482,7 @@ A separate blast output is then derived using pytaxonkit, which outputs prelimin
 ### Mapping back to consensus
 The quality filtered reads derived during the pre-processing step are mapped back to the consensus matches using Mimimap2. Samtools and Mosdepth are then used to derive bam files and coverage statistics. A summary of the blast results, preliminary taxonomic assignment, coverage statistics and associated **flags** are then derived for each consensus using python.  
 #### Flags
-Eight flags are providded to help with interpretation:  
+**Seven** flags are providded to help with interpretation:  
 
 | FLAG NAME | GREEN | ORANGE | RED | GREY |
 | --- | --- | --- | --- | --- |
@@ -493,6 +493,16 @@ Eight flags are providded to help with interpretation:
 | **5. MEAN COVERAGE FLAG** | When mapping back to the consensus match (ie qseq), the mean coverage **>= 500** | When mapping back to the  consensus match (ie qseq), the mean coverage is **between 100 and 500** | When mapping back to the consensus match (ie qseq), the mean coverage is **< 100** | The consensus returned no blast hits |
 | **6. READ LENGTH FLAG** | Number of mapped reads whose lengths are at least 90% of the reference length is **>=200** |  Number of mapped reads whose lengths are at least 90% of the reference length is between **50 and 200** |  Number of mapped reads whose lengths are at least 90% of the reference length is **< 50** | The consensus returned no blast hits |
 | **7. MEAN MQ FLAG** | Mean mapping quality of reads to this sequence is **>= 30** | Mean mapping quality of reads to this sequence is **between 10 and 30** | Mean mapping quality of reads to this sequence is **< 10** | The consensus returned no blast hits |
+
+| FLAG NAME | DEFINITION | GREEN | ORANGE | RED | GREY |
+| --- | --- | --- | --- | --- |
+| **1. 30X DEPTH FLAG** | When mapping back to the consensus match (ie qseq), the percentage of bases that attained at least 30X sequence coverage | **> 90%** |  **75-90%** | **< 75** | The consensus returned no blast hits |
+| **2. TARGET ORGANISM FLAG** | Flags whether the consensus matched to the target organism(s) by blast homology search and the % blast identity | The target organism was detected and blast identity **> 90%** | The target organism was detected and blast identity is **< 90%** | The target organism was not detected | The consensus returned no blast hits |
+| **3. TARGET SIZE FLAG** | The consensus match length relative to the expected target_size | **within ±20%** of the expected target_size | **±20% to ±40%** of the expected target size | **outside the range of ±40%** of the expected target_size | The consensus returned no blast hits |
+| **4. MAPPED READ COUNT FLAG** | Number of reads mapping back to the consensus match (ie qseq) | **>= 1000** |  **between 200 and 1000** | **< 200** | The consensus returned no blast hits |
+| **5. MEAN COVERAGE FLAG** | When mapping back to the consensus match (ie qseq), the mean coverage | **>= 500** | **between 100 and 500** | **< 100** | The consensus returned no blast hits |
+| **6. READ LENGTH FLAG** | Number of mapped reads whose lengths are at least 90% of the reference length |  **>=200** |  **50 and 200** | **< 50** | The consensus returned no blast hits |
+| **7. MEAN MQ FLAG** | Mean mapping quality of reads to this consensus | **>= 30** | **between 10 and 30** | **< 10** | The consensus returned no blast hits |
   
 ### Mapping back to reference (optional)
 By default the quality filtered reads derived during the pre-processing step are also mapped back to the
