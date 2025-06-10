@@ -35,8 +35,8 @@ class Config:
             'ONT-amplicon NextFlow workflow</a>.')
 
     class CRITERIA:
-        MIN_RAW_READS = 5000
-        MIN_FILTERED_READS = 1000
+        MIN_RAW_READS = 2500
+        MIN_FILTERED_READS = 800
 
     @property
     def default_params(self) -> dict[str, str]:

@@ -405,12 +405,12 @@ If you trim raw read of adapters and/or quality filter the raw reads, an additio
 
 A qc report will be generated in text and html formats summarising the read counts recovered after the pre-processing step for all samples listed in the index.csv file.
 It will include 3 flags:  
-1) For the raw_reads_flag, if there were < 5000 raw reads, the column will display: "Less than 5000 raw reads".  
-2) For the qfiltered_flag, if there were < 1000 quality_filtered_reads, the column will display: "Less than 1000 processed reads".  
+1) For the raw_reads_flag, if there were < 2500 raw reads, the column will display: "Less than 2500 raw reads".  
+2) For the qfiltered_flag, if there were < 800 quality_filtered_reads, the column will display: "Less than 800 processed reads".  
 3) QC_FLAG:
-- GREEN = > 5000 starting reads, > 1000 quality filtered reads.
-- ORANGE = < 5000 starting reads, > 1000 quality filtered reads.
-- RED = < 5000 starting reads, < 1000 quality filtered reads.
+- GREEN = > 2500 starting reads, > 800 quality filtered reads.
+- ORANGE = < 2500 starting reads, > 800 quality filtered reads.
+- RED = < 2500 starting reads, < 800 quality filtered reads.
 
 If the user wants to check the data after preprocessing before performing downstream analysis, they can apply the parameter `preprocessing_only: true`.
 
@@ -646,8 +646,4 @@ Finish output section
 
 **-html report specific**
 Incorporate basecalling model in html report  
-Improve reporting errors when RATTLE fails to produce clusters and prevent pipeline from crashing, add in report that no clusters were generated.  
-
-
-Generate a QC report even if preprocessing is not run to capture the raw read counts?  
 Provide option to run only map to ref
