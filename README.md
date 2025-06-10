@@ -486,13 +486,16 @@ The quality filtered reads derived during the pre-processing step are mapped bac
 
 | FLAG NAME | DEFINITION | GREEN | ORANGE | RED | GREY |
 | --- | --- | --- | --- | --- |  --- |
-| **1. 30X COVERAGE FLAG** | When mapping back to the consensus match (ie qseq), the percentage of bases that attained at least 30X sequence coverage | **> 90%** |  **75-90%** | **< 75%** | The consensus returned no blast hits |
+| **1. 30X DEPTH FLAG** | When mapping back to the consensus match (ie qseq), the percentage of bases that attained at least 30X sequence coverage | **> 90%** |  **75-90%** | **< 75%** | The consensus returned no blast hits |
 | **2. TARGET ORGANISM FLAG** | Flag based on whether the consensus matched to the target organism(s) by blast homology search and the % blast identity recovered | Target organism detected and blast identity **> 90%** | Target organism was detected and blast identity **< 90%** | Target organism not detected | The consensus returned no blast hits |
 | **3. TARGET SIZE FLAG** | Length of the consensus match (ie qseq) relative to the expected target_size | **within ±20%** | **±20%-±40%** | **outside the range of ±40%** | The consensus returned no blast hits |
 | **4. MAPPED READ COUNT FLAG** | Number of reads mapping back to the consensus match (ie qseq) | **>= 1000** |  **200-1000** | **< 200** | The consensus returned no blast hits |
 | **5. MEAN COVERAGE FLAG** | Mean read coverage of each base when mapping back to the consensus match (ie qseq) | **>= 500** | **100-500** | **< 100** | The consensus returned no blast hits |
 | **6. READ LENGTH FLAG** | Number of mapped reads whose lengths are at least 90% of the consensus match length |  **>=200** |  **50-200** | **< 50** | The consensus returned no blast hits |
 | **7. MEAN MQ FLAG** | Average mapping quality of reads mapping to the consensus match | **>= 30** | **10-30** | **< 10** | The consensus returned no blast hits |
+
+The confidence score is also derived. It is based on a scoring system which assigns different weight to each flag colour. It is a vlue bewteen 0 and 14. A higher score indicates a higher confidence in the sequence.  
+The normalised confidence score is also provided. It is a value between 0 and 1 that is calculated by normalising the confidence score to the maximum possible score for this sequence. A value of 1 indicates the sequence with highest confidence.
   
 ### Mapping back to reference (optional)
 By default the quality filtered reads derived during the pre-processing step are also mapped back to the
