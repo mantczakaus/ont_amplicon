@@ -45,5 +45,5 @@ TARGET_ORGANISM_FLAG,Target organism flag,,,Flag is green if the preliminary hom
 TARGET_SIZE_FLAG,Target size flag,,,Flag is green if the sequence length is within 20% of the target amplicon size; orange if between 20% and 40%; and red if 40% smaller or larger than expected.
 READ_LENGTH_FLAG,Mapped reads length flag,,,Flag is green if number of mapped reads whose lengths are at least 90% of the reference length is >=200; orange if between 50 and 200; and red if < 50.
 MEAN_MQ_FLAG,Mean mapping quality flag,,,Flag is green if the mean mapping quality of reads to this sequence is >= 30; orange if between 10 and 30; and red if < 10.
-TOTAL_CONF_SCORE,Total confidence score,float,,The total quality score is based on a scoring system which assigns different weight to each flag colour. A higher score indicates a higher confidence in the sequence.
+TOTAL_CONF_SCORE,Total confidence score,float,,The confidence score is based on a scoring system which assigns different weight to each flag colour. A higher score indicates a higher confidence in the sequence.
 NORMALISED_CONF_SCORE,Normalised confidence score,float,Y,The normalised confidence score is a value between 0 and 1 that is calculated by normalising the confidence score to the maximum possible score for this sequence. A value of 1 indicates the sequence with highest confidence.
