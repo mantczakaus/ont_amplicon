@@ -486,39 +486,12 @@ Eight flags are providded to help with interpretation:
 
 | FLAG NAME | GREEN | ORANGE | RED | GREY |
 | --- | --- | --- | --- | --- |
-| **30X DEPTH FLAG** | When mapping back to the consensus match (ie qseq), the percentage of bases that attained at least 30X sequence coverage **> 90** |  When mapping back to the consensus match (ie qseq), the percentage of bases that attained at least 30X sequence coverage is **between 75 and 90** | When mapping back to the consensus match (ie qseq), the percentage of bases that attained at least 30X sequence coverage is **< 75** | the consensus returned no blast hits |
-| **TARGET ORGANISM FLAG** | The target organism was detected and % blast identity **> 90%** | The target organism was detected and % blast identity is **< 90%** | The target organism was not detected | The consensus returned no blast hits |
-| **TARGET SIZE FLAG** | The consensus match length is **within ±20%** of the expected target_size | The consensus match length is **±20% to ±40%** of the expected target size | The consensus match length is **outside the range of ±40%** of the expected target_size | The consensus returned no blast hits |
-| **MAPPED READ COUNT FLAG** | When mapping back to the consensus match (ie qseq), read count is **>= 1000** | when mapping back to the  consensus match (ie qseq), read count is **between 200 and 1000** | when mapping back to the consensus match (ie qseq), read count is **< 200** | The consensus returned no blast hits |
-| **MEAN COVERAGE FLAG** | When mapping back to the consensus match (ie qseq), the mean coverage **>= 500** | when mapping back to the  consensus match (ie qseq), the mean coverage is **between 100 and 500** | when mapping back to the consensus match (ie qseq), the mean coverage is **< 100** | The consensus returned no blast hits |
-
-1) 30X DEPTH FLAG:
-  - GREEN = when mapping back to consensus match (ie qseq), the percentage of bases that attained at least 30X sequence coverage > 90
-  - ORANGE = when mapping back to consensus match (ie qseq), the percentage of bases that attained at least 30X sequence coverage is between 75 and 90
-  - RED = when mapping back to consensus match (ie qseq), the percentage of bases that attained at least 30X sequence coverage is < 75
-  - GREY = consensus returned no blast hits
- 
-2) TARGET ORGANISM FLAG
-  - GREEN = target organism detected and % blast identity > 90%
-  - ORANGE = target organism detected and % blast identity is < 90%
-  - RED = target organism not detected
-  - GREY = consensus returned no blast hits
- 
-3) TARGET SIZE FLAG
-  - GREEN = the consensus match length is within ±20% of the target_size
-  - ORANGE = the consensus match length is ±20% to ±40% of target size
-  - RED = the consensus match length is outside the range of ±40% of the target_size.
- 
-4) MAPPED READ COUNT FLAG
-  - GREEN = when mapping back to the consensus match (ie qseq), read count is >=1000
-  - ORANGE = when mapping back to the  consensus match (ie qseq), read count is between 200 and 1000
-  - RED = when mapping back to the consensus match (ie qseq), read count is <200
-  - GREY = consensus returned no blast hits
- 
- 5) MEAN COVERAGE FLAG
-  - GREEN = when mapping back to the consensus match (ie qseq), the mean coverage >=500
-  - ORANGE = when mapping back to the consensus match (ie qseq), the mean coverage is between 100 and 500
-  - RED = when mapping back to the consensus match (ie qseq), the mean coverage is < 100
+| **1. 30X DEPTH FLAG** | When mapping back to the consensus match (ie qseq), the percentage of bases that attained at least 30X sequence coverage **> 90** |  When mapping back to the consensus match (ie qseq), the percentage of bases that attained at least 30X sequence coverage is **between 75 and 90** | When mapping back to the consensus match (ie qseq), the percentage of bases that attained at least 30X sequence coverage is **< 75** | The consensus returned no blast hits |
+| **2. TARGET ORGANISM FLAG** | The target organism was detected and % blast identity **> 90%** | The target organism was detected and % blast identity is **< 90%** | The target organism was not detected | The consensus returned no blast hits |
+| **3. TARGET SIZE FLAG** | The consensus match length is **within ±20%** of the expected target_size | The consensus match length is **±20% to ±40%** of the expected target size | The consensus match length is **outside the range of ±40%** of the expected target_size | The consensus returned no blast hits |
+| **4. MAPPED READ COUNT FLAG** | When mapping back to the consensus match (ie qseq), read count is **>= 1000** | when mapping back to the  consensus match (ie qseq), read count is **between 200 and 1000** | When mapping back to the consensus match (ie qseq), read count is **< 200** | The consensus returned no blast hits |
+| **5. MEAN COVERAGE FLAG** | When mapping back to the consensus match (ie qseq), the mean coverage **>= 500** | When mapping back to the  consensus match (ie qseq), the mean coverage is **between 100 and 500** | When mapping back to the consensus match (ie qseq), the mean coverage is **< 100** | The consensus returned no blast hits |
+| **5. READ LENGTH FLAG** | Number of mapped reads whose lengths are at least 90% of the reference length is >=200; Number of mapped reads whose lengths are at least 90% of the reference length is between 50 and 200 |  and red if < 50. | Number of mapped reads whose lengths are at least 90% of the reference length is < 50 | The consensus returned no blast hits |
   
 ### Mapping back to reference (optional)
 By default the quality filtered reads derived during the pre-processing step are also mapped back to the
