@@ -492,7 +492,7 @@ Eight flags are providded to help with interpretation:
 | **4. MAPPED READ COUNT FLAG** | When mapping back to the consensus match (ie qseq), read count is **>= 1000** | when mapping back to the  consensus match (ie qseq), read count is **between 200 and 1000** | When mapping back to the consensus match (ie qseq), read count is **< 200** | The consensus returned no blast hits |
 | **5. MEAN COVERAGE FLAG** | When mapping back to the consensus match (ie qseq), the mean coverage **>= 500** | When mapping back to the  consensus match (ie qseq), the mean coverage is **between 100 and 500** | When mapping back to the consensus match (ie qseq), the mean coverage is **< 100** | The consensus returned no blast hits |
 | **6. READ LENGTH FLAG** | Number of mapped reads whose lengths are at least 90% of the reference length is **>=200** |  Number of mapped reads whose lengths are at least 90% of the reference length is between **50 and 200** |  Number of mapped reads whose lengths are at least 90% of the reference length is **< 50** | The consensus returned no blast hits |
-| **6. MEAN MQ FLAG** | Mean mapping quality of reads to this sequence is **>= 30**; Mean mapping quality of reads to this sequence is **between 10 and 30** | Mean mapping quality of reads to this sequence is **< 10** | The consensus returned no blast hits |
+| **7. MEAN MQ FLAG** | Mean mapping quality of reads to this sequence is **>= 30** | Mean mapping quality of reads to this sequence is **between 10 and 30** | Mean mapping quality of reads to this sequence is **< 10** | The consensus returned no blast hits |
   
 ### Mapping back to reference (optional)
 By default the quality filtered reads derived during the pre-processing step are also mapped back to the
