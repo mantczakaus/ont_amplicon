@@ -384,7 +384,7 @@ process EXTRACT_BLAST_HITS {
 //    target_organism_str = (target_organism instanceof List) ? target_organism.join(';') : target_organism
 
     target_organism_str = (target_organism instanceof List)
-    ? "\"${target_organism.join(';')}\""
+    ? "\"${target_organism.join('|')}\""
     : "\"${target_organism}\""
     """
     select_top_blast_hit.py --sample_name ${sampleid} --blastn_results ${sampleid}*_top_10_hits.txt --mode ${params.blast_mode} --target_organism ${target_organism_str} --taxonkit_database_dir ${params.taxdump}

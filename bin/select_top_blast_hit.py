@@ -96,14 +96,7 @@ def enrich_with_taxonomy(df, taxonkit_dir):
         )
     )
     print(lineage_df)
-    #kingdom_df = pytaxonkit.lineage(staxids_l, data_dir=taxonkit_dir, formatstr="{r}")
-    #if "TaxID" not in kingdom_df or "Lineage" not in kingdom_df:
-    #    raise KeyError("Missing expected columns in lineage data.")
-    #kingdom_df = kingdom_df[["TaxID", "Lineage"]]
-    #kingdom_df.columns = ["staxids", "sskingdoms"]
-    #kingdom_df["staxids"] = pd.to_numeric(kingdom_df["staxids"], errors='coerce').astype('Int64')
 
-    #names_df = pytaxonkit.filter(staxids_l, equal_to="species", rank_file=rank, debug=True)
     names_df = pytaxonkit.name(staxids_l, data_dir=taxonkit_dir)[['TaxID', 'Name']]
     names_df.columns = ["staxids", "species"]
     names_df["staxids"] = names_df["staxids"].astype(int)
@@ -121,8 +114,8 @@ def filter_and_format(df, sample_name, target_organism):
 
     # Enable to have a list of target organisms.
     # Normalise target_organism to a list of lowercase, underscored strings
-    if ';' in target_organism:
-        target_organism = [s.strip().strip("'\"") for s in target_organism.split(';')]
+    if '|' in target_organism:
+        target_organism = [s.strip().strip("'\"") for s in target_organism.split('|')]
         target_organisms = [org.lower().replace(" ", "_") for org in target_organism]
     else:
         target_organisms = [target_organism.lower().replace(" ", "_")]
@@ -154,7 +147,6 @@ def main():
     target_organism = args.target_organism
     mode = args.mode
     tk_db_dir = args.taxonkit_database_dir
-    #rank = os.path.join(tk_db_dir, "ranks.txt")
 
     if not os.path.isfile(blastn_results_path):
         raise FileNotFoundError(f"{blastn_results_path} does not exist.")
