@@ -36,7 +36,7 @@ class Config:
 
     class CRITERIA:
         MIN_RAW_READS = 2500
-        MIN_FILTERED_READS = 800
+        MIN_FILTERED_READS = 200
 
     @property
     def default_params(self) -> dict[str, str]:

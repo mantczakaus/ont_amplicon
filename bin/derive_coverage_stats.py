@@ -155,43 +155,6 @@ def apply_qc_flags(df, target_size):
         ['GREEN', 'ORANGE', 'RED', 'GREY'],
         default=""
     )
-#     df['PC_READ_LENGTH_FLAG_70_15'] = np.where(
-#         (df['sacc'] != 0) & 
-# #        (df['TARGET_SIZE_FLAG'] == 'GREEN') &
-#         (df['qseq_mapping_read_count'] >= 200) &
-#         (df['pc_read_length_passes_70_15'] == True),
-#         "GREEN",
-#         np.where((df['sacc'] != 0) & 
-#                 (df['qseq_mapping_read_count'] >= 200) & 
-# #                (df['TARGET_SIZE_FLAG'] == 'GREEN') &
-#                 (df['pc_read_length_passes_70_15'] == False),
-#                 "RED",
-#             np.where((df['sacc'] == 0) |
-#                 (df['qseq_mapping_read_count'] < 200), 
-#                 "GREY",
-#                 ""
-#             )
-#         )
-#     )
-
-#     df['PC_READ_LENGTH_FLAG_80_5'] = np.where(
-#         (df['sacc'] != 0) & 
-# #        (df['TARGET_SIZE_FLAG'] == 'GREEN') &
-#         (df['qseq_mapping_read_count'] >= 200) &
-#         (df['pc_read_length_passes_80_5'] == True),
-#         "GREEN",
-#         np.where((df['sacc'] != 0) & 
-#                 (df['qseq_mapping_read_count'] >= 200) & 
-# #                (df['TARGET_SIZE_FLAG'] == 'GREEN') &
-#                 (df['pc_read_length_passes_80_5'] == False),
-#                 "RED",
-#             np.where((df['sacc'] == 0) |
-#                 (df['qseq_mapping_read_count'] < 200), 
-#                 "GREY",
-#                 ""
-#             )
-#         )
-#     )
     df['READ_LENGTH_FLAG'] = np.where(
         (df['sacc'] != 0) & 
         (df['num_passing_90'] >= 200),
@@ -210,25 +173,7 @@ def apply_qc_flags(df, target_size):
             )
         )
     )
-    # df['READ_LENGTH_FLAG'] = np.where(
-    #     (df['sacc'] != 0) & 
-    #     (df['num_passing_90'] >= 250),
-    #     "GREEN",
-    #     np.where((df['sacc'] != 0) & 
-    #             (df['num_passing_90'] < 250) & 
-    #             (df['num_passing_90'] >= 100),
-    #             "ORANGE",
-    #         np.where((df['sacc'] != 0) &
-    #             (df['num_passing_90'] < 100), 
-    #             "RED",
-    #             np.where(df['sacc'].isin([0, None, '', '0', '-']),
-    #                 "GREY",
-    #                 ""
-    #             )
-    #         )
-    #     )
-    # )
-
+    # Mean mapping quality flag
     df['MEAN_MQ_FLAG'] = np.where(
         (df['sacc'] != 0) & 
         (df['mean_MQ'] >= 30),
