@@ -159,13 +159,13 @@ MP24-1096B_gyrB,/work/tests/mtdt_data/barcode19_MP24-1096B_gyrB/*fastq.gz,bacter
   
   By default the pipeline will look for a file called “index.csv” in the base directory but you can specify any file name using the ```--samplesheet [filename]``` in the parameter file, as long as it has a **.csv** suffix. This text file requires the following columns (which need to be included as a header): ```sampleid,fastq_path,target_organism,target_gene,target_size,fwd_primer,rev_primer``` 
 
-   - **sampleid** will be the sample name that will be given to the files created by the pipeline (required).  
-   - **fastq_path** is the full path to the fastq files that the pipeline requires as starting input (required).  
-   - **target_organism** is the organism targetted by the PCR (required).  
-   - **target_gene** is the gene targetted by the PCR (required).  
-   - **target_size** is the expected size of the amplicon (required).  
+   - **sampleid** will be the sample name that will be given to the files created by the pipeline **(required)**.  
+   - **fastq_path** is the full path to the fastq.gz files that the pipeline requires as starting input **(required)**.  
+   - **target_organism** is the organism targetted by the PCR **(required)**. If more than one organism is targetted, use a pipe '|' as separator between the targets with no space.
+   - **target_gene** is the gene targetted by the PCR **(required)**.  
+   - **target_size** is the expected size of the amplicon **(required)**.  
    - **fwd_primer** is the nucleotide sequence of the FWD primer (optional).  
-   - **rev_primer** is the nucleotide sequence of the REV primer (optional). Please note that the reverse primer chas to be reverse complemented so it reads in the 5-3 direction.  
+   - **rev_primer** is the nucleotide sequence of the REV primer (optional). Please note that the reverse primer has to be reverse complemented so it reads in the 5-3 direction.  
    - **test** is a field specific to NAQS LIMS (optional)
    - **method** is a field specific to NAQS LIMS (optional)
 
@@ -180,7 +180,9 @@ MP24-1096B_gyrB,/work/tests/mtdt_data/barcode19_MP24-1096B_gyrB/*fastq.gz,bacter
   MP24-1051A_16S,/work/tests/mtdt_data/barcode06_MP24-1051A_16S/*fastq.gz,bacteria,16s,1509,AGAGTTTGATCATGGCTCAG,AAGTCGTAACAAGGTAACCGT
   MP24-1096B_gyrB,/work/tests/mtdt_data/barcode19_MP24-1096B_gyrB/*fastq.gz,bacteria,gyrB,1258,GAAGTCATCATGACCGTTCTGCAYGCNGGNGGNAARTTYGA,ATGACNGAYGCNGAYGTNGAYGGCTCGCACATCCGTACCCTGCT
   ```
-  For samples with a single fastq.gz file, specify **the full path to the fastq.gz file**  and set the merge parameter as false.  
+  For samples with **a single fastq.gz** file, specify **the full path to the fastq.gz file**  and set the merge parameter as **false**.  
+
+  A python script is provided in the **bin** folder called derive_sample_sheet.py that will create an index.csv file with header and automatically populate the sample name and the fastq.gz file path.
 
 
 - Specify your container engine ```singularity``` in the profile:
