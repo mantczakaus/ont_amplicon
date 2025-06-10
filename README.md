@@ -495,7 +495,7 @@ The quality filtered reads derived during the pre-processing step are mapped bac
 | **7. MEAN MQ FLAG** | Mean mapping quality of reads to this sequence is **>= 30** | Mean mapping quality of reads to this sequence is **between 10 and 30** | Mean mapping quality of reads to this sequence is **< 10** | The consensus returned no blast hits |
 
 | FLAG NAME | DEFINITION | GREEN | ORANGE | RED | GREY |
-| --- | --- | --- | --- | --- |
+| --- | --- | --- | --- | --- |  --- |
 | **1. 30X DEPTH FLAG** | When mapping back to the consensus match (ie qseq), the percentage of bases that attained at least 30X sequence coverage | **> 90%** |  **75-90%** | **< 75** | The consensus returned no blast hits |
 | **2. TARGET ORGANISM FLAG** | Flags whether the consensus matched to the target organism(s) by blast homology search and the % blast identity | The target organism was detected and blast identity **> 90%** | The target organism was detected and blast identity is **< 90%** | The target organism was not detected | The consensus returned no blast hits |
 | **3. TARGET SIZE FLAG** | The consensus match length relative to the expected target_size | **within ±20%** of the expected target_size | **±20% to ±40%** of the expected target size | **outside the range of ±40%** of the expected target_size | The consensus returned no blast hits |
