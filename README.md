@@ -406,11 +406,11 @@ If you trim raw read of adapters and/or quality filter the raw reads, an additio
 A qc report will be generated in text and html formats summarising the read counts recovered after the pre-processing step for all samples listed in the index.csv file.
 It will include 3 flags:  
 1) For the raw_reads_flag, if there were < 2500 raw reads, the column will display: "Less than 2500 raw reads".  
-2) For the qfiltered_flag, if there were < 800 quality_filtered_reads, the column will display: "Less than 800 processed reads".  
+2) For the qfiltered_flag, if there were < 200 quality_filtered_reads, the column will display: "Less than 200 processed reads".  
 3) QC_FLAG:
-- GREEN = > 2500 starting reads, > 800 quality filtered reads.
-- ORANGE = < 2500 starting reads, > 800 quality filtered reads.
-- RED = < 2500 starting reads, < 800 quality filtered reads.
+- GREEN = >= 2500 starting reads, >= 200 quality filtered reads.
+- ORANGE = < 2500 starting reads, >= 200 quality filtered reads.
+- RED = < 2500 starting reads, < 200 quality filtered reads.
 
 If the user wants to check the data after preprocessing before performing downstream analysis, they can apply the parameter `preprocessing_only: true`.
 
