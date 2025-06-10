@@ -481,7 +481,7 @@ A separate blast output is then derived using pytaxonkit, which outputs prelimin
 
 ### Mapping back to consensus
 The quality filtered reads derived during the pre-processing step are mapped back to the consensus matches using Mimimap2. Samtools and Mosdepth are then used to derive bam files and coverage statistics. A summary of the blast results, preliminary taxonomic assignment, coverage statistics and associated flags are then derived for each consensus using python.  
-## Flags
+#### Flags
 Eight flags are providded to help wiht interpretation:  
 
 | FLAG | GREEN | ORANGE | RED | GREY |
