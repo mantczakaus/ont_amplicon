@@ -485,7 +485,9 @@ Eight flags are providded to help wiht interpretation:
 
 | FLAG | GREEN | ORANGE | GREY |
 | --- | --- | --- | --- |
-| 30X DEPTH FLAG | when mapping back to consensus match (ie qseq), the percentage of bases that attained at least 30X sequence coverage > 90 |  when mapping back to consensus match (ie qseq), the percentage of bases that attained at least 30X sequence coverage is between 75 and 90 | when mapping back to consensus match (ie qseq), the percentage of bases that attained at least 30X sequence coverage is < 7 | consensus returned no blast hits |
+| 30X DEPTH FLAG | when mapping back to consensus match (ie qseq), the percentage of bases that attained at least 30X sequence coverage > 90 |  when mapping back to consensus match (ie qseq), the percentage of bases that attained at least 30X sequence coverage is between 75 and 90 | when mapping back to consensus match (ie qseq), the percentage of bases that attained at least 30X sequence coverage is < 75 | consensus returned no blast hits |
+| TARGET ORGANISM FLAG | The target organism detected and % blast identity > 90% | The target organism detected and % blast identity is < 90% | The target organism was not detected | The consensus returned no blast hits |
+| TARGET SIZE FLAG | The consensus match length is within ±20% of the target_size | The consensus match length is ±20% to ±40% of target size | The consensus match length is outside the range of ±40% of the target_size |
 
 1) 30X DEPTH FLAG:
   - GREEN = when mapping back to consensus match (ie qseq), the percentage of bases that attained at least 30X sequence coverage > 90
