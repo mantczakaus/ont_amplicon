@@ -33,9 +33,8 @@ def read_filtered_read_count(nanostat_path):
     raise ValueError("number_of_reads not found in NanoStat file")
 
 
-def load_and_prepare_data(blast_path, coverage_path, bed_path, mapping_quality, filtered_read_counts):
-    blast_df = pd.read_csv(blast_path, sep="\t", header=0)
-    blast_df.rename(columns={"length": "alignment_length"}, inplace=True)
+def load_and_prepare_data(coverage_path, bed_path, mapping_quality, filtered_read_counts):
+    
 
     samtools_cov = pd.read_csv(coverage_path, sep="\t", usecols=["#rname", "endpos", "numreads", "meandepth"], header=0)
     samtools_cov.rename(columns={
@@ -48,16 +47,16 @@ def load_and_prepare_data(blast_path, coverage_path, bed_path, mapping_quality, 
 
     mosdepth = pd.read_csv(bed_path, sep="\t", header=0)
     mosdepth.columns = ["qseqid", "start", "end", "region", "base_counts_at_depth_30X"]
-    mosdepth['qseq_pc_depth_30X'] = np.where(
+    mosdepth['qseq_pc_cov_30X'] = np.where(
         mosdepth['base_counts_at_depth_30X'] > mosdepth['end'],
         100,
         mosdepth['base_counts_at_depth_30X'] / mosdepth['end'] * 100
     )
-    mosdepth['qseq_pc_depth_30X'] = mosdepth['qseq_pc_depth_30X'].round(1)
+    mosdepth['qseq_pc_cov_30X'] = mosdepth['qseq_pc_cov_30X'].round(1)
 
     mq = pd.read_csv(mapping_quality, sep="\t", header=None)
     mq.columns = ["qseqid", "mean_MQ"]
-    return blast_df, samtools_cov, mosdepth[["qseqid", "qseq_pc_depth_30X"]],mq
+    return samtools_cov, mosdepth[["qseqid", "qseq_pc_cov_30X"]],mq
 
 
 def merge_dataframes(blast_df, samtools_cov, mosdepth_df, mq_df, df_passes_90_5):
@@ -70,16 +69,16 @@ def merge_dataframes(blast_df, samtools_cov, mosdepth_df, mq_df, df_passes_90_5)
 def apply_qc_flags(df, target_size):
     #######30X_DEPTH_FLAG#######
     #Conditions:
-    #GREEN: If sgi != 0 and the qseq_pc_depth_30X is >=90
-    #ORANGE: If sgi != 0 and the qseq_pc_depth_30X is between 75 and 90.
-    #RED: If sgi != 0 and the qseq_pc_depth_30X is <75.
+    #GREEN: If sgi != 0 and the qseq_pc_cov_30X is >=90
+    #ORANGE: If sgi != 0 and the qseq_pc_cov_30X is between 75 and 90.
+    #RED: If sgi != 0 and the qseq_pc_cov_30X is <75.
     #GREY: If sgi == 0.
 
-    df['30X_DEPTH_FLAG'] = np.select(
+    df['30X_COVERAGE_FLAG'] = np.select(
         [
-            (df['sacc'] != 0) & (df['qseq_pc_depth_30X'] >= 90),
-            (df['sacc'] != 0) & (df['qseq_pc_depth_30X'] >= 75) & (df['qseq_pc_depth_30X'] < 90),
-            (df['sacc'] != 0) & (df['qseq_pc_depth_30X'] < 75),
+            (df['sacc'] != 0) & (df['qseq_pc_cov_30X'] >= 90),
+            (df['sacc'] != 0) & (df['qseq_pc_cov_30X'] >= 75) & (df['qseq_pc_cov_30X'] < 90),
+            (df['sacc'] != 0) & (df['qseq_pc_cov_30X'] < 75),
             (df['sacc'].isin([0, None, '', '0', '-']))
         ],
         ['GREEN', 'ORANGE', 'RED', 'GREY'],
@@ -201,7 +200,7 @@ def apply_qc_flags(df, target_size):
     }
     
     flag_columns = [
-        '30X_DEPTH_FLAG',
+        '30X_COVERAGE_FLAG',
         'MAPPED_READ_COUNT_FLAG',
         'MEAN_COVERAGE_FLAG',
         'TARGET_ORGANISM_FLAG',
@@ -230,7 +229,7 @@ def apply_qc_flags(df, target_size):
 def save_summary(df, sample_name):
     df = df.sort_values(["qseq_pc_mapping_read", "target_organism_match"], ascending=[False, False])
     df.drop("pc_read_length_passes_90_5" , axis=1, inplace=True)
-    df.drop("30X_DEPTH_FLAG_SCORE" , axis=1, inplace=True)
+    df.drop("30X_COVERAGE_FLAG_SCORE" , axis=1, inplace=True)
     df.drop("MAPPED_READ_COUNT_FLAG_SCORE" , axis=1, inplace=True)
     df.drop("MEAN_COVERAGE_FLAG_SCORE" , axis=1, inplace=True)
     df.drop("TARGET_ORGANISM_FLAG_SCORE" , axis=1, inplace=True)
@@ -352,27 +351,37 @@ def analyze_read_lengths_against_reference(reference_lengths, grouped_read_lengt
 
 def main():
     args = parse_args()
-    filtered_read_counts = read_filtered_read_count(args.nanostat)
-    blast_df, samtools_cov, mosdepth_df, mq_df = load_and_prepare_data(
-        args.blastn_results,
-        args.coverage,
-        args.bed,
-        args.mapping_quality,
-        filtered_read_counts
-    )
-    mapping = parse_mapping_file(args.contig_seqids)
-    read_lengths = get_read_lengths(args.reads_fasta)
-    reference_lengths = get_reference_lengths(args.consensus)
-    grouped_read_lengths = group_lengths_by_reference(mapping, read_lengths)
+    blast_df = pd.read_csv(args.blastn_results, sep="\t", header=0)
     
-    #df_passes_70_15 = analyze_read_lengths_against_reference(reference_lengths, grouped_read_lengths, 70, 15)
-    df_passes_90_5 = analyze_read_lengths_against_reference(reference_lengths, grouped_read_lengths, 90, 5)
+    if blast_df['sgi'].isna().all():
+        for col in ['query_match_length', 'qseq_mapping_read_count', 'qseq_mean_depth', 'qseq_pc_mapping_read', 'qseq_pc_cov_30X', 'mean_MQ', 'num_passing_90', 
+                    '30X_COVERAGE_FLAG', 'MAPPED_READ_COUNT_FLAG', 'MEAN_COVERAGE_FLAG', 'TARGET_ORGANISM_FLAG', 'TARGET_SIZE_FLAG', 'READ_LENGTH_FLAG', 
+                    'MEAN_MQ_FLAG', 'TOTAL_CONF_SCORE', 'NORMALISED_CONF_SCORE']:
+            if col not in blast_df.columns:
+                blast_df[col] = None
+        blast_df.to_csv(f"{args.sample}_top_blast_with_cov_stats.txt", index=None, sep="\t")
+    else:
+        filtered_read_counts = read_filtered_read_count(args.nanostat)
+        blast_df.rename(columns={"length": "alignment_length"}, inplace=True)
+        samtools_cov, mosdepth_df, mq_df = load_and_prepare_data(
+            args.coverage,
+            args.bed,
+            args.mapping_quality,
+            filtered_read_counts
+        )
+        mapping = parse_mapping_file(args.contig_seqids)
+        read_lengths = get_read_lengths(args.reads_fasta)
+        reference_lengths = get_reference_lengths(args.consensus)
+        grouped_read_lengths = group_lengths_by_reference(mapping, read_lengths)
+        
+        #df_passes_70_15 = analyze_read_lengths_against_reference(reference_lengths, grouped_read_lengths, 70, 15)
+        df_passes_90_5 = analyze_read_lengths_against_reference(reference_lengths, grouped_read_lengths, 90, 5)
 
-    #df_passes_70_15.to_csv("rpc_read_length_passes_70_15.csv", index=False)
-    #df_passes_90_5.to_csv("rpc_read_length_passes_80_5.csv", index=False)
-    merged_df = merge_dataframes(blast_df, samtools_cov, mosdepth_df, mq_df, df_passes_90_5)
-    flagged_df = apply_qc_flags(merged_df, args.target_size)
-    save_summary(flagged_df, args.sample)
+        #df_passes_70_15.to_csv("rpc_read_length_passes_70_15.csv", index=False)
+        #df_passes_90_5.to_csv("rpc_read_length_passes_80_5.csv", index=False)
+        merged_df = merge_dataframes(blast_df, samtools_cov, mosdepth_df, mq_df, df_passes_90_5)
+        flagged_df = apply_qc_flags(merged_df, args.target_size)
+        save_summary(flagged_df, args.sample)
 
 if __name__ == "__main__":
     main()

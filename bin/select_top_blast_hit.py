@@ -150,6 +150,12 @@ def main():
 
     if not os.path.isfile(blastn_results_path):
         raise FileNotFoundError(f"{blastn_results_path} does not exist.")
+    #elif len(blastn_results_path) == 0:
+    #    print("DataFrame is empty!")
+    #    out_file = open(os.path.basename(args.blastn_results).replace("_top_10_hits.txt", "_top_hits_tmp.txt"))
+    #    out_file.write("sample_name\tqseqid\tsgi\tsacc\tlength\tnident\tpident\tmismatch\tgaps\tgapopen\tqstart\tqend\tqlen\tsstart\tsend\tslen\tsstrand\tevalue\tbitscore\tqcovhsp\tstitle\tstaxids\tqseq\tsseq\tsseqid\tqcovs\tqframe\tsframe\tspecies\tbroad_taxonomic_category\tFullLineage\ttarget_organism_match")
+    #    out_file.close()
+    #    exit ()
 
     blastn_results = load_blast_results(blastn_results_path, mode)
     enriched_dfs = enrich_with_taxonomy(blastn_results, tk_db_dir)

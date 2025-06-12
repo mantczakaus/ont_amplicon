@@ -486,7 +486,7 @@ The quality filtered reads derived during the pre-processing step are mapped bac
 
 | FLAG NAME | DEFINITION | GREEN | ORANGE | RED | GREY |
 | --- | --- | --- | --- | --- |  --- |
-| **1. 30X DEPTH FLAG** | The percentage of bases that attained at least 30X sequence coverage when mapping back to the consensus match (ie qseq) | **> 90%** |  **75-90%** | **< 75%** | The consensus returned no blast hits |
+| **1. 30X COVERAGE FLAG** | The percentage of bases that attained at least 30X sequence coverage when mapping back to the consensus match (ie qseq) | **> 90%** |  **75-90%** | **< 75%** | The consensus returned no blast hits |
 | **2. TARGET ORGANISM FLAG** | Flag based on whether the consensus matched to the target organism(s) by blast homology search and the % blast identity recovered | Target organism detected and blast identity **> 90%** | Target organism was detected and blast identity **< 90%** | Target organism not detected | The consensus returned no blast hits |
 | **3. TARGET SIZE FLAG** | Length of the consensus match (ie qseq) relative to the expected target_size | **within ±20%** | **±20%-±40%** | **outside the range of ±40%** | The consensus returned no blast hits |
 | **4. MAPPED READ COUNT FLAG** | Number of reads mapping back to the consensus match (ie qseq) | **>= 1000** |  **200-1000** | **< 200** | The consensus returned no blast hits |
