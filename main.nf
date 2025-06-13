@@ -814,7 +814,7 @@ process SAMTOOLS {
     samtools index ${sampleid}_ref_aln.sorted.bam
     samtools coverage ${sampleid}_ref_aln.sorted.bam > ${sampleid}_coverage.txt
     samtools coverage -A -w 50 ${sampleid}_ref_aln.sorted.bam > ${sampleid}_histogram.txt
-    samtools consensus -f fasta -a -A ${sampleid}_ref_aln.sorted.bam --call-fract 0.5 -H 0.5 -o ${sampleid}_samtools_consensus_from_ref.fasta
+    samtools consensus -f fasta -a -A ${sampleid}_ref_aln.sorted.bam -X r10.4_sup -o ${sampleid}_samtools_consensus_from_ref.fasta
     """
 }
 
