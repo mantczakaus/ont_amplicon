@@ -63,6 +63,7 @@ The pipeline will generate ~5-100Mb of files per sample, depending on the number
 4. Set your singularity container cache directory. Copy paste the code below and press enter:  
 ```
 [[ -d $HOME/.nextflow ]] || mkdir -p $HOME/.nextflow
+mkdir $HOME/.nextflow/NXF_SINGULARITY_CACHEDIR
 
 cat <<EOF > $HOME/.nextflow/config
 singularity {
