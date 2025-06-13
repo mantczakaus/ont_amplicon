@@ -152,7 +152,7 @@ switch (workflow.containerEngine) {
 }
 
 process BLASTN {
-  publishDir "${params.outdir}/${sampleid}/04_megablast", mode: 'copy', pattern: '*_megablast_top_10_hits.txt'
+  publishDir "${params.outdir}/${sampleid}/04_megablast", mode: 'copy', pattern: '{*_megablast_top_10_hits.txt,*_blast_status.txt}'
   tag "${sampleid}"
   containerOptions "${bindOptions}"
   label "setting_10"
@@ -219,7 +219,7 @@ process BLASTN_COI {
 }
 
 process BLASTN2 {
-  publishDir "${params.outdir}/${sampleid}/04_megablast", mode: 'copy', pattern: '*_megablast_top_10_hits.txt'
+  publishDir "${params.outdir}/${sampleid}/04_megablast", mode: 'copy', pattern: '{*_megablast_top_10_hits.txt,*_blast_status.txt}'
   tag "${sampleid}"
   containerOptions "${bindOptions}"
   label "setting_10"
@@ -696,7 +696,7 @@ process RACON {
 process RATTLE {
   tag "${sampleid}"
   label 'setting_10'
-  publishDir "${params.outdir}/${sampleid}/02_clustering", mode: 'copy', pattern: '*_rattle.log'
+  publishDir "${params.outdir}/${sampleid}/02_clustering", mode: 'copy', pattern: '{*_rattle.log,*_rattle_status.txt}'
 
   input:
     tuple val(sampleid), path(fastq), val(target_size)
@@ -1322,7 +1322,6 @@ workflow {
                                                                                 .join(ch_blast_merged)
                                                                                 .join(SAMTOOLS_CONSENSUS.out.sorted_bams)
                                                                                 .join(COVSTATS.out.detections_summary))
-        files_for_report_ind_samples_ch.view()
         files_for_report_global_ch = TIMESTAMP_START.out.timestamp
             .concat(QCREPORT.out.qc_report_html)
             .concat(QCREPORT.out.qc_report_txt)
