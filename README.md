@@ -494,8 +494,8 @@ The quality filtered reads derived during the pre-processing step are mapped bac
 | **6. READ LENGTH FLAG** | Number of mapped reads whose lengths are at least 90% of the consensus match length |  **>=200** |  **50-200** | **< 50** | The consensus returned no blast hits |
 | **7. MEAN MQ FLAG** | Average mapping quality of reads mapping to the consensus match | **>= 30** | **10-30** | **< 10** | The consensus returned no blast hits |
 
-The confidence score is also derived. It is based on a scoring system which assigns different weight to each flag colour. It is a vlue bewteen 0 and 14. A higher score indicates a higher confidence in the sequence.  
-The normalised confidence score is also provided. It is a value between 0 and 1 that is calculated by normalising the confidence score to the maximum possible score for this sequence. A value of 1 indicates the sequence with highest confidence.
+The confidence score is also derived. It is based on a scoring system which assigns different weight to each flag colour for the 30X coverage flag, the target size, the mapped read count flag, the mena coverage flag, the read length flag and the mean MQ flag. It is a value bewteen 0 and 12. A higher score indicates a higher confidence in the quality of the consensus sequence.  
+The normalised confidence score is also provided. It is a value between 0 and 1 that is calculated by normalising the confidence score to the maximum possible score for this sequence. A value of 1 indicates the highest confidence in the quality of the consensus sequence.
   
 ### Mapping back to reference (optional)
 By default the quality filtered reads derived during the pre-processing step are also mapped back to the

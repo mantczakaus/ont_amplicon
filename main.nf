@@ -161,9 +161,8 @@ process BLASTN {
     tuple val(sampleid), path(assembly)
   output:
     path("${sampleid}*_megablast_top_10_hits.txt")
-//    tuple val(sampleid), path("${sampleid}*_megablast_top_10_hits.txt"), emit: blast_results
     path("${sampleid}_blast_status.txt")
-    tuple val(sampleid), path("${sampleid}*_megablast_top_10_hits.txt"), env(STATUS), emit: blast_results
+    tuple val(sampleid), path("${sampleid}*_megablast_top_10_hits.txt"), path("${sampleid}_blast_status.txt"), emit: blast_results
 
 
   script:
@@ -202,7 +201,7 @@ process BLASTN_COI {
   input:
     tuple val(sampleid), path(assembly), val(target_gene)
   output:
-    tuple val(sampleid), path("${sampleid}_ids_to_reverse_complement.txt"), emit: coi_blast_results, optional: true
+    tuple val(sampleid), path("${sampleid}_ids_to_reverse_complement.txt"), emit: coi_blast_results
 
   script:
   def blast_output_COI = assembly.getBaseName() + "_megablast_COI_top_hit.txt"
@@ -230,7 +229,7 @@ process BLASTN2 {
   output:
     path("${sampleid}*_megablast_top_10_hits.txt")
     path("${sampleid}_blast_status.txt")
-    tuple val(sampleid), path("${sampleid}*_megablast_top_10_hits.txt"), env(STATUS), emit: blast_results
+    tuple val(sampleid), path("${sampleid}*_megablast_top_10_hits.txt"), path("${sampleid}_blast_status.txt"), emit: blast_results
 
   script:
   def tmp_blast_output = assembly.getBaseName() + "_megablast_top_10_hits_temp.txt"
@@ -255,7 +254,6 @@ process BLASTN2 {
         STATUS="passed"
         echo "passed" > "${status_file}"
     fi
-
     """
   }
 }
@@ -278,36 +276,7 @@ process CHOPPER {
     gunzip -c ${sample} | chopper ${chopper_options} --threads ${task.cpus} 2> ${sampleid}_chopper.log | gzip > ${sampleid}_filtered.fastq.gz
     """
 }
-/*
-process FASTPLONG {
-  publishDir "${params.outdir}/${sampleid}/preprocessing/chopper", pattern: '*_chopper.log', mode: 'link'
-  tag "${sampleid}"
-  label 'setting_3'
 
-  input:
-    tuple val(sampleid), path(sample), val(fwd_primer), val(rev_primer)
-
-  output:
-    path("${sampleid}_fastp.log")
-    path("${sampleid}_fastp.report.html")
-    tuple val(sampleid), path("${sampleid}_filtered.fastq.gz"), emit: fastp_filtered_fq
-
-  script:
-// if (fwd_primer != null & rev_primer != null) {
-///    adapter_trimming_options = '-s ${fwd_primer} -e ${rev_primer}'
- // }
-// else {
- //   adapter_trimming_options = '-A'
-// }
-    """
-    if [[ -z ${fwd_primer} && -z ${rev_primer} ]]; then
-      fastplong -i ${sample} -o ${sampleid}_filtered.fastq.gz -V -x --cut_front --cut_tail --cut_mean_quality ${params.fastplong_min_quality} -m ${params.fastplong_min_quality} -l ${params.fastplong_min_length} -y -h ${sampleid}_fastp.report.html -R '${sampleid}_fastp_report.html' -w ${task.cpus} -s ${fwd_primer} -e ${rev_primer} > ${sampleid}_fastp.log
-    else
-      fastplong -i ${sample} -o ${sampleid}_filtered.fastq.gz -V -x --cut_front --cut_tail --cut_mean_quality ${params.fastplong_min_quality} -m ${params.fastplong_min_quality} -l ${params.fastplong_min_length} -y -h ${sampleid}_fastp.report.html -R '${sampleid}_fastp_report.html' -w ${task.cpus} -A > ${sampleid}_fastp.log
-    fi
-    """
-}
-*/
 process COVSTATS {
   tag "$sampleid"
   label "setting_1"
@@ -316,9 +285,9 @@ process COVSTATS {
   input:
     tuple val(sampleid), path(bed), path(consensus), path(coverage), path(mapping_qual), path(top_hits), path(nanostats), val(target_size), path(reads_fasta), path(contig_seqids)
   output:
-    path("*top_blast_with_cov_stats.txt"), optional: true
-    tuple val(sampleid), path("*top_blast_with_cov_stats.txt"), emit: detections_summary, optional: true
-    path("*top_blast_with_cov_stats.txt"), emit: detections_summary2, optional: true
+    path("*top_blast_with_cov_stats.txt")
+    tuple val(sampleid), path("*top_blast_with_cov_stats.txt"), emit: detections_summary
+    path("*top_blast_with_cov_stats.txt"), emit: detections_summary2
 
   script:
     """
@@ -368,6 +337,8 @@ process CUTADAPT {
   script:
 //  String fwd_primer_trimmed = fwd_primer[-10..-1]
 //  String rev_primer_trimmed = rev_primer[0..9]
+//cutadapt -n 2 -j ${task.cpus} -g "${fwd_primer_trimmed};max_error_rate=0.1;min_overlap=10" -a "${rev_primer_trimmed};max_error_rate=0.1;min_overlap=10" --trim-n -o ${sampleid}_final_polished_consensus.fasta ${consensus} > ${sampleid}_cutadapt.log
+
     """
     if fwd_primer != null && rev_primer != null;
       then
@@ -378,7 +349,6 @@ process CUTADAPT {
     """
 }
 
-//cutadapt -n 2 -j ${task.cpus} -g "${fwd_primer_trimmed};max_error_rate=0.1;min_overlap=10" -a "${rev_primer_trimmed};max_error_rate=0.1;min_overlap=10" --trim-n -o ${sampleid}_final_polished_consensus.fasta ${consensus} > ${sampleid}_cutadapt.log
 
 process EXTRACT_BLAST_HITS {
   publishDir "${params.outdir}/${sampleid}/04_megablast", mode: 'copy', pattern: '{*fasta}'
@@ -394,13 +364,10 @@ process EXTRACT_BLAST_HITS {
     path("${sampleid}_reference_match.fasta")
 
     tuple val(sampleid), path("${sampleid}*_megablast_top_hits_tmp.txt"), emit: topblast
-//    tuple val(sampleid), file("${sampleid}*_megablast_top_hits.txt"), emit: blast_results, optional: true
     tuple val(sampleid), path("${sampleid}_reference_match.fasta"), emit: reference_fasta_files
     tuple val(sampleid), path("${sampleid}_final_polished_consensus_match.fasta"), emit: consensus_fasta_files
 
   script:
-//    target_organism_str = (target_organism instanceof List) ? target_organism.join(';') : target_organism
-
     target_organism_str = (target_organism instanceof List)
     ? "\"${target_organism.join('|')}\""
     : "\"${target_organism}\""
@@ -464,9 +431,9 @@ process FASTQ2FASTA {
   tuple val(sampleid), path("${sampleid}.fasta"), emit: fasta
 
   script:
-  """
-  seqtk seq -A -C ${fastq} > ${sampleid}.fasta
-  """
+    """
+    seqtk seq -A -C ${fastq} > ${sampleid}.fasta
+    """
 }
 
 process CLUSTER2FASTA {
@@ -475,7 +442,7 @@ process CLUSTER2FASTA {
   label "setting_1"
 
   input:
-  tuple val(sampleid), path(fastq), path(assembly), env(status)
+  tuple val(sampleid), path(fastq), path(assembly), path(status)
 
 //  when:
 //  isNonEmptyFile(assembly)
@@ -485,17 +452,17 @@ process CLUSTER2FASTA {
   tuple val(sampleid), path("${sampleid}_rattle.fasta"), emit: fasta2
 
   script:
-  """
-  if [[ ! -s ${assembly} ]];
-    then
-      echo "Clustering file is empty. Skipping conversion to FASTA." >&2
-      touch ${sampleid}_rattle.fasta
-  else
-      echo "Converting assembly to FASTA format."
-      cut -f1,3 -d ' ' ${assembly} | sed 's/ total_reads=/_RC/' > ${sampleid}_tmp.fastq
-      seqtk seq -A -C ${sampleid}_tmp.fastq > ${sampleid}_rattle.fasta
-  fi
-  """
+    """
+    if [[ ! -s ${assembly} ]];
+      then
+        echo "Clustering file is empty. Skipping conversion to FASTA." >&2
+        touch ${sampleid}_rattle.fasta
+    else
+        echo "Converting assembly to FASTA format."
+        cut -f1,3 -d ' ' ${assembly} | sed 's/ total_reads=/_RC/' > ${sampleid}_tmp.fastq
+        seqtk seq -A -C ${sampleid}_tmp.fastq > ${sampleid}_rattle.fasta
+    fi
+    """
 }
 
 process FASTA2TABLE {
@@ -507,7 +474,7 @@ process FASTA2TABLE {
     tuple val(sampleid), path(tophits), path(fasta)
   output:
     file("${sampleid}*_megablast_top_hits.txt")
-    tuple val(sampleid), file("${sampleid}*_megablast_top_hits.txt"), emit: blast_results, optional: true
+    tuple val(sampleid), file("${sampleid}*_megablast_top_hits.txt"), emit: blast_results
 
   script:
     """
@@ -516,7 +483,7 @@ process FASTA2TABLE {
 }
 
 process MEDAKA2 {
-  publishDir "${params.outdir}/${sampleid}/03_polishing", mode: 'copy', pattern: '{*_consensus.fasta,*_consensus.fastq,*_consensus.pileup}'
+  publishDir "${params.outdir}/${sampleid}/03_polishing", mode: 'copy', pattern: '{*_consensus.fasta,*_consensus.fastq}'
   tag "${sampleid}"
   label 'setting_3'
 
@@ -622,7 +589,7 @@ process MOSDEPTH {
     tuple val(sampleid), path(consensus), path(bam), path(bai), path(bed)
 
   output:
-    tuple val(sampleid), path("${sampleid}.thresholds.bed"), emit: mosdepth_results, optional: true
+    tuple val(sampleid), path("${sampleid}.thresholds.bed"), emit: mosdepth_results
 
   script:
     """
@@ -645,7 +612,7 @@ process PYFAIDX {
     tuple val(sampleid), path(fasta)
 
   output:
-    tuple val(sampleid), path("${sampleid}.bed"), emit: bed, optional: true
+    tuple val(sampleid), path("${sampleid}.bed"), emit: bed
 
   script:
     """
@@ -736,9 +703,12 @@ process RATTLE {
 
   output:
     file("${sampleid}_rattle.log")
-    tuple val(sampleid), path(fastq), path("transcriptome.fq"), env(STATUS), emit: clusters
+    path("${sampleid}_rattle_status.txt")
+    tuple val(sampleid), path("${sampleid}_rattle_status.txt"), emit: status
+    tuple val(sampleid), path(fastq), path("transcriptome.fq"), path("${sampleid}_rattle_status.txt"), emit: clusters
 
   script:
+  def status_file = sampleid + "_rattle_status.txt"
   def rattle_clustering_options = params.rattle_clustering_options ?: ''
   def rattle_polishing_options = params.rattle_polishing_options ?: ''
   if (params.rattle_clustering_min_length != null) {
@@ -754,6 +724,7 @@ process RATTLE {
   }
     """
     STATUS=failed
+    echo "failed" > "${status_file}"
     (
       set +eo pipefail
       if [[ ${params.rattle_raw} == true ]]; then
@@ -776,6 +747,7 @@ process RATTLE {
     else
       echo "Rattle clustering and polishing completed successfully." >> ${sampleid}_rattle.log
       STATUS=passed
+      echo "passed" > "${status_file}"
     fi
     """
 }
@@ -859,7 +831,6 @@ process SAMTOOLS_CONSENSUS {
     path "${sampleid}_aln.sorted.bam"
     path "${sampleid}_aln.sorted.bam.bai"
     path "${sampleid}_coverage.txt"
-    path "${sampleid}_final_polished_consensus_match.pileup"
     path "${sampleid}_final_polished_consensus_match.fastq"
     tuple val(sampleid), path(consensus), path("${sampleid}_aln.sorted.bam"), path("${sampleid}_aln.sorted.bam.bai"), emit: sorted_bams
     tuple val(sampleid), path("${sampleid}_coverage.txt"), emit: coverage
@@ -873,7 +844,6 @@ process SAMTOOLS_CONSENSUS {
       touch ${sampleid}_aln.sorted.bam.bai
       touch ${sampleid}_coverage.txt
       touch ${sampleid}_mapq.txt
-      touch ${sampleid}_final_polished_consensus_match.pileup
       touch ${sampleid}_final_polished_consensus_match.fastq
     else
       samtools view -S -F 4 ${sample} | cut -f1,3 | sort | uniq > ${sampleid}_contigs_reads_ids.txt
@@ -888,21 +858,14 @@ process SAMTOOLS_CONSENSUS {
     """
 }
 
-/*
-samtools view -S -F 4 ${sample} | cut -f3 | sort | uniq > contigs_id.txt
-    for id in `cat contigs_id.txt`;
-      do
-        samtools view  -S -F 4 ${sample} | grep ${id} | cut -f1 >  ${sampleid}_${id}_aligning_ids.txt;
-      done
-*/
 process TIMESTAMP_START {
-    publishDir "${params.outdir}/01_pipeline_info", mode: 'copy', overwrite: true
-    cache false
-    output:
-    path "*nextflow_start_timestamp.txt"
-    path("*nextflow_start_timestamp.txt"), emit: timestamp
+  publishDir "${params.outdir}/01_pipeline_info", mode: 'copy', overwrite: true
+  cache false
+  output:
+  path "*nextflow_start_timestamp.txt"
+  path("*nextflow_start_timestamp.txt"), emit: timestamp
 
-    script:
+  script:
     """
     START_TIMESTAMP=\$(date "+%Y%m%d%H%M%S")
     echo "\$START_TIMESTAMP" > "\${START_TIMESTAMP}_nextflow_start_timestamp.txt"
@@ -915,9 +878,7 @@ process HTML_REPORT {
   label 'setting_3'
 
   input:
-
-//    tuple val(sampleid), path(consensus_fasta), path(consensus_match_fasta), path(aln_sorted_bam), path(aln_sorted_bam_bai), path(raw_nanoplot), path(filtered_nanoplot), path(top_blast_hits), val(status), path(blast_with_cov_stats),
-    tuple val(sampleid), path(raw_nanoplot), path(filtered_nanoplot), path(consensus_fasta), path(top_blast_hits), path(consensus_match_fasta), path(aln_sorted_bam), path(aln_sorted_bam_bai), path(blast_with_cov_stats),
+    tuple val(sampleid), path(raw_nanoplot), path(filtered_nanoplot), path (rattle_status), path(consensus_fasta), path(top_blast_hits), path(blast_status), path(consensus_match_fasta), path(aln_sorted_bam), path(aln_sorted_bam_bai), path(blast_with_cov_stats),
     path(timestamp),
     path(qcreport_html),
     path(qcreport_txt),
@@ -992,7 +953,7 @@ process READ_LENGTH_DIST {
     file "${sampleid}.fasta_read_length_dist.txt"
     file "${sampleid}.fasta_read_length_dist.png"
 
-    tuple val(sampleid), path("${sampleid}.fasta_read_length_dist.txt"), emit: read_length, optional: true
+    tuple val(sampleid), path("${sampleid}.fasta_read_length_dist.txt"), emit: read_length
 
   script:
     """
@@ -1061,18 +1022,8 @@ workflow {
       .fromPath(params.samplesheet, checkIfExists: true)
       .splitCsv(header:true)
       .map{ row->
-        //if (!row.target_size)  {
-        //  exit 1, "ERROR: samplesheet is missing required field for target_size."
-        //}
-        //else if (!row.target_organism)  {
-        //  exit 1, "ERROR: samplesheet is missing required field for target_organism."
-        //}
-        //else if (!row.target_gene)  {
-        //  exit 1, "ERROR: samplesheet is missing required field for target_gene."
-        //}
+      // Loop through required fields and check if any are null or empty
         def requiredFields = ['sampleid', 'target_organism', 'target_gene', 'target_size']
-
-        // Loop through required fields and check if any are null or empty
         for (field in requiredFields) {
             def value = row[field]
             if (value == null || value.toString().trim() == '') {
@@ -1118,7 +1069,6 @@ workflow {
           ['COI', 'CO1'].contains(gene)
       }
       .set { ch_coi }
-//    ch_coi.view()
 
     Channel
       .fromPath(params.samplesheet, checkIfExists: true)
@@ -1265,16 +1215,16 @@ workflow {
         //If the clustering step succeeds, it will proceed to the polishing step
         ch_fq_target_size = (final_fq.join(ch_target_size))
         RATTLE ( ch_fq_target_size )
-        ch_rattle_branched = RATTLE.out.clusters
-        | branch { sampleid, fastq, transcriptome, status ->
-            passed: status == "passed"
-            failed: status == "failed"
-        }
+        //ch_rattle_branched = RATTLE.out.clusters
+        //| branch { sampleid, fastq, transcriptome, status ->
+        //    passed: status == "passed"
+        //    failed: status == "failed"
+        //}
 
-        ch_rattle_passed = ch_rattle_branched.passed
-//           | map { sampleid, fastq, assembly, status -> [sampleid, fastq, assembly] }
-//            | CLUSTER2FASTA
-        ch_rattle_failed = ch_rattle_branched.failed
+        //ch_rattle_passed = ch_rattle_branched.passed
+        //      | map { sampleid, fastq, assembly, status -> [sampleid, fastq, assembly] }
+        //      | CLUSTER2FASTA
+        //ch_rattle_failed = ch_rattle_branched.failed
         CLUSTER2FASTA ( RATTLE.out.clusters )
 
         //Polish consensus sequence using Racon followed by Medaka and samtools consensus
@@ -1308,35 +1258,33 @@ workflow {
         REVCOMP ( ch_revcomp )
         //Blast to NCBI nt database
         BLASTN ( REVCOMP.out.revcomp )
-        ch_blastn_branched = BLASTN.out.blast_results
-        | branch { sampleid, blast_results, status ->
-            passed: status == "passed"
-            failed: status == "failed"
-        }
+        //ch_blastn_branched = BLASTN.out.blast_results
+        //| branch { sampleid, blast_results, status ->
+        //    passed: status == "passed"
+        //    failed: status == "failed"
+        //}
 
-        ch_blastn_passed = ch_blastn_branched.passed
-            | map { sampleid, blast_results, status -> [sampleid, blast_results] }
-        ch_blastn_failed = ch_blastn_branched.failed
+        //ch_blastn_passed = ch_blastn_branched.passed
+        //    | map { sampleid, blast_results, status -> [sampleid, blast_results] }
+        //ch_blastn_failed = ch_blastn_branched.failed
 
 
         //Directly blast to NCBI nt database all other samples
         ch_other_for_blast = (CUTADAPT.out.trimmed.join(ch_other))
         BLASTN2 ( ch_other_for_blast )
-        ch_blastn2_branched = BLASTN2.out.blast_results
-        | branch { sampleid, blast_results, status ->
-            passed: status == "passed"
-            failed: status == "failed"
-        }
+        //ch_blastn2_branched = BLASTN2.out.blast_results
+        //| branch { sampleid, blast_results, status ->
+        //    passed: status == "passed"
+        //    failed: status == "failed"
+        //}
 
-        ch_blastn2_passed = ch_blastn2_branched.passed
-            | map { sampleid, blast_results, status -> [sampleid, blast_results] }
-        ch_blastn2_failed = ch_blastn2_branched.failed
-
-
+        //ch_blastn2_passed = ch_blastn2_branched.passed
+        //    | map { sampleid, blast_results, status -> [sampleid, blast_results] }
+        //ch_blastn2_failed = ch_blastn2_branched.failed
 
         //Merge blast results from all samples
-        ch_blast_merged_passed = ch_blastn_passed.mix(ch_blastn2_passed.ifEmpty([]))
-        ch_blast_merged_failed = ch_blastn_failed.mix(ch_blastn2_failed.ifEmpty([]))
+        //ch_blast_merged_passed = ch_blastn_passed.mix(ch_blastn2_passed.ifEmpty([]))
+        //ch_blast_merged_failed = ch_blastn_failed.mix(ch_blastn2_failed.ifEmpty([]))
         ch_blast_merged = BLASTN.out.blast_results.mix(BLASTN2.out.blast_results.ifEmpty([]))
 
         ch_blast_merged2 = ch_blast_merged.map { sampleid, blast_results, status -> [sampleid, blast_results] }
@@ -1368,39 +1316,19 @@ workflow {
 
         COVSTATS(cov_stats_summary_ch)
 
-
-        //EXTRACT_READ_LENGTHS ((SEQTK.out.fasta).join(SEQTK.out.contig_seqids)
-        //                                        .join(consensus)
-        //                                        .join(COVSTATS.out.detections_summary))
-
-
-        //files_for_report_ind_samples_ch = SAMTOOLS_CONSENSUS.out.sorted_bams.join((CUTADAPT.out.trimmed)
-        //                                                                    .join(QC_PRE_DATA_PROCESSING.out.rawnanoplot)
-        //                                                                    .join(QC_POST_DATA_PROCESSING.out.filtnanoplot)
-        //                                                                    .join(BLASTN2.out.blast_results)
-        //                                                                    .join(COVSTATS.out.detections_summary), remainder: true)
-        //sorted_bam_ch = SAMTOOLS_CONSENSUS.out.sorted_bams.map { sampleid, consensus, bam, bai ->
-        //    tuple(sampleid, bam, bai)
-        //}
-
-        //sorted_bam_ch = sorted_bam_ch.ifEmpty {Channel.of(tuple('DUMMY', null, null))}
-        //covstats_ch = COVSTATS.out.detections_summary.ifEmpty { Channel.of().map { tuple('dummy', null) } }
-
-
         files_for_report_ind_samples_ch = QC_PRE_DATA_PROCESSING.out.rawnanoplot.join((QC_POST_DATA_PROCESSING.out.filtnanoplot)
+                                                                                .join(RATTLE.out.status)
                                                                                 .join(CUTADAPT.out.trimmed)
-                                                                                .join(ch_blast_merged2)
+                                                                                .join(ch_blast_merged)
                                                                                 .join(SAMTOOLS_CONSENSUS.out.sorted_bams)
                                                                                 .join(COVSTATS.out.detections_summary))
-//       files_for_report_ind_samples_ch.view()
+        files_for_report_ind_samples_ch.view()
         files_for_report_global_ch = TIMESTAMP_START.out.timestamp
             .concat(QCREPORT.out.qc_report_html)
             .concat(QCREPORT.out.qc_report_txt)
             .concat(configyaml)
             .concat(Channel.from(params.samplesheet).map { file(it) }).toList()
 
-        //HTML_REPORT(files_for_report_ind_samples_ch, files_for_report_global_ch)
-        //samplesheet_ch = Channel.fromPath(params.samplesheet)
         HTML_REPORT(files_for_report_ind_samples_ch
             .combine(files_for_report_global_ch))
         //CONTAMINATION_PREDICTION(COVSTATS.out.detections_summary2.collect().ifEmpty([]))

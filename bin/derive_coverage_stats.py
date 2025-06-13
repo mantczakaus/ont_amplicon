@@ -203,7 +203,6 @@ def apply_qc_flags(df, target_size):
         '30X_COVERAGE_FLAG',
         'MAPPED_READ_COUNT_FLAG',
         'MEAN_COVERAGE_FLAG',
-        'TARGET_ORGANISM_FLAG',
         'TARGET_SIZE_FLAG',
         'READ_LENGTH_FLAG',
         'MEAN_MQ_FLAG'
@@ -216,7 +215,7 @@ def apply_qc_flags(df, target_size):
     # Total score for each cluster
     df['TOTAL_CONF_SCORE'] = df[[col + '_SCORE' for col in flag_columns]].sum(axis=1)
 
-    # Optionally normalize: score out of 14 (7 flags × max score of 2)
+    # Optionally normalize: score out of 12 (6 flags × max score of 2)
     df['NORMALISED_CONF_SCORE'] = df['TOTAL_CONF_SCORE'] / (2 * len(flag_columns))  # Result: 0 to 1 scale
 
      #df['qseq_pc_mapping_read'] = df['qseq_pc_mapping_read'].round(1)
@@ -232,7 +231,6 @@ def save_summary(df, sample_name):
     df.drop("30X_COVERAGE_FLAG_SCORE" , axis=1, inplace=True)
     df.drop("MAPPED_READ_COUNT_FLAG_SCORE" , axis=1, inplace=True)
     df.drop("MEAN_COVERAGE_FLAG_SCORE" , axis=1, inplace=True)
-    df.drop("TARGET_ORGANISM_FLAG_SCORE" , axis=1, inplace=True)
     df.drop("TARGET_SIZE_FLAG_SCORE" , axis=1, inplace=True)
     df.drop("READ_LENGTH_FLAG_SCORE" , axis=1, inplace=True)
     df.drop("MEAN_MQ_FLAG_SCORE" , axis=1, inplace=True)
