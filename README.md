@@ -469,8 +469,8 @@ mapping_back_to_ref: true
 }
 
 ### Polishing step (optional)
-The clusters derived using RATTLE can be polished. The reads are first mapped back to the clusters using Minimap2 and then the clusters are polished using Racon, Medaka2 and Samtools consensus. 
-This step is performed by default by the pipeline but can be skipped by specifying the paramater ``--polishing false``.  
+The clusters derived using RATTLE can be polished. The reads are first mapped back to the clusters using Minimap2 and then the clusters are polished using Racon, Medaka2 and Samtools consensus. For Samtools consensus, we use the predefined sets of configuration parameters that have been optimised for ONT reads (i.e. r10.4_sup) (please see the configuration section of the [`Samtools consensus documentation`](https://www.htslib.org/doc/samtools-consensus.html)).
+This polishing step is performed by default by the pipeline but can be skipped by specifying the paramater ``--polishing false``.  
 
 ### Primer search
 If the fwd_primer and the rev_primer have been provided in the csv file, clusters are then searched for primers using Cutadapt.  
