@@ -160,7 +160,7 @@ MP24-1096B_gyrB,/work/tests/mtdt_data/barcode19_MP24-1096B_gyrB/*fastq.gz,bacter
   
   By default the pipeline will look for a file called “index.csv” in the base directory but you can specify any file name using the ```--samplesheet [filename]``` in the parameter file, as long as it has a **.csv** suffix. This text file requires the following columns (which need to be included as a header): ```sampleid,fastq_path,target_organism,target_gene,target_size,fwd_primer,rev_primer``` 
 
-   - **sampleid** will be the sample name that will be given to the files created by the pipeline **(required)**.  
+   - **sampleid** will be the sample name that will be given to the files created by the pipeline **(required)**.  **Please do not use space or special characters when naming your samples (e.g. &()*|\/) as this will break the code.**  
    - **fastq_path** is the full path to the fastq.gz files that the pipeline requires as starting input **(required)**.  
    - **target_organism** is the organism targetted by the PCR **(required)**. If more than one organism is targetted, use a pipe '|' as separator between the targets with no space.
    - **target_gene** is the gene targetted by the PCR **(required)**.  
