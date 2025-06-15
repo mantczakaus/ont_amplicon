@@ -21,6 +21,7 @@
 
 <div class="my-3" style="overflow-x: auto;">
 
+  {% if consensus_blast_hits | length %}
   <table class="table table-lined tight text-center">
     <thead>
       <tr>
@@ -57,8 +58,24 @@
       {% endfor %}
     </tbody>
   </table>
+  {% else %}
+    {% if not rattle_passed %}
+    <p class="alert alert-danger">
+      Clustering with Rattle failed - nothing to show here.
+    </p>
+    {% elif not blast_passed %}
+    <p class="alert alert-danger">
+      BLAST search against reference sequences failed - nothing to show here.
+    </p>
+    {% else %}
+    <p class="alert alert-info">
+      No sequences matched a reference sequence with BLAST (nothing to show here).
+    </p>
+    {% endif %}
+  {% endif %}
 </div>
 
+{% if consensus_blast_hits | length %}
 <button
   type="button"
   class="btn btn-primary"
@@ -67,23 +84,27 @@
 >
   Consensus statistics
 </button>
+{% endif %}
 
+{% if rattle_passed %}
 <button
   type="button"
   class="btn btn-primary"
   data-bs-toggle="modal"
   data-bs-target="#consensusFastaModal"
 >
-  Consensus sequences
+  All consensus sequences
 </button>
+{% endif %}
 
+{% if consensus_blast_hits | length %}
 <button
   type="button"
   class="btn btn-primary"
   data-bs-toggle="modal"
   data-bs-target="#consensusMatchFastaModal"
 >
-  Consensus match sequences
+  Matching consensus sequences
 </button>
 
 <a
@@ -102,8 +123,11 @@
 >
   Flag definitions
 </button>
+{% endif %}
 
-{% include 'components/consensus-blast-modal.html' %}
 {% include 'components/consensus-fasta-modal.html' %}
+{% if consensus_blast_hits | length %}
+{% include 'components/consensus-blast-modal.html' %}
 {% include 'components/consensus-match-fasta-modal.html' %}
 {% include 'components/flag-definitions-modal.html' %}
+{% endif %}

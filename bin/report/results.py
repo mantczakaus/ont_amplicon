@@ -275,6 +275,9 @@ class ConsensusFASTA:
     def __len__(self):
         return len(self.records)
 
+    def __bool__(self):
+        return bool(len(self.records))
+
     def __iter__(self):
         return iter(self.records)
 

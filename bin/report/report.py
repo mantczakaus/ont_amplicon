@@ -61,7 +61,9 @@ def render(
     with open(path, 'w') as f:
         f.write(rendered_html)
     logger.info(f"HTML document written to {path}")
-    render_bam_html()
+
+    if len(context['consensus_blast_hits']):
+        render_bam_html()
 
 
 def _get_static_file_contents():
@@ -121,6 +123,8 @@ def _get_report_context(
         'consensus_fasta': consensus_fasta,
         'consensus_match_fasta': consensus_match_fasta,
         'flags': config.flags,
+        'blast_passed': config.blast_passed,
+        'rattle_passed': config.rattle_passed,
     }
 
 
@@ -219,7 +223,7 @@ def _calculate_blast_stats(
 ) -> dict:
     return {
         'count': len(blast_hits.positive_hits),
-        'percent': round(
+        'percent': 'NA' if not consensus_fasta else round(
             100 * len(blast_hits.positive_hits) / len(consensus_fasta)
         ),
     }

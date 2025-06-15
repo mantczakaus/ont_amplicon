@@ -110,6 +110,22 @@ class Config:
         return self._get_file_by_pattern(
             "*polished_consensus_rc_megablast_top_10_hits.txt")
 
+    @property
+    def blast_passed(self) -> bool:
+        """Check if BLAST was successful."""
+        path = self._get_file_by_pattern("*_blast_status.txt")
+        if not path.exists():
+            return True  # If no file written, assume it passed
+        return 'fail' not in path.read_text().lower()
+
+    @property
+    def rattle_passed(self) -> bool:
+        """Check if clustering was successful."""
+        path = self._get_file_by_pattern("*_rattle_status.txt")
+        if not path.exists():
+            return True  # If no file written, assume it passed
+        return 'fail' not in path.read_text().lower()
+
     @cached_property
     def sample_id(self) -> str:
         """Return the sample ID from the result directory."""
