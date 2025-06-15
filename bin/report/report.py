@@ -1,6 +1,5 @@
 """Render a workflow report from output files."""
 
-import base64
 import csv
 import json
 import logging
@@ -19,7 +18,7 @@ from .results import (
     Metadata,
     RunQC,
 )
-from .utils import serialize
+from .utils import get_img_src, serialize
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -82,19 +81,10 @@ def _get_static_file_contents():
             ]
         elif root.name == 'img':
             static_files['img'] = {
-                f: _get_img_src(root / f)
+                f: (root / f)
                 for f in files
             }
     return {'static': static_files}
-
-
-def _get_img_src(path):
-    """Return the base64 encoded image source as an HTML img src property."""
-    ext = path.suffix[1:]
-    return (
-        f"data:image/{ext};base64,"
-        + base64.b64encode(path.read_bytes()).decode()
-    )
 
 
 def _get_report_context(

@@ -1,5 +1,6 @@
 """General utility functions."""
 
+import base64
 import re
 from pathlib import Path
 
@@ -25,3 +26,12 @@ def existing_path(path):
 def path_safe(dirty: str):
     """Make a string safe for use as a filename."""
     return re.sub(r"[/\\?%*:|\"<>\x7F\x00-\x1F\s]", "_", dirty)
+
+
+def get_img_src(path):
+    """Return the base64 encoded image source as an HTML img src property."""
+    ext = path.suffix[1:]
+    return (
+        f"data:image/{ext};base64,"
+        + base64.b64encode(path.read_bytes()).decode()
+    )

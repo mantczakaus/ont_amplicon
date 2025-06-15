@@ -3,6 +3,7 @@ from jinja2 import Environment, FileSystemLoader
 from pathlib import Path
 
 from .config import Config
+from .utils import get_img_src
 
 config = Config()
 logger = logging.getLogger(__name__)
@@ -34,6 +35,15 @@ def render_bam_html():
         'loading_svg': (STATIC_DIR / 'img/spinner.svg').read_text(),
         'igv_js': (STATIC_DIR / 'js/igv-3.3.0.min.js').read_text(),
         'bootstrap_css': (STATIC_DIR / 'css/bootstrap.min.css').read_text(),
+        'bootstrap_js': (
+            STATIC_DIR / 'js/bootstrap.bundle.min.js'
+        ).read_text(),
+        'jquery_js': (
+            STATIC_DIR / 'js/jquery-3.7.1.min.js'
+        ).read_text(),
+        'igv_help_img': get_img_src(
+            STATIC_DIR / 'img/igv-help.png'
+        ),
     })
     rendered_html = template.render(**context)
     path = config.bam_html_path
