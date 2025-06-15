@@ -81,7 +81,7 @@ def _get_static_file_contents():
             ]
         elif root.name == 'img':
             static_files['img'] = {
-                f: (root / f)
+                f: get_img_src(root / f)
                 for f in files
             }
     return {'static': static_files}
