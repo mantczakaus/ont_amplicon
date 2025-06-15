@@ -42,3 +42,30 @@ table.freeze-header th {
 table.table-lined td {
   border-bottom: 1px solid #bbb;
 }
+.modal-xxl {
+  max-width: 1400px;
+}
+th.column-green {
+  background-color: #a5f1b7;
+}
+th.column-orange {
+  background-color: #e9ab59;
+}
+th.column-red {
+  background-color: #e7939a;
+}
+th.column-grey {
+  background-color: #ddd;
+}
+td.column-green {
+  background-color: #d3f5db;
+}
+td.column-orange {
+  background-color: #f5d190;
+}
+td.column-red {
+  background-color: #f8bdc2;
+}
+td.column-flag_name {
+  font-family: monospace;
+}

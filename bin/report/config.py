@@ -1,5 +1,6 @@
 """Configuration of the report module."""
 
+import csv
 import os
 from datetime import datetime
 from functools import cached_property
@@ -9,19 +10,20 @@ import yaml
 
 from .utils import path_safe
 
-ROOT_DIR = Path(__file__).parent
-GITHUB_URL = 'https://github.com/maelyg/ont_amplicon'
+PARENT_DIR = Path(__file__).parent
+ROOT_DIR = Path(__file__).parents[2].resolve()
+REPO_URL = 'https://github.com/maelyg/ont_amplicon'
 
 
 class Config:
 
-    # METADATA_FILE = 'index.csv'
     TIMESTAMP_FILE = '*_start_timestamp.txt'
-    VERSIONS_PATH = ROOT_DIR.parents[1] / 'versions.yml'
-    DEFAULT_PARAMS_PATH = ROOT_DIR.parents[1] / 'params/default_params.yml'
+    VERSIONS_PATH = ROOT_DIR / 'versions.yml'
+    DEFAULT_PARAMS_PATH = ROOT_DIR / 'params/default_params.yml'
+    FLAGS_CSV = ROOT_DIR / 'flags.csv'
 
     class SCHEMA:
-        BLAST_HITS_FIELD_CSV = ROOT_DIR / 'schema/blast_hits_columns.csv'
+        BLAST_HITS_FIELD_CSV = PARENT_DIR / 'schema/blast_hits_columns.csv'
 
     class OUTPUTS:
         REPORT_FILE_TEMPLATE = '{sample_id}_report.html'
@@ -31,7 +33,7 @@ class Config:
         TITLE = "Amplicon sequencing assembly report"
         SUBTITLE = (
             "Results generated through the"
-            f' <a href="{GITHUB_URL}" target="_blank">'
+            f' <a href="{REPO_URL}" target="_blank">'
             'ONT-amplicon NextFlow workflow</a>.')
 
     class CRITERIA:
@@ -124,6 +126,14 @@ class Config:
                 '%Y%m%d%H%M%S',
             )
         return None
+
+    @cached_property
+    def flags(self) -> list[dict[str, str]]:
+        """Load flag definitions from a CSV file."""
+        with self.FLAGS_CSV.open() as f:
+            reader = csv.DictReader(f)
+            flags = list(reader)
+        return flags
 
     def load(self, result_dir: Path):
         """Read the results from the result directory."""

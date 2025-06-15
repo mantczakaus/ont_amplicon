@@ -130,6 +130,7 @@ def _get_report_context(
         ),
         'consensus_fasta': consensus_fasta,
         'consensus_match_fasta': consensus_match_fasta,
+        'flags': config.flags,
     }
 
 
