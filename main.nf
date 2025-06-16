@@ -944,7 +944,7 @@ process SUBSAMPLE {
   | gzip  > ${sampleid}_downsampled.fastq.gz
   """
 }
-
+/*
 process READ_LENGTH_DIST {
   tag "${sampleid}"
   label "setting_1"
@@ -964,7 +964,7 @@ process READ_LENGTH_DIST {
     read_length_dist.py  --contig_seqids barcode01_VE24-0976_COI_contigs_reads_ids.txt --reads /mnt/hpccs01/work/hia_mt18005/diagnostics/2024/20240419_24_30_MTDT/work/76/de167856984f66a41bd0d479f63dcf/barcode01_VE24-0976_COI.fasta --consensus barcode01_VE24-0976_COI_final_polished_consensus.fasta
     """
 }
-/*
+
 process CONTAMINATION_PREDICTION {
   label "local"
 
@@ -980,7 +980,7 @@ process CONTAMINATION_PREDICTION {
     """
 }
 
-*/
+
 process EXTRACT_READ_LENGTHS {
   tag "${sampleid}"
   label "setting_2"
@@ -996,7 +996,7 @@ process EXTRACT_READ_LENGTHS {
     read_length_dist.py --sampleid ${sampleid} --contig_seqids ${contig_seqids} --reads ${reads_fasta} --consensus ${contigs} --results_table ${results}
     """
 }
-
+*/
 
 include { NANOPLOT as QC_PRE_DATA_PROCESSING } from './modules.nf'
 include { NANOPLOT as QC_POST_DATA_PROCESSING } from './modules.nf'
