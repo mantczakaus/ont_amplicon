@@ -14,7 +14,7 @@ It takes compressed fastq files as input.
 - Data quality check (QC) and preprocessing
   - Merge fastq files (Fascat) - optional
   - Raw fastq file QC (Nanoplot)
-  - Trim adaptors (PoreChop ABI) - optional
+  - Trim adaptors (PoreChop ABI)
   - Filter reads based on length and/or quality (Chopper) - optional
   - Reformat fastq files so read names are trimmed after the first whitespace (bbmap)
   - Processed fastq file QC (if PoreChop and/or Chopper is run) (Nanoplot)
@@ -368,8 +368,8 @@ By default the pipeline will run a quality control check of the raw reads using 
 If multiple fastq files exist for a single sample, they will first need to be merged using the `merge: true` option using [`Fascat`](https://github.com/epi2me-labs/fastcat).
 Then the read names of the fastq file created will be trimmed after the first whitespace, for compatiblity purposes with all downstream tools.  
 
-Reads can also be optionally trimmed of adapters and/or quality filtered:  
-- Search for presence of sequencing adapters in sequences reads using [`Porechop ABI`](https://github.com/rrwick/Porechop) by specifying the ``adapter_trimming: true`` parameter. Porechop ABI parameters can be specified using ```porechop_options: '{options} '```, making sure you leave a space at the end before the closing quote. Please refer to the Porechop manual.  
+Reads are trimmed of adapters and optionally quality filtered:  
+- Reads are searched for the presence of sequencing adapters using [`Porechop ABI`](https://github.com/rrwick/Porechop). Porechop ABI parameters can be specified using ```porechop_options: '{options} '```, making sure you leave a space at the end before the closing quote. Please refer to the Porechop manual.  
 
   **Special usage:**  
   To limit the search to known adapters listed in [`adapter.py`](https://github.com/bonsai-team/Porechop_ABI/blob/master/porechop_abi/adapters.py), just specify the ```adapter_trimming: true``` parameter.  
@@ -404,7 +404,7 @@ Reads can also be optionally trimmed of adapters and/or quality filtered:
 
 A zipped copy of the resulting **preprocessed** and/or **quality filtered fastq file** will be saved in the preprocessing folder.  
 
-If you trim raw read of adapters and/or quality filter the raw reads, an additional quality control step will be performed.  
+After processing raw reads, an additional quality control step will be performed.  
 
 A qc report will be generated in text and html formats summarising the read counts recovered after the pre-processing step for all samples listed in the index.csv file.
 It will include 3 flags:  
