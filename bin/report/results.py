@@ -205,14 +205,15 @@ class BlastHits(AbstractResultRows):
         def _get_bs_class(row):
             # Extract numeric scores (expected in the range 0 to 1)
             conf_score = row.get('NORMALISED_CONF_SCORE', 1)
+            sacc = row.get('sacc')
  
             # Define thresholds (customize as needed)
-            if conf_score < 0.5:
+            if conf_score == 0 and sacc in [None, '', '0', '-']:
+                return 'secondary'   # grey
+            elif conf_score < 0.5:
                 return 'danger'      # red
             elif conf_score < 0.8:
                 return 'warning'     # orange
-            elif conf_score == 0:
-                return 'secondary'   # grey
             else:
                 return 'success'     # green
 
