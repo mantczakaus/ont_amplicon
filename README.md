@@ -9,7 +9,7 @@ It takes compressed fastq files as input.
 
 ## Pipeline overview
 
-![diagram pipeline](docs/images/ont_amplicon_workflow.png)
+<p><img src="docs/images/ont_amplicon_workflow.png" width="625"></p>
 
 - Data quality check (QC) and preprocessing
   - Merge fastq files (Fascat) - optional
