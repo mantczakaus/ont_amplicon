@@ -1,8 +1,8 @@
 samplesheet: index.csv
 merge: true
 adapter_trimming: true
-qual_filt: false
-chopper_options: null
+qual_filt: true
+chopper_options: -q 8
 polishing: true
 blastn_db: null
 taxdump: null
@@ -27,3 +27,5 @@ rattle_clustering_max_variance: 1000000
 rattle_polishing_options: null
 blast_mode: ncbi
 blastn_COI: null
+subsample: false
+reads_downsampling_size: 10000
