@@ -543,15 +543,15 @@ Example of output plots:
 <p align="center"><img src="docs/images/Example_raw_WeightedHistogramReadlength.png" width="750"></p>
 <p align="center"><img src="docs/images/Example_LengthvsQualityScatterPlot.png" width="750"></p>
 
-A preprocessed fastq file will be saved in the **SampleName/preprocessing** output directory which will minimally have its read names trimmed after the first whitespace, for compatiblity purposes with all downstream tools. This fastq file might be additionally trimmed of adapters and/or filtered based on quality and length (if PoreChopABI and/or Chopper were run).  
+A preprocessed fastq file will be saved in the **SampleName/preprocessing** output directory which will minimally have its read names trimmed after the first whitespace, for compatiblity purposes with all downstream tools. This fastq file will be trimmed of adapters (PoreChopABI) and optionally filtered based on quality and length (if Chopper was run).  
 
-After quality/length trimming, a PoreChopABI log will be saved under the **SampleName/preprocessing/porechop** folder.  
+After adapter trimming, a PoreChopABI log will be saved under the **SampleName/preprocessing/porechop** folder.  
 
-After adapter trimming, a Chopper log file will be saved under the **SampleName/preprocessing/chopper** folder.  
+After quality/length trimming, a Chopper log file will be saved under the **SampleName/preprocessing/chopper** folder.  
 
-If adapter trimming and/or quality/length trimming is performed, a second quality check will be performed on the processsed fastq file and a NanoPlot-report.html file will be saved under the **SampleName/qc/nanoplot** folder with the prefix **filtered**.  
+A second quality check will be performed on the processsed fastq file and a NanoPlot-report.html file will be saved under the **SampleName/qc/nanoplot** folder with the prefix **filtered**.  
 
-If the adapter trimming and/or the quality filtering options have been run, a QC report will be saved both in text and html format (i.e. **run_qc_report_YYYYMMDD-HHMMSS.txt** and **run_qc_report_YYYYMMDD-HHMMSS.html**) under the **qc_report** folder.  
+A QC report will be saved both in text and html format (i.e. **run_qc_report_YYYYMMDD-HHMMSS.txt** and **run_qc_report_YYYYMMDD-HHMMSS.html**) under the **qc_report** folder.  
 
 Example of report:
 

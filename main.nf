@@ -448,9 +448,6 @@ process CLUSTER2FASTA {
   input:
   tuple val(sampleid), path(fastq), path(assembly), path(status)
 
-//  when:
-//  isNonEmptyFile(assembly)
-
   output:
   tuple val(sampleid), path(fastq), path("${sampleid}_rattle.fasta"), emit: fasta
   tuple val(sampleid), path("${sampleid}_rattle.fasta"), emit: fasta2
@@ -486,13 +483,15 @@ process FASTA2TABLE {
     """
 }
 
+//If Racon polishing failed or produced an empty file, then Medaka will be run on the Rattle assembly.
+//If Medaka polishing fails, then the script will run samtools consensus to produce a consensus sequence from the Rattle assembly.
 process MEDAKA2 {
   publishDir "${params.outdir}/${sampleid}/03_polishing", mode: 'copy', pattern: '{*_consensus.fasta,*_consensus.fastq}'
   tag "${sampleid}"
   label 'setting_3'
 
   input:
-   tuple val(sampleid), path(fastq), path(assembly)
+   tuple val(sampleid), path(fastq), path(rattle_assembly), path(assembly)
 
   output:
    path("${sampleid}_medaka_consensus.fasta")
@@ -500,29 +499,52 @@ process MEDAKA2 {
    path("${sampleid}_samtools_consensus.fastq")
    tuple val(sampleid), path("${sampleid}_medaka_consensus.fasta"), path("${sampleid}_medaka_consensus.bam"), path("${sampleid}_medaka_consensus.bam.bai"), path("${sampleid}_samtools_consensus.fasta")
    tuple val(sampleid), path("${sampleid}_medaka_consensus.fasta"), path("${sampleid}_medaka_consensus.bam"), path("${sampleid}_medaka_consensus.bam.bai"), emit: consensus1
-   tuple val(sampleid), path("${sampleid}_samtools_consensus.fasta"), emit: consensus2
+   tuple val(sampleid), path(rattle_assembly), path("${sampleid}_samtools_consensus.fasta"), env(STATUS), emit: consensus2
 
   script:
     """
-    if [[ ! -s ${assembly} ]];
+    if [[ ! -s ${rattle_assembly} ]];
       then
         touch ${sampleid}_medaka_consensus.fasta
         touch ${sampleid}_medaka_consensus.bam
         touch ${sampleid}_medaka_consensus.bam.bai
         touch ${sampleid}_samtools_consensus.fasta
         touch ${sampleid}_samtools_consensus.fastq
+    
+    elif [[ ! -s ${assembly} ]];
+      then
+        (
+          set +eo pipefail
+          medaka_consensus -i ${fastq} -d ${rattle_assembly} -t ${task.cpus} -o ${sampleid}
+        ) 2>&1 | tee ${sampleid}_medaka.log
     else
-      medaka_consensus -i ${fastq} -d ${assembly} -t ${task.cpus} -o ${sampleid}
-
+        medaka_consensus -i ${fastq} -d ${assembly} -t ${task.cpus} -o ${sampleid}
+    fi
+    if [[ ! -s ${sampleid}/consensus.fasta ]];
+      then
+        touch ${sampleid}_medaka_consensus.fasta
+        touch ${sampleid}_medaka_consensus.bam
+        touch ${sampleid}_medaka_consensus.bam.bai
+        samtools consensus -f fasta -a -A -X r10.4_sup -o ${sampleid}_samtools_consensus.fasta ${rattle_assembly}
+        samtools consensus -f fastq -a -A -X r10.4_sup -o ${sampleid}_samtools_consensus.fastq ${rattle_assembly}
+    else
       cp ${sampleid}/calls_to_draft.bam ${sampleid}_medaka_consensus.bam
       cp ${sampleid}/calls_to_draft.bam.bai ${sampleid}_medaka_consensus.bam.bai
       cp ${sampleid}/consensus.fasta ${sampleid}_medaka_consensus.fasta
-      samtools consensus -f fasta -a -A -X r10.4_sup -o ${sampleid}_samtools_consensus.fasta ${sampleid}_medaka_consensus.bam
+      samtools consensus -f fasta -a -A -X r10.4_sup -o ${sampleid}_samtools_consensus.fasta ${sampleid}_medaka_consensus.bam 2>&1 | tee ${sampleid}_samtools_consensus.log
       samtools consensus -f fastq -a -A -X r10.4_sup -o ${sampleid}_samtools_consensus.fastq ${sampleid}_medaka_consensus.bam
+      if [[ ! -s ${sampleid}_samtools_consensus.fasta ]];
+        then
+          echo "Samtools consensus failed or produced an empty file." >> ${sampleid}_samtools_consensus.log
+          touch ${sampleid}_samtools_consensus.fasta
+          touch ${sampleid}_samtools_consensus.fastq
+          STATUS=failed
+      else 
+        STATUS=passed
+      fi
     fi
     """
 }
-
 
 process MINIMAP2_CONSENSUS {
   tag "${sampleid}"
@@ -653,7 +675,7 @@ process PORECHOP_ABI {
 }
 
 process QCREPORT {
-  publishDir "${params.outdir}/00_qc_report", mode: 'copy', overwrite: true
+  publishDir "${params.outdir}/00_QC_report", mode: 'copy', overwrite: true
   containerOptions "${bindOptions}"
 
   input:
@@ -672,28 +694,37 @@ process QCREPORT {
 }
 
 process RACON {
-  publishDir "${params.outdir}/${sampleid}/03_polishing", mode: 'copy', pattern: '*_racon_polished.fasta'
+  publishDir "${params.outdir}/${sampleid}/03_polishing", mode: 'copy', pattern: '*_racon_consensus.fasta'
   tag "${sampleid}"
   label 'setting_2'
 
   input:
-   tuple val(sampleid), path(fastq), path(assembly), path(paf)
+   tuple val(sampleid), path(fastq), path(rattle_assembly), path(paf)
 
   output:
-   tuple val(sampleid), path(fastq), path("${sampleid}_racon_polished.fasta")
-   tuple val(sampleid), path(fastq), path("${sampleid}_racon_polished.fasta"), emit: polished
+   path("${sampleid}_racon_consensus.fasta")
+   tuple val(sampleid), path(fastq), path(rattle_assembly), path("${sampleid}_racon_consensus.fasta"), emit: polished
 
   script:
     """
-    if [[ ! -s ${assembly} ]];
-      then
-        touch ${sampleid}_racon_polished.fasta
-    else
-        racon -m 8 -x -6 -g -8 -w 500 -t ${task.cpus} -q -1 --no-trimming -u \
-            ${fastq} ${paf} ${assembly} \
-            > ${sampleid}_racon_polished_tmp.fasta
-        cut -f1 -d ' ' ${sampleid}_racon_polished_tmp.fasta > ${sampleid}_racon_polished.fasta
-    fi
+    (
+      set +eo pipefail
+      if [[ ! -s ${rattle_assembly} ]];
+        then
+          touch ${sampleid}_racon_consensus.fasta
+      else
+          racon -m 8 -x -6 -g -8 -w 500 -t ${task.cpus} -q -1 --no-trimming -u \
+              ${fastq} ${paf} ${rattle_assembly} \
+              > ${sampleid}_racon_consensus_tmp.fasta
+      fi
+      
+      ) 2>&1 | tee ${sampleid}_racon.log
+      if [[ ! -s ${sampleid}_racon_consensus_tmp.fasta ]]; then
+        echo "Racon polishing failed or produced an empty file." >> ${sampleid}_racon.log
+        touch ${sampleid}_racon_consensus.fasta
+      else
+        cut -f1 -d ' ' ${sampleid}_racon_consensus_tmp.fasta > ${sampleid}_racon_consensus.fasta
+      fi
     """
 }
 
@@ -727,7 +758,6 @@ process RATTLE {
       rattle_clustering_min_length_set = '150'}
   }
     """
-    STATUS=failed
     echo "failed" > "${status_file}"
     (
       set +eo pipefail
@@ -750,7 +780,6 @@ process RATTLE {
       echo "Rattle clustering and polishing failed." >> ${sampleid}_rattle.log
     else
       echo "Rattle clustering and polishing completed successfully." >> ${sampleid}_rattle.log
-      STATUS=passed
       echo "passed" > "${status_file}"
     fi
     """
@@ -940,60 +969,8 @@ process SUBSAMPLE {
   | gzip  > ${sampleid}_downsampled.fastq.gz
   """
 }
-/*
-process READ_LENGTH_DIST {
-  tag "${sampleid}"
-  label "setting_1"
-  containerOptions "${bindOptions}"
 
-  input:
-    tuple val(sampleid), path(fasta)
-
-  output:
-    file "${sampleid}.fasta_read_length_dist.txt"
-    file "${sampleid}.fasta_read_length_dist.png"
-
-    tuple val(sampleid), path("${sampleid}.fasta_read_length_dist.txt"), emit: read_length
-
-  script:
-    """
-    read_length_dist.py  --contig_seqids barcode01_VE24-0976_COI_contigs_reads_ids.txt --reads /mnt/hpccs01/work/hia_mt18005/diagnostics/2024/20240419_24_30_MTDT/work/76/de167856984f66a41bd0d479f63dcf/barcode01_VE24-0976_COI.fasta --consensus barcode01_VE24-0976_COI_final_polished_consensus.fasta
-    """
-}
-
-process CONTAMINATION_PREDICTION {
-  label "local"
-
-  input:
-    path('*')
-
-  output:
-    path("detection_summary*.txt")
-
-  script:
-    """
-    contamination_prediction.py --threshold ${params.contamination_flag_threshold}
-    """
-}
-
-
-process EXTRACT_READ_LENGTHS {
-  tag "${sampleid}"
-  label "setting_2"
-  publishDir "${params.outdir}/${sampleid}/05_mapping_to_consensus", mode: 'copy'
-
-  input:
-  tuple val(sampleid), path(reads_fasta), path(contig_seqids), path(contigs), path(results)
-  output:
-  path "*final_top_blast_with_cov_stats.txt"
-
-  script:
-    """
-    read_length_dist.py --sampleid ${sampleid} --contig_seqids ${contig_seqids} --reads ${reads_fasta} --consensus ${contigs} --results_table ${results}
-    """
-}
-*/
-
+// Main workflow definition
 include { NANOPLOT as QC_PRE_DATA_PROCESSING } from './modules.nf'
 include { NANOPLOT as QC_POST_DATA_PROCESSING } from './modules.nf'
 
@@ -1173,16 +1150,6 @@ workflow {
         //If the clustering step succeeds, it will proceed to the polishing step
         ch_fq_target_size = (final_fq.join(ch_target_size))
         RATTLE ( ch_fq_target_size )
-        //ch_rattle_branched = RATTLE.out.clusters
-        //| branch { sampleid, fastq, transcriptome, status ->
-        //    passed: status == "passed"
-        //    failed: status == "failed"
-        //}
-
-        //ch_rattle_passed = ch_rattle_branched.passed
-        //      | map { sampleid, fastq, assembly, status -> [sampleid, fastq, assembly] }
-        //      | CLUSTER2FASTA
-        //ch_rattle_failed = ch_rattle_branched.failed
         CLUSTER2FASTA ( RATTLE.out.clusters )
 
         //Polish consensus sequence using Racon followed by Medaka and samtools consensus
@@ -1190,8 +1157,18 @@ workflow {
           MINIMAP2_RACON ( CLUSTER2FASTA.out.fasta )
           RACON ( MINIMAP2_RACON.out.draft_mapping)
           MEDAKA2 ( RACON.out.polished )
-          consensus = MEDAKA2.out.consensus2
+          ch_branched = MEDAKA2.out.consensus2
+            | branch { sampleid, clusters, consensus, status ->
+              passed: status == "passed"
+              failed: status == "failed"
+            }
 
+          ch_passed = ch_branched.passed
+            | map { sampleid, clusters, consensus, status -> [sampleid, consensus] }
+          ch_failed = ch_branched.failed
+            | map { sampleid, clusters, consensus, status -> [sampleid, clusters] }
+
+          consensus = ch_passed.concat(ch_failed.ifEmpty([]))
         }
         //If polishing is skipped, directly use the clusters generated by Rattle for blast search
         else {
@@ -1201,12 +1178,6 @@ workflow {
         //Remove trailing Ns and primer sequences from consensus sequence
           CUTADAPT ( consensus.join(ch_primers) )
 
-        //Limit blast homology search to a reference (legacy from ontvisc, placeholder at this stage, not tested in ont_amplicon)
-        //if (params.blast_vs_ref) {
-        //  BLASTN2REF ( consensus )
-        //}
-
-        //else {
         //Blast steps for samples targetting COI
         ch_coi_for_blast = (CUTADAPT.out.trimmed.join(ch_coi))
         //Blast to COI database
@@ -1216,33 +1187,12 @@ workflow {
         REVCOMP ( ch_revcomp )
         //Blast to NCBI nt database
         BLASTN ( REVCOMP.out.revcomp )
-        //ch_blastn_branched = BLASTN.out.blast_results
-        //| branch { sampleid, blast_results, status ->
-        //    passed: status == "passed"
-        //    failed: status == "failed"
-        //}
-
-        //ch_blastn_passed = ch_blastn_branched.passed
-        //    | map { sampleid, blast_results, status -> [sampleid, blast_results] }
-        //ch_blastn_failed = ch_blastn_branched.failed
-
 
         //Directly blast to NCBI nt database all other samples
         ch_other_for_blast = (CUTADAPT.out.trimmed.join(ch_other))
         BLASTN2 ( ch_other_for_blast )
-        //ch_blastn2_branched = BLASTN2.out.blast_results
-        //| branch { sampleid, blast_results, status ->
-        //    passed: status == "passed"
-        //    failed: status == "failed"
-        //}
-
-        //ch_blastn2_passed = ch_blastn2_branched.passed
-        //    | map { sampleid, blast_results, status -> [sampleid, blast_results] }
-        //ch_blastn2_failed = ch_blastn2_branched.failed
 
         //Merge blast results from all samples
-        //ch_blast_merged_passed = ch_blastn_passed.mix(ch_blastn2_passed.ifEmpty([]))
-        //ch_blast_merged_failed = ch_blastn_failed.mix(ch_blastn2_failed.ifEmpty([]))
         ch_blast_merged = BLASTN.out.blast_results.mix(BLASTN2.out.blast_results.ifEmpty([]))
 
         ch_blast_merged2 = ch_blast_merged.map { sampleid, blast_results, status -> [sampleid, blast_results] }
@@ -1288,7 +1238,6 @@ workflow {
 
         HTML_REPORT(files_for_report_ind_samples_ch
             .combine(files_for_report_global_ch))
-        //CONTAMINATION_PREDICTION(COVSTATS.out.detections_summary2.collect().ifEmpty([]))
 
         //MAPPING BACK TO REFERENCE
         if (params.mapping_back_to_ref) {
@@ -1298,9 +1247,6 @@ workflow {
           //Derive bam file and consensus fasta file
           SAMTOOLS ( MINIMAP2_REF.out.aligned_sample )
         }
-
-      //DETECTION_REPORT(COVSTATS.out.detections_summary.collect().ifEmpty([]))
-//        }
       }
 /*
       //Perform direct alignment to a reference
