@@ -1,6 +1,5 @@
 samplesheet: /full/path/to/index.csv
 merge: true
-adapter_trimming: true
 qual_filt: true
 chopper_options: -q 8 -l 100
 polishing: true

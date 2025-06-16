@@ -7,18 +7,10 @@ import time
 import numpy as np
 
 def main():
-    parser = argparse.ArgumentParser(description="Derive a qc report")
-    parser.add_argument("--adapter_trimming", type=str)
-    parser.add_argument("--quality_trimming", type=str)
-    args = parser.parse_args()
-    adapter_trimming = args.adapter_trimming
-    quality_trimming = args.quality_trimming
 
     timestr = time.strftime("%Y%m%d-%H%M%S")
-
     summary_dict = {}
 
-    #if os.path.isfile("*raw_NanoStats.txt"):
     for raw_read_out in glob.glob("*raw_NanoStats.txt"):
         raw_reads = ()
         line_number = 0
@@ -52,33 +44,29 @@ def main():
             #qt_reads = int(first_line[0].strip())
         f.close()
         summary_dict[sample].append(qt_reads)
-    
- 
-    
-    else:
-        if adapter_trimming == "true" or quality_trimming == "true":
-            run_data_df = pd.DataFrame([([k] + v) for k, v in summary_dict.items()], columns=['Sample','raw_reads','quality_filtered_reads'])
-            run_data_df['percent_quality_filtered'] = run_data_df['quality_filtered_reads'] / run_data_df['raw_reads'] * 100
-            run_data_df['percent_quality_filtered'] = run_data_df['percent_quality_filtered'].apply(lambda x: float("{:.2f}".format(x)))
-            run_data_df = run_data_df.sort_values("Sample")
-            run_data_df['raw_reads_flag'] = np.where((run_data_df['raw_reads'] < 2500), "Less than 2500 raw reads", "")
-            run_data_df['qfiltered_flag'] = np.where((run_data_df['quality_filtered_reads'] < 200), "Less than 200 processed reads", "")
-            run_data_df["QC_FLAG"] = np.where(
-                (run_data_df['quality_filtered_reads'] < 200),
-                "RED",
-                np.where(
-                    ((run_data_df['raw_reads'] < 2500) &
-                    (run_data_df['quality_filtered_reads'] >= 200)),
-                    "ORANGE",
-                    np.where(
-                        ((run_data_df['raw_reads'] >= 2500) &
-                        (run_data_df['quality_filtered_reads'] >= 200)),
-                        "GREEN",
-                        ""
-                    )
-                )
+
+    run_data_df = pd.DataFrame([([k] + v) for k, v in summary_dict.items()], columns=['Sample','raw_reads','quality_filtered_reads'])
+    run_data_df['percent_quality_filtered'] = run_data_df['quality_filtered_reads'] / run_data_df['raw_reads'] * 100
+    run_data_df['percent_quality_filtered'] = run_data_df['percent_quality_filtered'].apply(lambda x: float("{:.2f}".format(x)))
+    run_data_df = run_data_df.sort_values("Sample")
+    run_data_df['raw_reads_flag'] = np.where((run_data_df['raw_reads'] < 2500), "Less than 2500 raw reads", "")
+    run_data_df['qfiltered_flag'] = np.where((run_data_df['quality_filtered_reads'] < 200), "Less than 200 processed reads", "")
+    run_data_df["QC_FLAG"] = np.where(
+        (run_data_df['quality_filtered_reads'] < 200),
+        "RED",
+        np.where(
+            ((run_data_df['raw_reads'] < 2500) &
+            (run_data_df['quality_filtered_reads'] >= 200)),
+            "ORANGE",
+            np.where(
+                ((run_data_df['raw_reads'] >= 2500) &
+                (run_data_df['quality_filtered_reads'] >= 200)),
+                "GREEN",
+                ""
             )
-    
+        )
+    )
+
     run_data_df.to_csv("run_qc_report_" + timestr + ".txt", index = None, sep="\t")
 
     summary_table = run_data_df.to_html(index=False).replace('<table border="1" class="dataframe">','<table class="table table-striped">') # use bootstrap styling

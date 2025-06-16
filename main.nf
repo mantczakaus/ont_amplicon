@@ -41,8 +41,6 @@ def helpMessage () {
                                       Default: false
       --preprocessing_only            Only perform preprocessing steps specied
                                       Default: false
-      --adapter_trimming              Run porechop step
-                                      Default: false
       --porechop_options              Porechop_ABI options
                                       Default: ''
       --porechop_custom_primers       Limit porechop search to custom adapters specified under porechop_custom_primers_path
@@ -669,7 +667,7 @@ process QCREPORT {
 
   script:
     """
-    seq_run_qc_report.py --adapter_trimming ${params.adapter_trimming} --quality_trimming ${params.qual_filt}
+    seq_run_qc_report.py
     """
 }
 
@@ -757,8 +755,6 @@ process RATTLE {
     fi
     """
 }
-
-//grep '@cluster' transcriptome.fq  | cut -f1,3 -d ' '  | sed 's/total_reads=//' | sort -k2,2 -rn | sed 's/ /_RC/' | sed 's/@//' | head -n 10 > ${sampleid}_most_abundant_clusters_ids.txt
 
 process REFORMAT {
   tag "${sampleid}"
@@ -1000,8 +996,6 @@ process EXTRACT_READ_LENGTHS {
 
 include { NANOPLOT as QC_PRE_DATA_PROCESSING } from './modules.nf'
 include { NANOPLOT as QC_POST_DATA_PROCESSING } from './modules.nf'
-//include { BLASTN as BLASTN } from './modules.nf'
-//include { BLASTN as BLASTN2 } from './modules.nf'
 
 workflow {
   TIMESTAMP_START ()
@@ -1084,10 +1078,6 @@ workflow {
   } else { exit 1, "Input samplesheet file not specified!" }
 
   configyaml = Channel.fromPath(workflow.commandLine.split(" -params-file ")[1].split(" ")[0])
-  // Collect the elements in the channel to a list to check if it is empty or not
-  //If not empty, ensure a path to a MetaCOXI database has been specified
-  //def elements = ch_coi.toList()
-  //println "The channel 'ch_coi' contains: ${elements}"
 
 // Conditional logic to require database if needed
   ch_coi
@@ -1119,18 +1109,15 @@ workflow {
         error("Please provide the path to a taxonkit database using the parameter --taxdump.")
       }
     }
-//    else if (params.blast_vs_ref ) {
-//      if ( params.reference == null) {
-//      error("Please provide the path to a reference fasta file with the parameter --reference.")
-//      }
-//    }
+
   }
+  /*
   else if ( params.analysis_mode == 'map2ref' ) {
     if ( params.reference == null) {
       error("Please provide the path to a reference fasta file with the parameter --reference.")
       }
   }
-
+  */
   if (params.merge) {
     //Merge split fastq.gz files
     FASTCAT ( ch_sample )
@@ -1146,20 +1133,13 @@ workflow {
   // Data pre-processing
   if (!params.qc_only) {
     // Remove adapters using PORECHOP_ABI
-    if (params.adapter_trimming) {
-      PORECHOP_ABI ( fq )
-      trimmed_fq = PORECHOP_ABI.out.porechopabi_trimmed_fq
-    }
-    else {
-      trimmed_fq = fq
-    }
+    PORECHOP_ABI ( fq )
+    trimmed_fq = PORECHOP_ABI.out.porechopabi_trimmed_fq
 
     // Perform quality filtering of reads using chopper
     if (params.qual_filt) {
       CHOPPER ( trimmed_fq)
       filtered_fq = CHOPPER.out.chopper_filtered_fq
-//      FASTPLONG ( trimmed_fq.join(ch_primers))
-//      filtered_fq = FASTPLONG.out.fastp_filtered_fq
     }
     else { filtered_fq = trimmed_fq
     }
@@ -1167,28 +1147,9 @@ workflow {
     //Reformat fastq read names after the first whitespace
     REFORMAT( filtered_fq )
 
-
     //Run Nanoplot on merged raw fastq files after data processing
-    if ( params.qual_filt & params.adapter_trimming | !params.qual_filt & params.adapter_trimming | params.qual_filt & !params.adapter_trimming) {
-      QC_POST_DATA_PROCESSING ( filtered_fq )
-    }
+    QC_POST_DATA_PROCESSING ( filtered_fq )
 
-/*
-    //Legacy code from ontvisc to filter host sequences, consider removing if not needed
-    if (params.host_filtering) {
-      if ( params.host_fasta == null) {
-        error("Please provide the path to a fasta file of host sequences that need to be filtered with the parameter --host_fasta.")
-      }
-      else {
-        MINIMAP2_ALIGN_RNA ( REFORMAT.out.reformatted_fq, params.host_fasta )
-        EXTRACT_READS ( MINIMAP2_ALIGN_RNA.out.sequencing_ids )
-        final_fq = EXTRACT_READS.out.unaligned_fq
-      }
-    }
-    else {
-      final_fq = REFORMAT.out.reformatted_fq
-    }
-*/
     if (params.subsample) {
       SUBSAMPLE ( REFORMAT.out.reformatted_fq )
       final_fq = SUBSAMPLE.out.subsampled_fq
@@ -1197,21 +1158,14 @@ workflow {
       final_fq = REFORMAT.out.reformatted_fq
     }
 
-
-    //final_fq = REFORMAT.out.reformatted_fq
-
-    //Derive QC report if any preprocessing steps were performed
-    //if ( params.qual_filt & params.host_filtering | params.adapter_trimming & params.host_filtering ) {
-    if ( params.qual_filt | params.adapter_trimming ) {
-      ch_multiqc_files = Channel.empty()
-      ch_multiqc_files = ch_multiqc_files.mix(QC_PRE_DATA_PROCESSING.out.read_counts.collect().ifEmpty([]))
-      ch_multiqc_files = ch_multiqc_files.mix(QC_POST_DATA_PROCESSING.out.read_counts.collect().ifEmpty([]))
-      QCREPORT(ch_multiqc_files.collect())
-    }
-
+    //Derive QC report
+    ch_multiqc_files = Channel.empty()
+    ch_multiqc_files = ch_multiqc_files.mix(QC_PRE_DATA_PROCESSING.out.read_counts.collect().ifEmpty([]))
+    ch_multiqc_files = ch_multiqc_files.mix(QC_POST_DATA_PROCESSING.out.read_counts.collect().ifEmpty([]))
+    QCREPORT(ch_multiqc_files.collect())
 
     if (!params.preprocessing_only) {
-      //Currently only one analysis mode in ont_amplicon, this is legacy from ontvisc, consider removing if no other mode is added to this pipeline
+      //Currently only one analysis mode in ont_amplicon, consider removing if no other mode is added to this pipeline
       //We have had talks about including an option to just a map to a reference of interest, but this is not implemented yet
       if ( params.analysis_mode == 'clustering' ) {
         //Perform clustering using Rattle and convert to fasta file
