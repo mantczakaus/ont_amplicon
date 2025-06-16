@@ -229,7 +229,7 @@ class BlastHits(AbstractResultRows):
         """Set rows with no hits to have a null value."""
         for row in self.rows:
             if not row['sacc'] or row['sacc'] == '0':
-                for colname in self.COLUMNS[3:33]:
+                for colname in self.COLUMNS[3:41] + self.COLUMNS[49:50]:
                     row[colname] = '-'
 
 
