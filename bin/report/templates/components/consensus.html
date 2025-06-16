@@ -61,11 +61,11 @@
   {% else %}
     {% if not rattle_passed %}
     <p class="alert alert-danger">
-      Clustering with Rattle failed - nothing to show here.
+      Clustering with Rattle failed. Therefore, only a limited report is available. Consider relaxing the criteria at the quality filtering step and/or reducing the minimum read length during cluster generation. 
     </p>
     {% elif not blast_passed %}
     <p class="alert alert-danger">
-      BLAST search against reference sequences failed - nothing to show here.
+      BLAST search against reference sequences failed . Therefore, only a limited report is available as no coverage statistics were generated. Blast homology search can fail when the consensuses generated are too short. If this is the case for this sample, consider relaxing the criteria at the quality filtering step and/or reducing the minimum read length during cluster generation.
     </p>
     {% else %}
     <p class="alert alert-info">

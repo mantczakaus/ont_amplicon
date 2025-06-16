@@ -214,7 +214,13 @@ process BLASTN_COI {
       -outfmt '6 qseqid sseqid length pident mismatch gapopen qstart qend sstart send evalue bitscore sstrand' \
       -max_target_seqs 1 \
       -max_hsps 1
-      grep minus ${blast_output_COI} | cut -f1 > ${sampleid}_ids_to_reverse_complement.txt
+
+    if [[ ! -s ${blast_output_COI} ]];
+      then
+        touch ${sampleid}_ids_to_reverse_complement.txt
+    else
+        grep minus ${blast_output_COI} | cut -f1 > ${sampleid}_ids_to_reverse_complement.txt
+    fi
     """
 }
 
@@ -896,9 +902,7 @@ process HTML_REPORT {
     cp ${params.tool_versions} versions.yml
     cp ${params.default_params} default_params.yml
 
-    if [[ -s ${consensus_match_fasta} ]]; then
-      build_report.py --samplesheet ${samplesheet} --result_dir . --params_file ${configyaml} --analyst ${analyst_name} --facility ${params.facility} --versions versions.yml --default_params_file default_params.yml
-    fi
+    build_report.py --samplesheet ${samplesheet} --result_dir . --params_file ${configyaml} --analyst ${analyst_name} --facility ${params.facility} --versions versions.yml --default_params_file default_params.yml
     """
 }
 
