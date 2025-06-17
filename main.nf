@@ -74,8 +74,6 @@ def helpMessage () {
                                        Default: ''
 
       #### Blast options ####
-      --blast_mode                    Blast mode to use
-                                      Default: 'ncbi'
       --blast_threads                 Number of threads for megablast
                                       Default: '2'
       --blastn_db                     Path to blast database [required if not performing qc_only or preprocessing_only]
@@ -167,8 +165,6 @@ process BLASTN {
   def tmp_blast_output = assembly.getBaseName() + "_megablast_top_10_hits_temp.txt"
   def blast_output = assembly.getBaseName() + "_megablast_top_10_hits.txt"
   def status_file = sampleid + "_blast_status.txt"
-
-  if (params.blast_mode == "ncbi") {
     """
     STATUS="failed"
     echo "failed" > "${status_file}"
@@ -188,7 +184,7 @@ process BLASTN {
         echo "passed" > "${status_file}"
     fi
     """
-  }
+
 }
 
 process BLASTN_COI {
