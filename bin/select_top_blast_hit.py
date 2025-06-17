@@ -13,36 +13,32 @@ def parse_arguments():
     parser = argparse.ArgumentParser(description="Load and enrich BLASTn results.")
     parser.add_argument("--blastn_results", required=True, type=str)
     parser.add_argument("--sample_name", required=True, type=str)
-    parser.add_argument("--mode", required=True, choices=["ncbi", "localdb"], type=str)
     parser.add_argument("--target_organism", required=True, type=str)
     parser.add_argument("--taxonkit_database_dir", required=True, type=str)
     return parser.parse_args()
 
-def load_blast_results(path, mode):
+def load_blast_results(path):
     """Load BLASTn results based on mode."""
     if not os.path.isfile(path):
         raise FileNotFoundError(f"BLASTn results file not found: {path}")
 
-    if mode == "ncbi":
-        columns = ["qseqid", "sgi", "sacc", "length", "nident", "pident", "mismatch", "gaps", "gapopen", "qstart",
-                   "qend", "qlen", "sstart", "send", "slen", "sstrand", "evalue", "bitscore", "qcovhsp", "stitle",
-                   "staxids", "qseq", "sseq", "sseqid", "qcovs", "qframe", "sframe"]
+    columns = ["qseqid", "sgi", "sacc", "length", "nident", "pident", "mismatch", "gaps", "gapopen", "qstart",
+                "qend", "qlen", "sstart", "send", "slen", "sstrand", "evalue", "bitscore", "qcovhsp", "stitle",
+                "staxids", "qseq", "sseq", "sseqid", "qcovs", "qframe", "sframe"]
 
-        dtype = {
-            "qseqid": 'str', "sgi": 'str', "sacc": 'str', "length": 'int64', "nident": 'int64',
-            "pident": 'float64', "mismatch": 'int64', "gaps": 'int64', "gapopen": 'int64', "qstart": 'int64',
-            "qend": 'int64', "qlen": 'int64', "sstart": 'int64', "send": 'int64', "slen": 'int64', "sstrand": 'str',
-            "evalue": 'float64', "bitscore": 'float64', "qcovhsp": 'int64', "stitle": 'str', "staxids": 'str',
-            "qseq": 'str', "sseq": 'str', "sseqid": 'str', "qcovs": 'int64', "qframe": 'int64', "sframe": 'int64'
-        }
+    dtype = {
+        "qseqid": 'str', "sgi": 'str', "sacc": 'str', "length": 'int64', "nident": 'int64',
+        "pident": 'float64', "mismatch": 'int64', "gaps": 'int64', "gapopen": 'int64', "qstart": 'int64',
+        "qend": 'int64', "qlen": 'int64', "sstart": 'int64', "send": 'int64', "slen": 'int64', "sstrand": 'str',
+        "evalue": 'float64', "bitscore": 'float64', "qcovhsp": 'int64', "stitle": 'str', "staxids": 'str',
+        "qseq": 'str', "sseq": 'str', "sseqid": 'str', "qcovs": 'int64', "qframe": 'int64', "sframe": 'int64'
+    }
 
-        df = pd.read_csv(path, sep="\t", header=0, usecols=columns, dtype=dtype)
-        df["staxids"] = pd.to_numeric(df["staxids"].str.split(";").str[0], errors='coerce').fillna(0).astype(int)
-        top_hit = df.drop_duplicates(subset=["qseqid"], keep="first").copy()
+    df = pd.read_csv(path, sep="\t", header=0, usecols=columns, dtype=dtype)
+    df["staxids"] = pd.to_numeric(df["staxids"].str.split(";").str[0], errors='coerce').fillna(0).astype(int)
+    top_hit = df.drop_duplicates(subset=["qseqid"], keep="first").copy()
 
-        return top_hit
-    else:
-        raise NotImplementedError("Mode 'localdb' not implemented yet.")
+    return top_hit
 
 def enrich_with_taxonomy(df, taxonkit_dir):
     """Add taxonomy information to the dataFrame."""
@@ -145,7 +141,6 @@ def main():
     blastn_results_path = args.blastn_results
     sample_name = args.sample_name
     target_organism = args.target_organism
-    mode = args.mode
     tk_db_dir = args.taxonkit_database_dir
 
     if not os.path.isfile(blastn_results_path):
@@ -157,7 +152,7 @@ def main():
     #    out_file.close()
     #    exit ()
 
-    blastn_results = load_blast_results(blastn_results_path, mode)
+    blastn_results = load_blast_results(blastn_results_path)
     enriched_dfs = enrich_with_taxonomy(blastn_results, tk_db_dir)
     merged_df = merge_taxonomy(enriched_dfs)
     final_df = filter_and_format(merged_df, sample_name, target_organism)
