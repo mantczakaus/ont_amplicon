@@ -350,7 +350,6 @@ process CUTADAPT {
 
 
 process EXTRACT_BLAST_HITS {
-  publishDir "${params.outdir}/${sampleid}/04_megablast", mode: 'copy', pattern: '{*fasta}'
   tag "${sampleid}"
   label "setting_1"
   containerOptions "${bindOptions}"
@@ -359,9 +358,6 @@ process EXTRACT_BLAST_HITS {
     tuple val(sampleid), path(blast_results), val(target_organism), val(target_gene), val(target_size)
 
   output:
-    path("${sampleid}_final_polished_consensus_match.fasta")
-    path("${sampleid}_reference_match.fasta")
-
     tuple val(sampleid), path("${sampleid}*_megablast_top_hits_tmp.txt"), emit: topblast
     tuple val(sampleid), path("${sampleid}_reference_match.fasta"), emit: reference_fasta_files
     tuple val(sampleid), path("${sampleid}_final_polished_consensus_match.fasta"), emit: consensus_fasta_files
@@ -500,6 +496,7 @@ process MEDAKA2 {
 
   script:
     """
+    STATUS=failed
     if [[ ! -s ${rattle_assembly} ]];
       then
         touch ${sampleid}_medaka_consensus.fasta
@@ -507,41 +504,42 @@ process MEDAKA2 {
         touch ${sampleid}_medaka_consensus.bam.bai
         touch ${sampleid}_samtools_consensus.fasta
         touch ${sampleid}_samtools_consensus.fastq
-    
-    elif [[ ! -s ${assembly} ]];
-      then
-        (
-          set +eo pipefail
-          medaka_consensus -i ${fastq} -d ${rattle_assembly} -t ${task.cpus} -o ${sampleid}
-        ) 2>&1 | tee ${sampleid}_medaka.log
     else
-        (
-          set +eo pipefail
-          medaka_consensus -i ${fastq} -d ${assembly} -t ${task.cpus} -o ${sampleid}
-        ) 2>&1 | tee ${sampleid}_medaka.log
-    fi
-    if [[ ! -s ${sampleid}/consensus.fasta ]];
-      then
-        touch ${sampleid}_medaka_consensus.fasta
-        touch ${sampleid}_medaka_consensus.bam
-        touch ${sampleid}_medaka_consensus.bam.bai
-        samtools consensus -f fasta -a -A -X r10.4_sup -o ${sampleid}_samtools_consensus.fasta ${rattle_assembly}
-        samtools consensus -f fastq -a -A -X r10.4_sup -o ${sampleid}_samtools_consensus.fastq ${rattle_assembly}
-    else
-      cp ${sampleid}/calls_to_draft.bam ${sampleid}_medaka_consensus.bam
-      cp ${sampleid}/calls_to_draft.bam.bai ${sampleid}_medaka_consensus.bam.bai
-      cp ${sampleid}/consensus.fasta ${sampleid}_medaka_consensus.fasta
-      samtools consensus -f fasta -a -A -X r10.4_sup -o ${sampleid}_samtools_consensus.fasta ${sampleid}_medaka_consensus.bam 2>&1 | tee ${sampleid}_samtools_consensus.log
-      samtools consensus -f fastq -a -A -X r10.4_sup -o ${sampleid}_samtools_consensus.fastq ${sampleid}_medaka_consensus.bam
-      if [[ ! -s ${sampleid}_samtools_consensus.fasta ]];
+      if [[ ! -s ${assembly} ]];
         then
-          echo "Samtools consensus failed or produced an empty file." >> ${sampleid}_samtools_consensus.log
-          touch ${sampleid}_samtools_consensus.fasta
-          touch ${sampleid}_samtools_consensus.fastq
-          STATUS=failed
+          (
+            set +eo pipefail
+            medaka_consensus -i ${fastq} -d ${rattle_assembly} -t ${task.cpus} -o ${sampleid}
+          ) 2>&1 | tee ${sampleid}_medaka.log
       else
-        echo "Samtools consensus ran succesfully." >> ${sampleid}_samtools_consensus.log
-        STATUS=passed
+          (
+            set +eo pipefail
+            medaka_consensus -i ${fastq} -d ${assembly} -t ${task.cpus} -o ${sampleid}
+          ) 2>&1 | tee ${sampleid}_medaka.log
+      fi
+
+      if [[ ! -s ${sampleid}/consensus.fasta ]];
+        then
+          touch ${sampleid}_medaka_consensus.fasta
+          touch ${sampleid}_medaka_consensus.bam
+          touch ${sampleid}_medaka_consensus.bam.bai
+          samtools consensus -f fasta -a -A -X r10.4_sup -o ${sampleid}_samtools_consensus.fasta ${rattle_assembly}
+          samtools consensus -f fastq -a -A -X r10.4_sup -o ${sampleid}_samtools_consensus.fastq ${rattle_assembly}
+      else
+        cp ${sampleid}/calls_to_draft.bam ${sampleid}_medaka_consensus.bam
+        cp ${sampleid}/calls_to_draft.bam.bai ${sampleid}_medaka_consensus.bam.bai
+        cp ${sampleid}/consensus.fasta ${sampleid}_medaka_consensus.fasta
+        samtools consensus -f fasta -a -A -X r10.4_sup -o ${sampleid}_samtools_consensus.fasta ${sampleid}_medaka_consensus.bam 2>&1 | tee ${sampleid}_samtools_consensus.log
+        samtools consensus -f fastq -a -A -X r10.4_sup -o ${sampleid}_samtools_consensus.fastq ${sampleid}_medaka_consensus.bam
+        if [[ ! -s ${sampleid}_samtools_consensus.fasta ]];
+          then
+            echo "Samtools consensus failed or produced an empty file." >> ${sampleid}_samtools_consensus.log
+            touch ${sampleid}_samtools_consensus.fasta
+            touch ${sampleid}_samtools_consensus.fastq
+        else
+          echo "Samtools consensus ran succesfully." >> ${sampleid}_samtools_consensus.log
+          STATUS=passed
+        fi
       fi
     fi
     """
@@ -695,7 +693,7 @@ process QCREPORT {
 }
 
 process RACON {
-  publishDir "${params.outdir}/${sampleid}/03_polishing", mode: 'copy', pattern: '*_racon_consensus.fasta,*.log'
+  publishDir "${params.outdir}/${sampleid}/03_polishing", mode: 'copy', pattern: '{*_racon_consensus.fasta,*.log}'
   tag "${sampleid}"
   label 'setting_2'
 
@@ -726,6 +724,7 @@ process RACON {
         touch ${sampleid}_racon_consensus.fasta
       else
         cut -f1 -d ' ' ${sampleid}_racon_consensus_tmp.fasta > ${sampleid}_racon_consensus.fasta
+        echo "Racon polishing ran succesfully." >> ${sampleid}_racon.log
       fi
     """
 }
@@ -837,7 +836,6 @@ process SAMTOOLS {
   output:
     path "${sampleid}_ref_aln.sorted.bam"
     path "${sampleid}_ref_aln.sorted.bam.bai"
-    path "${sampleid}_coverage.txt"
     path "${sampleid}_samtools_consensus_from_ref.fasta"
     tuple val(sampleid), path(ref), path("${sampleid}_ref_aln.sorted.bam"), path("${sampleid}_ref_aln.sorted.bam.bai"), emit: sorted_sample
 
