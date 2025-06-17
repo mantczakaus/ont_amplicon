@@ -95,17 +95,17 @@ class RunQC(AbstractDataRow):
 
     COLUMNS = [
         ('raw_reads', int),
-        ('quality_filtered_reads', int),
-        ('percent_quality_filtered', float),
+        ('processed_reads', int),
+        ('percent_processed', float),
         ('raw_reads_flag', str),
-        ('qfiltered_flag', str),
+        ('processed_flag', str),
     ]
 
     @property
     def flag(self):
         raw_threshold = self.raw_reads > config.CRITERIA.MIN_RAW_READS
         qfiltered_threshold = (
-            self.quality_filtered_reads
+            self.processed_reads
             > config.CRITERIA.MIN_FILTERED_READS)
         if qfiltered_threshold:
             if raw_threshold:

@@ -45,22 +45,22 @@ def main():
         f.close()
         summary_dict[sample].append(qt_reads)
 
-    run_data_df = pd.DataFrame([([k] + v) for k, v in summary_dict.items()], columns=['Sample','raw_reads','quality_filtered_reads'])
-    run_data_df['percent_quality_filtered'] = run_data_df['quality_filtered_reads'] / run_data_df['raw_reads'] * 100
-    run_data_df['percent_quality_filtered'] = run_data_df['percent_quality_filtered'].apply(lambda x: float("{:.2f}".format(x)))
+    run_data_df = pd.DataFrame([([k] + v) for k, v in summary_dict.items()], columns=['Sample','raw_reads','processed_reads'])
+    run_data_df['percent_processed'] = run_data_df['processed_reads'] / run_data_df['raw_reads'] * 100
+    run_data_df['percent_processed'] = run_data_df['percent_processed'].apply(lambda x: float("{:.2f}".format(x)))
     run_data_df = run_data_df.sort_values("Sample")
     run_data_df['raw_reads_flag'] = np.where((run_data_df['raw_reads'] < 2500), "Less than 2500 raw reads", "")
-    run_data_df['qfiltered_flag'] = np.where((run_data_df['quality_filtered_reads'] < 200), "Less than 200 processed reads", "")
+    run_data_df['processed_reads_flag'] = np.where((run_data_df['processed_reads'] < 200), "Less than 200 processed reads", "")
     run_data_df["QC_FLAG"] = np.where(
-        (run_data_df['quality_filtered_reads'] < 200),
+        (run_data_df['processed_reads'] < 200),
         "RED",
         np.where(
             ((run_data_df['raw_reads'] < 2500) &
-            (run_data_df['quality_filtered_reads'] >= 200)),
+            (run_data_df['processed_reads'] >= 200)),
             "ORANGE",
             np.where(
                 ((run_data_df['raw_reads'] >= 2500) &
-                (run_data_df['quality_filtered_reads'] >= 200)),
+                (run_data_df['processed_reads'] >= 200)),
                 "GREEN",
                 ""
             )
@@ -81,8 +81,8 @@ def main():
             <blockquote>
             <p><b> Definitions:</b></p>
             <p><b> raw_reads </b>= total raw reads sequenced </p>
-            <p><b> quality_filtered_reads </b>= total reads left-over after adapter trimming and/or quality filtering </p>
-            <p><b> percent_quality_filtered </b>= (quality_filtered_reads/raw_reads x 100)</p>
+            <p><b> processed_reads </b>= total reads left-over after adapter trimming and/or quality filtering </p>
+            <p><b> percent_processed </b>= (processed_reads/raw_reads x 100)</p>
             </blockquote>
             <!-- *** Section 1 *** --->
             ''' + summary_table + '''

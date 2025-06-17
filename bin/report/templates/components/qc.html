@@ -41,13 +41,13 @@
   >
     <td>Clean reads</td>
     <td>
-      {{ "{:,}". format(run_qc.quality_filtered_reads) }}
-      ({{ run_qc.percent_quality_filtered }}%)
+      {{ "{:,}". format(run_qc.processed_reads) }}
+      ({{ run_qc.percent_processed }}%)
     </td>
     <td class="text-center">
-      {% if run_qc.qfiltered_flag %}
+      {% if run_qc.processed_flag %}
       <span>&#10060;</span>
-      {{ run_qc.qfiltered_flag }}
+      {{ run_qc.processed_flag }}
       {% else %}
       <span>&#9989;</span>
       {% endif %}
