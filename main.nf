@@ -837,6 +837,7 @@ process SAMTOOLS {
     path "${sampleid}_ref_aln.sorted.bam"
     path "${sampleid}_ref_aln.sorted.bam.bai"
     path "${sampleid}_samtools_consensus_from_ref.fasta"
+    path "${sampleid}_coverage.txt"
     tuple val(sampleid), path(ref), path("${sampleid}_ref_aln.sorted.bam"), path("${sampleid}_ref_aln.sorted.bam.bai"), emit: sorted_sample
 
   script:
@@ -850,7 +851,7 @@ process SAMTOOLS {
 }
 
 process SAMTOOLS_CONSENSUS {
-  publishDir "${params.outdir}/${sampleid}/05_mapping_to_consensus", mode: 'copy', pattern: '{*.bam,*.bai,*_coverage.txt,*final_polished_consensus_match.*}'
+  publishDir "${params.outdir}/${sampleid}/05_mapping_to_consensus", mode: 'copy', pattern: '{*.bam,*.bai,*final_polished_consensus_match.*}'
   tag "${sampleid}"
   label 'setting_2'
 
@@ -861,7 +862,6 @@ process SAMTOOLS_CONSENSUS {
     path "${sampleid}_final_polished_consensus_match.fasta"
     path "${sampleid}_aln.sorted.bam"
     path "${sampleid}_aln.sorted.bam.bai"
-    path "${sampleid}_coverage.txt"
     path "${sampleid}_final_polished_consensus_match.fastq"
     tuple val(sampleid), path(consensus), path("${sampleid}_aln.sorted.bam"), path("${sampleid}_aln.sorted.bam.bai"), emit: sorted_bams
     tuple val(sampleid), path("${sampleid}_coverage.txt"), emit: coverage
