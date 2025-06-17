@@ -122,7 +122,6 @@ With the following parmaters specified in the params_mtdt_test.yml. **Please upd
 {
 samplesheet: tests/index_mtdt.csv
 merge: true
-adapter_trimming: true
 qual_filt: true
 chopper_options: -q 8 -l 100
 polishing: true
@@ -200,7 +199,6 @@ These are the default parameters set by the pipeline:
 {
 samplesheet: /full/path/to/index.csv
 merge: true
-adapter_trimming: true
 qual_filt: true
 chopper_options: -q 8 -l 100
 polishing: true
@@ -372,15 +370,13 @@ Reads are trimmed of adapters and optionally quality filtered:
 - Reads are searched for the presence of sequencing adapters using [`Porechop ABI`](https://github.com/rrwick/Porechop). Porechop ABI parameters can be specified using ```porechop_options: '{options} '```, making sure you leave a space at the end before the closing quote. Please refer to the Porechop manual.  
 
   **Special usage:**  
-  To limit the search to known adapters listed in [`adapter.py`](https://github.com/bonsai-team/Porechop_ABI/blob/master/porechop_abi/adapters.py), just specify the ```adapter_trimming: true``` parameter.  
+  By default, Porechop limits the search to known adapters listed in [`adapter.py`](https://github.com/bonsai-team/Porechop_ABI/blob/master/porechop_abi/adapters.py).  
   To search ab initio for adapters on top of known adapters, specify:
   ```
-  adapter_trimming: true 
   porechop_options: '-abi '
   ```  
   To limit the search to custom adapters, specify 
   ```
-  adapter_trimming: true
   porechop_custom_primers: true
   porechop_options '-ddb '
   ```
@@ -435,7 +431,6 @@ Example of parameter file in which all reads will be retained during the cluster
 {
 samplesheet: tests/index_mtdt.csv
 merge: true
-adapter_trimming: true
 qual_filt: true
 chopper_options: -q 8 -l 25
 rattle_raw: true
@@ -454,7 +449,6 @@ Example in which reads are first quality filtered using the tool chopper (only r
 {
 samplesheet: tests/index_mtdt.csv
 merge: true
-adapter_trimming: true
 qual_filt: true
 chopper_options: -q 8 -l 100
 rattle_clustering_min_length: 200
