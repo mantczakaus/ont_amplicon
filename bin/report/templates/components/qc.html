@@ -41,8 +41,12 @@
   >
     <td>Clean reads</td>
     <td>
+      {% if run_qc.processed_reads is not none %}
       {{ "{:,}". format(run_qc.processed_reads) }}
       ({{ run_qc.percent_processed }}%)
+      {% else %}
+      NA
+      {% endif %}
     </td>
     <td class="text-center">
       {% if run_qc.processed_flag %}
