@@ -74,17 +74,17 @@ def _get_static_file_contents():
         if root.name == 'css':
             static_files['css'] = [
                 f'/* {f} */\n' + (root / f).read_text()
-                for f in files
+                for f in sorted(files)
             ]
         elif root.name == 'js':
             static_files['js'] = [
                 f'/* {f} */\n' + (root / f).read_text()
-                for f in files
+                for f in sorted(files)
             ]
         elif root.name == 'img':
             static_files['img'] = {
                 f: get_img_src(root / f)
-                for f in files
+                for f in sorted(files)
             }
     return {'static': static_files}
 
