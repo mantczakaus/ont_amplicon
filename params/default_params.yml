@@ -24,7 +24,6 @@ rattle_clustering_max_length: null
 rattle_raw: false
 rattle_clustering_max_variance: 1000000
 rattle_polishing_options: null
-blast_mode: ncbi
 blastn_COI: null
 subsample: false
 reads_downsampling_size: 10000
