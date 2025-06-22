@@ -2,9 +2,9 @@
 
 ## Introduction
 
-ont_amplicon is a Nextflow-based bioinformatics pipeline designed to derive consensus sequences from **amplicon sequencing data** that was generated using **rapid library preparation kit** from **Oxford nanopore Technologies**. The pipeline expects the fastq files to have been generated using a **high accuracy (HAC)** basecalling model.  **The pipeline will fail to run if the fastq files provided are generated with a Fast basecalling model.**
+ont_amplicon is a Nextflow-based bioinformatics pipeline designed to derive consensus sequences from **amplicon sequencing data** that were generated using **rapid library preparation kit** from **Oxford nanopore Technologies**. The pipeline expects the fastq files to have been generated using a **high accuracy (HAC)** basecalling model.  **The pipeline will fail to run if the fastq files provided are generated with a Fast basecalling model.**
 
-It takes compressed fastq files as input.
+It takes compressed fastq files (i.e. fastq.gz) as input.
 
 
 ## Pipeline overview
@@ -12,24 +12,25 @@ It takes compressed fastq files as input.
 <p><img src="docs/images/ont_amplicon_workflow.png" width="625"></p>
 
 - Data quality check (QC) and preprocessing
-  - Merge fastq files (Fascat) - optional
-  - Raw fastq file QC (Nanoplot)
+  - Merge fastq.gz files (Fascat) - optional
+  - Quality check of raw fastq file (Nanoplot)
   - Trim adaptors (PoreChop ABI)
-  - Filter reads based on length and/or quality (Chopper) - optional
+  - Filter reads based on length and/or mean quality (Chopper) - optional
   - Reformat fastq files so read names are trimmed after the first whitespace (bbmap)
-  - Processed fastq file QC (if PoreChop and/or Chopper is run) (Nanoplot)
+  - Quality check of processed fastq file (Nanoplot)
+  - Subsample reads (seqkit)- optional
 - QC report
-  - Derive read counts recovered pre and post data processing and post host filtering
+  - Derive read counts recovered pre and post data processing
 - Clustering mode
   - Read clustering (Rattle)
   - Convert fastq to fasta format (seqtk)
-  - Polishing (Minimap2, Racon, Medaka2, Samtools - optional)
-  - Remove adapters if provided (Cutadapt)
+  - Polishing (Minimap2, Racon, Medaka2, Samtools) - optional
+  - Remove adapters, if provided (Cutadapt)
   - Megablast homology search against COI database (if COI is targetted) and reverse complement where required
   - Megablast homology search against NCBI database
-  - Derive top candidate hits, assign preliminary taxonomy and target organism flag (pytaxonkit)
-  - Map reads back to segment of consensus sequence that align to reference and derive BAM file and alignment statistics (Minimap2, Samtools and Mosdepth)
-  - Map reads to segment of NCBI reference sequence that align to consensus and derive BAM file and consensus (Minimap2, Samtools) - optional
+  - Derive top candidate hits, assign preliminary taxonomy and set target organism flag (pytaxonkit)
+  - Map reads back to segment of consensus sequence that aligns to reference and derive BAM file and alignment statistics (Minimap2, Samtools and Mosdepth)
+  - Map reads to segment of NCBI reference sequence that aligns to consensus and derive BAM file and consensus (Minimap2, Samtools) - optional
 
 
 ## Installation
@@ -44,7 +45,7 @@ If the pipeline is run on a local machine, it will require between 300-800Gb of 
 - 280Gb/760Gb for the blast NCBI database coreNT/NT
 - 3.4Gb for the MetaCOXI database  
 
-To run the pipeline will also require at least 2 cores and ~40Gb of memory per sample.  
+To run, the pipeline will also require at least 2 cores and ~40Gb of memory per sample.  
 The pipeline will generate ~5-100Mb of files per sample, depending on the number of consensuses recovered per sample and if mapping back to reference is required. Make sure you have enough space available on your local machine before running several samples at the same time.  
 
 1. Install Java if not already on your system. Follow the java download instructions provided on this [`page`](https://www.nextflow.io/docs/latest/getstarted.html#installation).
