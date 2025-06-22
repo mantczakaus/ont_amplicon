@@ -61,7 +61,7 @@ The pipeline will generate ~5-100Mb of files per sample, depending on the number
 
 3. Install [`Singularity`](https://docs.sylabs.io/guides/3.0/user-guide/quick_start.html#quick-installation-steps) to suit your environment. The pipeline has been validated using singularity version 3.10.2-1 and apptainer version 1.3.6-1.el9 but has not yet been tested with singularity version 4.
 
-4. **Important**: To avoid nextflow installing the singularity containers each time you are running the pipeline, set your singularity container cache directory. For example, the command below will set a cache directory called $HOME/.nextflow/NXF_SINGULARITY_CACHEDIR and this will direct nextflow to save the container sin this centralised location:  
+4. **Important: To avoid nextflow installing the singularity containers each time you are running the pipeline, set your singularity container cache directory.** For example, the command below will set a cache directory called $HOME/.nextflow/NXF_SINGULARITY_CACHEDIR and this directs Nextflow to always save the containers into this centralised location:  
 ```
 [[ -d $HOME/.nextflow ]] || mkdir -p $HOME/.nextflow
 [[ -d $HOME/.nextflow/NXF_SINGULARITY_CACHEDIR ]] || mkdir -p $HOME/.nextflow/NXF_SINGULARITY_CACHEDIR
