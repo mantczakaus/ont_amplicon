@@ -594,7 +594,7 @@ As each process can spawn many tasks, colors are used to identify those tasks be
 #### Workflow diagram
 The pipeline executed is represented as an HTML diagram in direct acyclic graph format. The vertices in the graph represent the pipeline’s processes and operators, while the edges represent the data dependencies (i.e. channels) between them.
 
-### Preprocessing and host read filtering outputs
+### Preprocessing and quality check outputs (Sample_name/00_preprocessing, Sample_name/01_QC & 00_QC_report)
 If the fastq.gz files need to be merged for a sample, the resulting fastq.g file will be stored under the **SampleName/01_QC/fastcat** folder. The basecallign model used will also be captured in this folder in a file called **basecalling_model_inference.txt**.  
 A quality check will be performed on the raw fastq file using [NanoPlot](https://github.com/wdecoster/NanoPlot) which is a tool that can be used to produce general quality metrics e.g. quality score distribution, read lengths and other general stats. A NanoPlot-report.html file will be saved under the **SampleName/01_QC/nanoplot** folder with the prefix **raw**. This report displays 6 plots as well as a table of summary statistics.  
 
@@ -610,9 +610,9 @@ After adapter trimming, a PoreChopABI log will be saved under the **SampleName/0
 
 After quality/length trimming, a Chopper log file will be saved under the **SampleName/preprocessing/chopper** folder.  
 
-A second quality check will be performed on the processsed fastq file and a NanoPlot-report.html file will be saved under the **SampleName/01_qc/nanoplot** folder with the prefix **filtered**.  
+A second quality check will be performed on the processsed fastq file and a NanoPlot-report.html file will be saved under the **SampleName/01_QC/nanoplot** folder with the prefix **filtered**.  
 
-A QC repor,t which captures the date and time in the file name, will be saved both in text and html format (i.e. **run_qc_report_YYYYMMDD-HHMMSS.txt** and **run_qc_report_YYYYMMDD-HHMMSS.html**) under the **00_QC_report** folder.  
+A QC report, which captures the date and time in the file name, will be saved both in text and html format (i.e. **run_qc_report_YYYYMMDD-HHMMSS.txt** and **run_qc_report_YYYYMMDD-HHMMSS.html**) under the **00_QC_report** folder.  
 
 Example of report:
 
@@ -621,10 +621,10 @@ Example of report:
 | ONT141 | 10929 | 2338 | 21.39 | | | GREEN |
 | ONT142| 21849 | 4232 | 9.37 | | | GREEN |
 
-### Clustering step outputs  
-In this mode, the output from Rattle will be saved under **SampleName/02_clustering/SampleName_rattle.fasta**. The number of reads contributing to each clusters is listed in the header. The amplicon of interest is usually amongst the most abundant clusters (i.e. the ones represented by the most reads). The rattle log (**SampleName_rattle.log**) is also available in the same folder as well as a file called **SampleName_rattle.status** that catches whether the clustering step ran succesfully or not.  
+### Clustering step outputs (Sample_name02_clustering)
+The output from Rattle will be saved under **SampleName/02_clustering/SampleName_rattle.fasta**. The number of reads contributing to each clusters is listed in the header. The amplicon of interest is usually amongst the most abundant clusters (i.e. the ones represented by the most reads). The rattle log (**SampleName_rattle.log**) is also available in the same folder as well as a file called **SampleName_rattle.status** that catches whether the clustering step ran succesfully or not.  
 
-### Polishing step outputs 
+### Polishing step outputs (Sample_name03_polishing)
 (in progress)  
 
 ### Blast search outputs  
