@@ -6,6 +6,27 @@ ont_amplicon is a Nextflow-based bioinformatics pipeline designed to derive cons
 
 It takes compressed fastq files (i.e. fastq.gz) as input.
 
+## Table of contents
+1. [Pipeline overview](#pipeline-overview)  
+2. [Installation](#installation)  
+a. [Requirements](#requirements)  
+3. [Running the pipeline](#running-the-pipeline)
+4. [Run the pipeline for the first time](#run-the-pipeline-for-the-first-time)  
+a. [Run test data](#run-test-data)  
+b. [QC step](#qc-step)  
+c. [Preprocessing reads](#preprocessing-reads)  
+d. [Host read filtering](#host-read-filtering)  
+e. [Read classification analysis mode](#read-classification-analysis-mode)  
+f. [De novo assembly analysis mode](#de-novo-assembly-analysis-mode)  
+g. [Clustering analysis mode](#clustering-analysis-mode)  
+h. [Mapping to reference](#mapping-to-reference)
+5. [Output files](#output-files)  
+a. [Preprocessing and host read filtering outputs](#Preprocessing-and-host-read-filtering-outputs)  
+b. [Read classification mode outputs](#read-classification-mode)  
+c. [De novo assembly mode outputs](#de-novo-assembly-mode-outputs)  
+d. [Clustering mode outputs](#clustering-mode-outputs)  
+e. [Map to reference mode outputs](#map-to-reference-mode-outputs)  
+f. [Results folder structure](#results-folder-structure)
 
 ## Pipeline overview
 
@@ -48,9 +69,9 @@ If the pipeline is run on a local machine, it will require between 300-800Gb of 
 To run, the pipeline will also require at least 2 cores and ~40Gb of memory per sample.  
 The pipeline will generate ~5-100Mb of files per sample, depending on the number of consensuses recovered per sample and if mapping back to reference is required. Make sure you have enough space available on your local machine before running several samples at the same time.  
 
-1. Install Java if not already on your system. Follow the java download instructions provided on this [`page`](https://www.nextflow.io/docs/latest/getstarted.html#installation).
+**1. Install Java** if not already on your system. Follow the java download instructions provided on this [`page`](https://www.nextflow.io/docs/latest/getstarted.html#installation).
 
-2. Install [`Nextflow`](https://www.nextflow.io/docs/latest/getstarted.html#installation)
+**2. Install [`Nextflow`](https://www.nextflow.io/docs/latest/getstarted.html#installation)**
 
   Nextflow memory requirements
 
@@ -59,9 +80,9 @@ The pipeline will generate ~5-100Mb of files per sample, depending on the number
   NXF_OPTS='-Xms1g -Xmx4g'
   ```
 
-3. Install [`Singularity`](https://docs.sylabs.io/guides/3.0/user-guide/quick_start.html#quick-installation-steps) to suit your environment. The pipeline has been validated using singularity version 3.10.2-1 and apptainer version 1.3.6-1.el9 but has not yet been tested with singularity version 4.
+**3. Install [`Singularity`](https://docs.sylabs.io/guides/3.0/user-guide/quick_start.html#quick-installation-steps)** to suit your environment. The pipeline has been validated using singularity version 3.10.2-1 and apptainer version 1.3.6-1.el9 but has not yet been tested with singularity version 4.
 
-4. **Important: To avoid nextflow installing the singularity containers each time you are running the pipeline, set your singularity container cache directory.** For example, the command below will set a cache directory called $HOME/.nextflow/NXF_SINGULARITY_CACHEDIR and this directs Nextflow to always save the containers into this centralised location:  
+**4. Important: To avoid nextflow installing the singularity containers each time you are running the pipeline, set your singularity container cache directory.** For example, the command below will set a cache directory called $HOME/.nextflow/NXF_SINGULARITY_CACHEDIR and this directs Nextflow to always save the containers into this centralised location:  
 ```
 [[ -d $HOME/.nextflow ]] || mkdir -p $HOME/.nextflow
 [[ -d $HOME/.nextflow/NXF_SINGULARITY_CACHEDIR ]] || mkdir -p $HOME/.nextflow/NXF_SINGULARITY_CACHEDIR
@@ -77,10 +98,10 @@ singularity {
 Specify a different `cacheDir` location if space is limited in your home directory.  
 
 
-5. Install the taxonkit databases using the script install_taxonkit.sh located in the bin folder or follow the steps described on this [`page`](https://bioinf.shenwei.me/taxonkit/download/).
+**5. Install the taxonkit databases** using the script install_taxonkit.sh located in the bin folder or follow the steps described on this [`page`](https://bioinf.shenwei.me/taxonkit/download/).
 
 
-6. Install NCBI NT or coreNT.  
+**6. Install NCBI NT or coreNT.**  
 Download a local copy of the NCBI database of interest, following the detailed steps available at https://www.ncbi.nlm.nih.gov/books/NBK569850/. Create a folder where you will store your NCBI databases. It is good practice to include the date of download. For instance:
   ```
   mkdir blastDB/20230930
@@ -99,7 +120,7 @@ Download a local copy of the NCBI database of interest, following the detailed s
   blastn_db: /full/path/to/blastDB/20230930/nt
   ```
 
-7. Download the Cytochrome oxydase 1 (COI1) database if you are planning to analyse COI samples.
+**7. Download the Cytochrome oxydase 1 (COI1) database** if you are planning to analyse COI samples.
   ```
   wget https://zenodo.org/record/6246634/files/MetaCOXI_Seqs_1.tar.gz
   #extract MetaCOXI_Seqs.fasta from the MetaCOXI_Seqs.tar.gz file
@@ -116,30 +137,29 @@ Specify the full path to your COI database name in your in your parameter file.
 ## Running the pipeline  
 
 ### Quick start
-The typical command for running the pipeline is as follows:
+A typical command for running the pipeline is as follows:
 ```
-nextflow run main.nf -profile singularity -params-file params/params_mtdt_test.yml
+nextflow run main.nf -profile singularity -params-file params/params_example.yml
 ```
 With the following parmaters specified in the params_mtdt_test.yml. **Please update paths to databases to match your local set up**:
 ```
 {
-samplesheet: tests/index_mtdt.csv
+samplesheet: /full/path/to/index.csv
 merge: true
-adapter_trimming: true
 qual_filt: true
 chopper_options: -q 8 -l 100
 polishing: true
-blastn_db: $HOME/ont_amplicon/tests/blastdb/reference.fasta
-blastn_COI: $HOME/ont_amplicon/tests/COIdb/MetaCOXI_Seqs.fasta
-taxdump: ~/.taxonkit
+blastn_db: /full/path/to/NCBI/core_nt
+blastn_COI: /full/path/to/MetaCOXI_Seqs.fasta
 blast_threads: 2
-analyst_name: John Smith
-facility: MTDT
+taxdump: ~/.taxonkit
+analyst_name: Maely Gauthier
+facility: QUT
 mapping_back_to_ref: true
 }
 ```
 
-And below is an example of an index.file:
+And below is an example of an **index.file**:
 ```
 sampleid,fastq_path,target_organism,target_gene,target_size,fwd_primer,rev_primer
 VE24-1279_COI,/work/tests/mtdt_data/barcode01_VE24-1279_COI/*fastq.gz,drosophilidae,COI,711,GGTCAACAAATCATAAAGATATTGG,ATTTTTTGGTCACCCTGAAGTTTA
