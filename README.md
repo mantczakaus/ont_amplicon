@@ -563,15 +563,14 @@ A confidence score is also derived. It is based on a scoring system which assign
 The normalised confidence score is also provided. It is a value between 0 and 1 that is calculated by normalising the confidence score to the maximum possible score for this sequence. A value of 1 indicates the highest confidence in the quality of the consensus sequence.
   
 ### Mapping back to reference (optional)
-By default the quality filtered reads derived during the pre-processing step are also mapped back to the
-reference blast match and Samtools consensus is used to derive independent guided-reference consensuses. Their nucleotide sequences can be compared to that of the original consensuses to resolve ambiguities (ie low complexity and repetitive regions).  
+By default the quality filtered reads derived during the pre-processing step are also mapped back to the reference blast match and [Samtools consensus](http://www.htslib.org/doc/samtools-consensus.html) is used to derive independent guided-reference consensuses. Their nucleotide sequences can be compared to that of the original consensuses to resolve ambiguities (ie low complexity and repetitive regions).  
 
 ### HTML report
 An html summary report is generated for each sample, incorporating sample metadata, QC before and after 
-preprocessing, blast results and coverage statistics. It also provides a link to the bam files generated when ampping back to consensus.  
+preprocessing, blast results and coverage statistics. It also provides a link to the bam files generated when mapping back to consensus.  
 
 ## Output files
-The output files will be saved under the results folder by default. This can be changed by setting the `outdir` parameter.  
+The output files will be saved by default under the **results** folder. This can be changed by setting the **`--outdir` parameter**.  
 
 ### Nextflow reports
 Nextflow generates several outputs which are stored under the **01_pipeline_info** folder. Please find detailed information about these on this [page](https://www.nextflow.io/docs/latest/reports.html). All of these have the date and time appended as a suffix.
@@ -580,7 +579,7 @@ Nextflow generates several outputs which are stored under the **01_pipeline_info
 Nextflow outputs an **HTML execution report** which includes general metrics about the run. The report is organised into 3 main sections:  
 - The **Summary** section reports the execution status, the launch command, overall execution time and some other workflow metadata.  
 - The **Resources** section plots the distribution of resource usage for each workflow process. Plots are shown for CPU, memory, job duration and disk I/O. They have two (or three) tabs with the raw values and a percentage representation showing what proportion of the requested resources were used. These plots are very helpful to check that task resources are used efficiently.  
-- The **Tasks** section lists all executed tasks, reporting for each of them the status, the actual command script, and many other metrics.  
+- The **Tasks** section lists all executed tasks, reporting for each of them the status, the actual command script, and several other metrics.  
 
 #### Trace file
 Nextflow creates an execution tracing text file that contains some useful information about each process executed in your pipeline script, including: submission time, start time, completion time, cpu and memory used.  
@@ -596,8 +595,8 @@ As each process can spawn many tasks, colors are used to identify those tasks be
 The pipeline executed is represented as an HTML diagram in direct acyclic graph format. The vertices in the graph represent the pipeline’s processes and operators, while the edges represent the data dependencies (i.e. channels) between them.
 
 ### Preprocessing and host read filtering outputs
-If a merge step is required, fastcat will create a summary text file showing the read length distribution.  
-Quality check will be performed on the raw fastq file using [NanoPlot](https://github.com/wdecoster/NanoPlot) which is a tool that can be used to produce general quality metrics e.g. quality score distribution, read lengths and other general stats. A NanoPlot-report.html file will be saved under the **SampleName/qc/nanoplot** folder with the prefix **raw**. This report displays 6 plots as well as a table of summary statistics.  
+If the fastq.gz files need to be merged for a sample, the resulting fastq.g file will be stored under the **SampleName/01_QC/fastcat** folder. The basecallign model used will also be captured in this folder in a file called **basecalling_model_inference.txt**.  
+A quality check will be performed on the raw fastq file using [NanoPlot](https://github.com/wdecoster/NanoPlot) which is a tool that can be used to produce general quality metrics e.g. quality score distribution, read lengths and other general stats. A NanoPlot-report.html file will be saved under the **SampleName/01_QC/nanoplot** folder with the prefix **raw**. This report displays 6 plots as well as a table of summary statistics.  
 
 <p align="center"><img src="docs/images/Example_Statistics.png" width="1000"></p>
 
@@ -605,25 +604,25 @@ Example of output plots:
 <p align="center"><img src="docs/images/Example_raw_WeightedHistogramReadlength.png" width="750"></p>
 <p align="center"><img src="docs/images/Example_LengthvsQualityScatterPlot.png" width="750"></p>
 
-A preprocessed fastq file will be saved in the **SampleName/preprocessing** output directory which will minimally have its read names trimmed after the first whitespace, for compatiblity purposes with all downstream tools. This fastq file will be trimmed of adapters (PoreChopABI) and optionally filtered based on quality and length (if Chopper was run).  
+A preprocessed fastq file will be saved in the **SampleName/00_preprocessing** output directory which will have its read names trimmed after the first whitespace, for compatiblity purposes with all downstream tools. This fastq file will also be trimmed of adapters (PoreChopABI) and optionally filtered based on quality and/or length (if Chopper was run).  
 
-After adapter trimming, a PoreChopABI log will be saved under the **SampleName/preprocessing/porechop** folder.  
+After adapter trimming, a PoreChopABI log will be saved under the **SampleName/00_preprocessing/porechop** folder.  
 
 After quality/length trimming, a Chopper log file will be saved under the **SampleName/preprocessing/chopper** folder.  
 
-A second quality check will be performed on the processsed fastq file and a NanoPlot-report.html file will be saved under the **SampleName/qc/nanoplot** folder with the prefix **filtered**.  
+A second quality check will be performed on the processsed fastq file and a NanoPlot-report.html file will be saved under the **SampleName/01_qc/nanoplot** folder with the prefix **filtered**.  
 
-A QC report will be saved both in text and html format (i.e. **run_qc_report_YYYYMMDD-HHMMSS.txt** and **run_qc_report_YYYYMMDD-HHMMSS.html**) under the **qc_report** folder.  
+A QC repor,t which captures the date and time in the file name, will be saved both in text and html format (i.e. **run_qc_report_YYYYMMDD-HHMMSS.txt** and **run_qc_report_YYYYMMDD-HHMMSS.html**) under the **00_QC_report** folder.  
 
 Example of report:
 
-| Sample| raw_reads | quality_filtered_reads | percent_quality_filtered | raw_reads_flag | qfiltered_flag | QC_FLAG |
+| Sample| raw_reads | processed_reads | percent_processed | raw_reads_flag | processed_reads_flag | QC_FLAG |
 | --- | --- | --- | --- | --- | --- | --- |
 | ONT141 | 10929 | 2338 | 21.39 | | | GREEN |
 | ONT142| 21849 | 4232 | 9.37 | | | GREEN |
 
 ### Clustering step outputs  
-In this mode, the output from Rattle will be saved under **SampleName/clustering/rattle/SampleName_rattle.fasta**. The number of reads contributing to each clusters is listed in the header. The amplicon of interest is usually amongst the most abundant clusters (i.e. the ones represented by the most reads).  
+In this mode, the output from Rattle will be saved under **SampleName/02_clustering/SampleName_rattle.fasta**. The number of reads contributing to each clusters is listed in the header. The amplicon of interest is usually amongst the most abundant clusters (i.e. the ones represented by the most reads). The rattle log (**SampleName_rattle.log**) is also available in the same folder as well as a file called **SampleName_rattle.status** that catches whether the clustering step ran succesfully or not.  
 
 ### Polishing step outputs 
 (in progress)  
