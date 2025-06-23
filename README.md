@@ -511,7 +511,7 @@ mapping_back_to_ref: true
 }
 ```
 
-Example in which reads are first quality filtered using the tool chopper (only reads with a Phread average quality score above 8 are retained). Then for the clustering step, only reads ranging between 500 and 2000 bp will be retained:  
+Example in which reads are first quality filtered using the tool chopper (only reads with a Phread average quality score above 8 and length >100 bp are retained). Then for the clustering step, only reads ranging between 500 and 2000 bp are retained:  
 ```
 {
 samplesheet: tests/index_mtdt.csv
