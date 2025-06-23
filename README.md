@@ -147,7 +147,7 @@ A typical command for running the pipeline is as follows:
 ```
 nextflow run main.nf -profile singularity -params-file params/params_example.yml
 ```
-With the following parmaters specified in the params_mtdt_test.yml. **Please update paths to databases to match your local set up**:
+With the following parmaters specified in the params_sample.yml. **Please update paths to databases to match your local set up**:
 ```
 {
 samplesheet: /full/path/to/index.csv
@@ -199,11 +199,9 @@ MP24-1096B_gyrB,/work/tests/mtdt_data/barcode19_MP24-1096B_gyrB/*fastq.gz,bacter
    - **test** is a field specific to NAQS LIMS (optional)
    - **method** is a field specific to NAQS LIMS (optional)
 
-  To specify parameters, we recommend that you use a parameter file. Please refer to this document for additional information on how to pass parameters and how parameter passing priority works (https://software.pixelgen.com/nf-core-pixelator/1.3.x/usage/passing-parameters/).  
-
-  For the fastq files path, the pipeline can process 1) multiple fastq.gz files per sample located within one folder (default) or 2) a single fastq.gz file per sample.  
+  For the **fastq files path**, the pipeline can process 1) multiple fastq.gz files per sample located within one folder (default) or 2) a single fastq.gz file per sample.  
   If there are **multiple fastq.gz files per sample**, their full path can be specified on one line using **an asterisk (i.e. *fastq.gz)** and you will need to specify the parameter ```--merge``` in the parameter file (default setting).  
-  See an example of an index.csv file for 2 MTDT samples:  
+  See an example of an index.csv file for 3 MTDT samples:  
   ```
   sampleid,fastq_path,target_organism,target_gene,target_size
   VE24-1279_COI,/work/tests/mtdt_data/barcode01_VE24-1279_COI/*fastq.gz,drosophilidae,COI,711,GGTCAACAAATCATAAAGATATTGG,ATTTTTTGGTCACCCTGAAGTTTA
@@ -213,57 +211,89 @@ MP24-1096B_gyrB,/work/tests/mtdt_data/barcode19_MP24-1096B_gyrB/*fastq.gz,bacter
   For samples with **a single fastq.gz** file, specify **the full path to the fastq.gz file**  and set the merge parameter as **false**.  
 
   A python script is provided in the **bin** folder called derive_sample_sheet.py that will create an index.csv file with header and automatically populate the sample name and the fastq.gz file path.
-
-
-- Specify your container engine ```singularity``` in the profile:
+  It requires python to be installed on your local system.  
+  It expects fastq files to be in gzip format (i.e. fastq.gz).
+  
+  To run the script, specify the directory where the fastq.gz files are located with **-d [full/path/to/fastqgz/directory** and the output file name with  **-o index.csv**:  
+  ```
+  python derive_sample_sheet.py -d /full/path/to/fastqgz/directory -o index_example.csv
+  ```
+  If there is only a single fastq.gz file per sample, specify the single option with **-s**:  
+  ```
+  python derive_sample_sheet.py -d /full/path/to/fastqgz/directory -o index_example.csv -s
+  ```
+  **Please note that the script will derive sample names based on the fastq.gz file prefix. Adjust the sample name accordingly.**
+  
+- Specify your container engine ```singularity``` as the profile:
   ```
   nextflow run main.nf -profile singularity
   ```
+  
+- To specify parameters, we recommend that you provide a **params.yml** file with all your parameters. Please refer to this document for additional information on how to pass parameters and how parameter passing priority works (https://software.pixelgen.com/nf-core-pixelator/1.3.x/usage/passing-parameters/).  
 
-- Provide a params.yml file with all your parameters:
 ```
-nextflow run main.nf  -profile singularity -params-file params/params_mtdt_test.yml
+nextflow run main.nf  -profile singularity -params-file params/params_example.yml
 ```
-These are the default parameters set by the pipeline:
+The default parameters are provided in the default_params.yml under the params folder:
 ```
 {
-samplesheet: /full/path/to/index.csv
+samplesheet: index.csv
 merge: true
-adapter_trimming: true
 qual_filt: true
-chopper_options: -q 8 -l 100
+chopper_options: -q 8
 polishing: true
-blastn_db: /full/path/to/NCBI/core_nt
-blastn_COI: /full/path/to/MetaCOXI_Seqs.fasta
-taxdump: ~/.taxonkit
-analyst_name: Gauthier
-facility: MTDT
+blastn_db: null
+taxdump: null
+blast_threads: 2
+analyst_name: null
+facility: null
+mapping_back_to_ref: true
+outdir: results
+help: false
+qc_only: false
+preprocessing_only: false
+porechop_options: null
+porechop_custom_primers: false
+porechop_custom_primers_path: ~/ont_amplicon/bin/adapters.txt
+chopper_options: null
+analysis_mode: clustering
+rattle_clustering_options: null
+rattle_clustering_min_length: null 
+rattle_clustering_max_length: null
+rattle_raw: false
+rattle_clustering_max_variance: 1000000
+rattle_polishing_options: null
+blastn_COI: null
+subsample: false
+reads_downsampling_size: 10000
 }
 ```
-- Specify the path to your blast and taxonkit databases in your parameter file.  The analysis cannot proceed without these being set.  
+- Specify the full path to your blast and taxonkit databases in your parameter file.  The analysis cannot proceed without these being set.
 
-- Specify the ``--analyst_name`` and the ``--facility`` in your parameter file.  The analysis cannot proceed without these being set.  
+- Specify the ``--analyst_name`` and the ``--facility`` in your parameter file.  The analysis cannot proceed without these being set.
 
-- If you are invoking the pipeline from another folder, create a config file (for example local.config) in which you specify the full path of your local ont_amplicon repository.  
-For example:  
+- Specify the full path to your COI database name in your in your parameter file if some of your gene targets are COI. The analysis will not process if one of your target gene is COI and the blastn_COI parameter is not set.   
+
+- If you are invoking the pipeline from another folder, create a config file (for example local.config) in which you specify the full path of your local ont_amplicon repository:  
 ```
 singularity {
   runOptions = '-B /full/path/to/ont_amplicon:/mnt/ont_amplicon'
   }
 ```
-
 And update your command to:  
-```nextflow run /full/path/to/main.nf  -profile singularity -resume  -params-file  params.yml -c local.config```.
+```
+nextflow run /full/path/to/main.nf  -profile singularity -resume  -params-file  params.yml -c local.config
+```
 
-- By default, nextflow saves the run log to a file called .nextflow.log in the folder from which the analysis is run. Add the `-log` option to your nextflow command to specify a different log file name and location.  
+- By default, nextflow saves the run log to a file called **.nextflow.log** in the folder from which the analysis is run. Add the **`-log` option** to your nextflow command to specify a different log file name and location.  
 
 ### Run test data
-Two tests are currently provided to check if the pipeline was successfully installed and to demonstrate to users the current outputs generated by the pipeline prototype so they can provide feedback. 
+Two tests are currently provided to check if the pipeline was successfully installed. 
 - The mtdt_test runs three samples provided by  MTDT (barcode01_VE24-1279_COI, barcode06_MP24-1051A_16S and barcode19_MP24-1096B_gyrB). 
 - The peq_test runs two samples provided by PEQ (ONT141 and ONT142). 
 A small NCBI blast database and COI database have been derived to speed up the analysis run in test mode.  
 
-To use the tests, change directory to ont_amplicon and run the following command for the MTDT test:
+To use the tests, change directory to the ont_amplicon github repository and run the following command for the MTDT test:
   ```
   nextflow run main.nf -profile singularity,mtdt_test -resume -params-file params/params_mtdt_test.yml
   ```
@@ -283,49 +313,49 @@ If the installation is successful, your screen should output something similar t
 ```
  N E X T F L O W   ~  version 24.10.5
 
-Launching `main.nf` [berserk_gutenberg] DSL2 - revision: 14779efa3e
+Launching `main.nf` [hungry_hilbert] DSL2 - revision: cea782866c
 
 executor >  pbspro (76)
-[8f/37f88f] process > TIMESTAMP_START                                     [100%] 1 of 1 ✔
-[9a/4ae987] process > FASTCAT (barcode19_MP24-1096B_gyrB)                 [100%] 3 of 3 ✔
-[4b/c28438] process > QC_PRE_DATA_PROCESSING (barcode19_MP24-1096B_gyrB)  [100%] 3 of 3 ✔
-[3a/3245aa] process > PORECHOP_ABI (barcode19_MP24-1096B_gyrB)            [100%] 3 of 3 ✔
-[be/1a6a24] process > CHOPPER (barcode19_MP24-1096B_gyrB)                 [100%] 3 of 3 ✔
-[e1/178003] process > REFORMAT (barcode19_MP24-1096B_gyrB)                [100%] 3 of 3 ✔
-[27/dfdee1] process > QC_POST_DATA_PROCESSING (barcode19_MP24-1096B_gyrB) [100%] 3 of 3 ✔
-[ed/547789] process > QCREPORT                                            [100%] 1 of 1 ✔
-[bf/0b1014] process > RATTLE (barcode19_MP24-1096B_gyrB)                  [100%] 3 of 3 ✔
-[71/803823] process > FASTQ2FASTA (barcode19_MP24-1096B_gyrB)             [100%] 3 of 3 ✔
-[6c/8c02c0] process > MINIMAP2_RACON (barcode19_MP24-1096B_gyrB)          [100%] 3 of 3 ✔
-[42/2b5a12] process > RACON (barcode19_MP24-1096B_gyrB)                   [100%] 3 of 3 ✔
-[13/02e7b3] process > MEDAKA2 (barcode19_MP24-1096B_gyrB)                 [100%] 3 of 3 ✔
-[9f/10d248] process > CUTADAPT (barcode19_MP24-1096B_gyrB)                [100%] 3 of 3 ✔
-[8d/636107] process > BLASTN_COI (barcode01_VE24-1279_COI)                [100%] 1 of 1 ✔
-[77/5b10fc] process > REVCOMP (barcode01_VE24-1279_COI)                   [100%] 1 of 1 ✔
-[c4/119cf8] process > BLASTN (barcode01_VE24-1279_COI)                    [100%] 1 of 1 ✔
-[fe/284a69] process > BLASTN2 (barcode19_MP24-1096B_gyrB)                 [100%] 2 of 2 ✔
-[8e/7623d2] process > EXTRACT_BLAST_HITS (barcode19_MP24-1096B_gyrB)      [100%] 3 of 3 ✔
-[ee/d92377] process > FASTA2TABLE (barcode19_MP24-1096B_gyrB)             [100%] 3 of 3 ✔
-[25/32f878] process > MINIMAP2_REF (barcode19_MP24-1096B_gyrB)            [100%] 3 of 3 ✔
-[9b/21ada5] process > SAMTOOLS (barcode19_MP24-1096B_gyrB)                [100%] 3 of 3 ✔
-[01/69286e] process > MINIMAP2_CONSENSUS (barcode19_MP24-1096B_gyrB)      [100%] 3 of 3 ✔
-[bf/351d07] process > SAMTOOLS_CONSENSUS (barcode19_MP24-1096B_gyrB)      [100%] 3 of 3 ✔
-[0b/783c9e] process > PYFAIDX (barcode19_MP24-1096B_gyrB)                 [100%] 3 of 3 ✔
-[bb/c64067] process > MOSDEPTH (barcode19_MP24-1096B_gyrB)                [100%] 3 of 3 ✔
-[4e/20a073] process > COVSTATS (barcode19_MP24-1096B_gyrB)                [100%] 3 of 3 ✔
-[6b/b98138] process > SEQTK (barcode19_MP24-1096B_gyrB)                   [100%] 3 of 3 ✔
-[73/fbfcfe] process > HTML_REPORT (3)                                     [100%] 3 of 3 ✔
-Completed at: 03-Apr-2025 09:47:49
-Duration    : 5m 49s
-CPU hours   : 0.2
+[8a/42602e] TIMESTAMP_START                                     [100%] 1 of 1 ✔
+[f9/ad32cb] FASTCAT (barcode19_MP24-1096B_gyrB)                 [100%] 3 of 3 ✔
+[76/8c97a7] QC_PRE_DATA_PROCESSING (barcode19_MP24-1096B_gyrB)  [100%] 3 of 3 ✔
+[e7/cfb6bf] PORECHOP_ABI (barcode19_MP24-1096B_gyrB)            [100%] 3 of 3 ✔
+[e7/f281b9] CHOPPER (barcode19_MP24-1096B_gyrB)                 [100%] 3 of 3 ✔
+[f8/987357] REFORMAT (barcode19_MP24-1096B_gyrB)                [100%] 3 of 3 ✔
+[d4/4333ad] QC_POST_DATA_PROCESSING (barcode19_MP24-1096B_gyrB) [100%] 3 of 3 ✔
+[1b/de3961] QCREPORT                                            [100%] 1 of 1 ✔
+[ae/563754] RATTLE (barcode19_MP24-1096B_gyrB)                  [100%] 3 of 3 ✔
+[d2/482ec5] CLUSTER2FASTA (barcode19_MP24-1096B_gyrB)           [100%] 3 of 3 ✔
+[61/6cc7fe] MINIMAP2_RACON (barcode19_MP24-1096B_gyrB)          [100%] 3 of 3 ✔
+[d1/5025de] RACON (barcode19_MP24-1096B_gyrB)                   [100%] 3 of 3 ✔
+[fa/4d7987] MEDAKA2 (barcode19_MP24-1096B_gyrB)                 [100%] 3 of 3 ✔
+[80/d7647f] CUTADAPT (barcode19_MP24-1096B_gyrB)                [100%] 3 of 3 ✔
+[74/f9c567] BLASTN_COI (barcode01_VE24-1279_COI)                [100%] 1 of 1 ✔
+[ed/aa205d] REVCOMP (barcode01_VE24-1279_COI)                   [100%] 1 of 1 ✔
+[e0/d44563] BLASTN (barcode01_VE24-1279_COI)                    [100%] 1 of 1 ✔
+[73/541c3f] BLASTN2 (barcode19_MP24-1096B_gyrB)                 [100%] 2 of 2 ✔
+[13/fc6720] EXTRACT_BLAST_HITS (barcode06_MP24-1051A_16S)       [100%] 3 of 3 ✔
+[b3/13c5ea] FASTA2TABLE (barcode19_MP24-1096B_gyrB)             [100%] 3 of 3 ✔
+[e0/2e5e64] MINIMAP2_CONSENSUS (barcode06_MP24-1051A_16S)       [100%] 3 of 3 ✔
+[78/2822af] SAMTOOLS_CONSENSUS (barcode06_MP24-1051A_16S)       [100%] 3 of 3 ✔
+[5c/9e082b] PYFAIDX (barcode06_MP24-1051A_16S)                  [100%] 3 of 3 ✔
+[34/ee513d] MOSDEPTH (barcode06_MP24-1051A_16S)                 [100%] 3 of 3 ✔
+[e7/b555f5] SEQTK (barcode06_MP24-1051A_16S)                    [100%] 3 of 3 ✔
+[7d/cb9d44] COVSTATS (barcode19_MP24-1096B_gyrB)                [100%] 3 of 3 ✔
+[70/c85da3] HTML_REPORT (2)                                     [100%] 3 of 3 ✔
+[96/3ff7d4] MINIMAP2_REF (barcode19_MP24-1096B_gyrB)            [100%] 3 of 3 ✔
+[29/f193f6] SAMTOOLS (barcode19_MP24-1096B_gyrB)                [100%] 3 of 3 ✔
+Completed at: 23-Jun-2025 11:14:02
+Duration    : 6m 18s
+CPU hours   : 0.3
 Succeeded   : 76
 ```
 
-By default, the output files will be saved under the **results** folder (this can be changed by setting the `outdir` parameter to soemthing else).  
+By default, the output files will be saved under the **results** folder (this can be changed by setting the **`--outdir`** parameter to something else).  
 
 The results folder has the following structure:  
 ```
-├── 00_qc_report
+├── 00_QC_report
 │   ├── run_qc_report_20250428-091847.html
 │   └── run_qc_report_20250428-091847.txt
 ├── 01_pipeline_info
@@ -357,44 +387,51 @@ The results folder has the following structure:
 │   ├── 02_clustering
 │   │   ├── barcode01_VE24-1279_COI_rattle.fasta
 │   │   └── barcode01_VE24-1279_COI_rattle.log
+│   │   └── barcode01_VE24-1279_COI_rattle_status.txt
 │   ├── 03_polishing
 │   │   ├── barcode01_VE24-1279_COI_cutadapt.log
 │   │   ├── barcode01_VE24-1279_COI_final_polished_consensus.fasta
 │   │   ├── barcode01_VE24-1279_COI_medaka_consensus.fasta
-│   │   ├── barcode01_VE24-1279_COI_racon_polished.fasta
-│   │   └── barcode01_VE24-1279_COI_samtools_consensus.fasta
+│   │   ├── barcode01_VE24-1279_COI_medaka.log
+│   │   ├── barcode01_VE24-1279_COI_racon_consensus.fasta
+│   │   ├── barcode01_VE24-1279_COI_racon.log
+│   │   ├── barcode01_VE24-1279_COI_samtools_consensus.fasta
+│   │   ├── barcode01_VE24-1279_COI_samtools_consensus.fastq
+│   │   └── barcode01_VE24-1279_COI_samtools_consensus.log
 │   ├── 04_megablast
-│   │   ├── barcode01_VE24-1279_COI_final_polished_consensus_match.fasta
+│   │   ├── barcode01_VE24-1279_COI_blast_status.txt
 │   │   ├── barcode01_VE24-1279_COI_final_polished_consensus_rc.fasta
 │   │   ├── barcode01_VE24-1279_COI_final_polished_consensus_rc_megablast_top_10_hits.txt
 │   │   ├── barcode01_VE24-1279_COI_final_polished_consensus_rc_megablast_top_hits.txt
-│   │   └── barcode01_VE24-1279_COI_reference_match.fasta
 │   ├── 05_mapping_to_consensus
 │   │   ├── barcode01_VE24-1279_COI_aln.sorted.bam
 │   │   ├── barcode01_VE24-1279_COI_aln.sorted.bam.bai
 │   │   ├── barcode01_VE24-1279_COI_coverage.txt
 │   │   ├── barcode01_VE24-1279_COI_final_polished_consensus_match.fasta
+│   │   ├── barcode01_VE24-1279_COI_final_polished_consensus_match.fastq
 │   │   └── barcode01_VE24-1279_COI_top_blast_with_cov_stats.txt
 │   ├── 06_mapping_to_ref
-│   │   ├── barcode01_VE24-1279_COI_aln.sorted.bam
-│   │   ├── barcode01_VE24-1279_COI_aln.sorted.bam.bai
 │   │   ├── barcode01_VE24-1279_COI_coverage.txt
+│   │   ├── barcode01_VE24-1279_COI_ref_aln.sorted.bam
+│   │   ├── barcode01_VE24-1279_COI_ref_aln.sorted.bam.bai
 │   │   ├── barcode01_VE24-1279_COI_reference_match.fasta
 │   │   └── barcode01_VE24-1279_COI_samtools_consensus_from_ref.fasta
 │   └── 07_html_report
-│       ├── bam-alignment.html
+│       ├── barcode01_VE24-1279_COI_bam-alignment.html
+│       ├── barcode01_VE24-1279_COI_report.html
+│       ├── default_params.yml
 │       ├── example_report_context.json
-│       ├── report.html
-│       └── run_qc_report.html
+│       ├── run_qc_report.html
+│       └── versions.yml
 ```
 
 ### QC step
-By default the pipeline will run a quality control check of the raw reads using NanoPlot.
+By default the pipeline will run a quality control check of the raw reads using [NanoPlot](https://github.com/wdecoster/NanoPlot).  
 
-- It is recommended to first run only the quality control step to have a preliminary look at the data before proceeding with downstream analyses by specifying the `qc_only: true` parameter.
+**It is recommended to first run only the quality control step to have a preliminary look at the data before proceeding with downstream analyses by specifying the `qc_only: true` parameter.**
 
 ### Preprocessing reads
-If multiple fastq files exist for a single sample, they will first need to be merged using the `merge: true` option using [`Fascat`](https://github.com/epi2me-labs/fastcat).
+If multiple fastq files exist for a single sample, they will first need to be merged using the `merge: true` option using [`Fascat`](https://github.com/epi2me-labs/fastcat).  
 Then the read names of the fastq file created will be trimmed after the first whitespace, for compatiblity purposes with all downstream tools.  
 
 Reads are trimmed of adapters and optionally quality filtered:  
