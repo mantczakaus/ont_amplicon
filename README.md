@@ -596,7 +596,9 @@ As each process can spawn many tasks, colors are used to identify those tasks be
 #### Workflow diagram
 The pipeline executed is represented as an HTML diagram in direct acyclic graph format. The vertices in the graph represent the pipeline’s processes and operators, while the edges represent the data dependencies (i.e. channels) between them.
 
-### Preprocessing and quality check outputs (Sample_name/00_preprocessing, Sample_name/01_QC & 00_QC_report)
+### Preprocessing and quality check outputs  
+Location of files under Sample_name/00_preprocessing, Sample_name/01_QC & 00_QC_report.  
+
 If the fastq.gz files need to be merged for a sample, the resulting fastq.g file will be stored under the **SampleName/01_QC/fastcat** folder. The basecallign model used will also be captured in this folder in a file called **basecalling_model_inference.txt**.  
 A quality check will be performed on the raw fastq file using [NanoPlot](https://github.com/wdecoster/NanoPlot) which is a tool that can be used to produce general quality metrics e.g. quality score distribution, read lengths and other general stats. A NanoPlot-report.html file will be saved under the **SampleName/01_QC/nanoplot** folder with the prefix **raw**. This report displays 6 plots as well as a table of summary statistics.  
 
@@ -623,13 +625,16 @@ Example of report:
 | ONT141 | 10929 | 2338 | 21.39 | | | GREEN |
 | ONT142| 21849 | 4232 | 9.37 | | | GREEN |
 
-### Clustering step outputs (Sample_name/02_clustering)
+### Clustering step outputs
+Location of files under Sample_name/02_clustering  
 The output from Rattle will be saved under **SampleName/02_clustering/SampleName_rattle.fasta**. The number of reads contributing to each clusters is listed in the header. The amplicon of interest is usually amongst the most abundant clusters (i.e. the ones represented by the most reads). The rattle log (**SampleName_rattle.log**) is also available in the same folder as well as a file called **SampleName_rattle.status** that catches whether the clustering step ran succesfully or not.  
 
-### Polishing step outputs (Sample_name/03_polishing)
+### Polishing step outputs 
+Location of files in Sample_name/03_polishing)  
 (in progress)  
 
-### Blast search outputs  (Sample_name/04_megablast
+### Blast search outputs
+Location of files under Sample_name/04_megablast  
 If the target gene is COI, then the consensuses will first be mapped to a cyctochrome oxidase I database and based on the strandedness of the blast results, consensuses will be reverse complemented where required. All consensuses will be saved in **Sample_name/04_megablast/Sample_name_final_polished_consensus_rc.fasta**.  
 All consensuses are then blasted against NCBI.  If at least one consensus returns a blast hit, this will be captured in the **Sample_name/04_megablast/Sample_name_final_blast_status.txt** file.  
 The 10 top hits derived for each contig are listed in the file **SampleName/04_megablast/SampleName_final_polished_consensus_megablast_top_10_hits.txt**. This file contains the following 26 columns:
