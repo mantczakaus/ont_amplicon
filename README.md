@@ -51,13 +51,13 @@ h. [HTML report output](#html-report-output)
 - Clustering mode
   - Read clustering (Rattle)
   - Convert fastq to fasta format (seqtk)
-  - Polishing (Minimap2, Racon, Medaka2, Samtools) - optional
+  - Polishing ([Minimap2](https://lh3.github.io/minimap2/minimap2.html), Racon, Medaka2, Samtools) - optional
   - Remove adapters, if provided (Cutadapt)
   - Megablast homology search against COI database (if COI is targetted) and reverse complement where required
   - Megablast homology search against NCBI database
   - Derive top candidate hits, assign preliminary taxonomy and set target organism flag (pytaxonkit)  
-  - Map reads back to segment of consensus sequence that aligns to reference and derive BAM file and alignment statistics (Minimap2, Samtools and Mosdepth)  
-  - Map reads to segment of NCBI reference sequence that aligns to consensus and derive BAM file and consensus (Minimap2, Samtools) - optional
+  - Map reads back to segment of consensus sequence that aligns to reference and derive BAM file and alignment statistics ([Minimap2](https://lh3.github.io/minimap2/minimap2.html), Samtools and Mosdepth)  
+  - Map reads to segment of NCBI reference sequence that aligns to consensus and derive BAM file and consensus ([Minimap2](https://lh3.github.io/minimap2/minimap2.html), Samtools) - optional
 
 
 ## Installation
@@ -534,7 +534,7 @@ mapping_back_to_ref: true
 ```
 
 ### Polishing step (optional)
-The clusters derived using RATTLE can be polished. The reads are first mapped back to the clusters using Minimap2 and then the clusters are polished using Racon, Medaka2 and Samtools consensus. For Samtools consensus, we use the predefined sets of configuration parameters that have been optimised for ONT reads (i.e. r10.4_sup) (please see the configuration section of the [`Samtools consensus documentation`](https://www.htslib.org/doc/samtools-consensus.html)).
+The clusters derived using RATTLE can be polished. The reads are first mapped back to the clusters using [Minimap2](https://lh3.github.io/minimap2/minimap2.html) and then the clusters are polished using Racon, Medaka2 and Samtools consensus. For Samtools consensus, we use the predefined sets of configuration parameters that have been optimised for ONT reads (i.e. r10.4_sup) (please see the configuration section of the [`Samtools consensus documentation`](https://www.htslib.org/doc/samtools-consensus.html)).
 This polishing step is performed by default by the pipeline but can be skipped by specifying the paramater ``--polishing false``.  
 
 ### Primer search
