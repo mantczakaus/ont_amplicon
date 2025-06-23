@@ -14,15 +14,14 @@ a. [Requirements](#requirements)
 a. [Quick start](#quick-start)  
 b. [Run the pipeline for the first time](#run-the-pipeline-for-the-first-time)  
 c. [Run test data](#run-test-data)  
-d. [QC step](#qc-step)  
-e. [Preprocessing reads](#preprocessing-reads)  
-f. [Clustering step (RATTLE)](#clustering-step-rattle)  
-g. [Polishing step (optional)](#polishing-step-optional)  
-h. [Primer search](#primer-search)  
-i. [Blast homology search against NCBI](#blast-homology-search-against-NCBI)  
-j. [Mapping back to consensus](#mapping-back-to-consensus)  
-k. [Mapping back to reference (optional)](#mapping-back-to-reference-optional)  
-l. [HTML report](#HTML-report)  
+d. [QC and preprocessing steps](#qc-and-preprocessing-steps)  
+e. [Clustering step (RATTLE)](#clustering-step-rattle)  
+f. [Polishing step (optional)](#polishing-step-optional)  
+g. [Primer search](#primer-search)  
+h. [Blast homology search against NCBI](#blast-homology-search-against-NCBI)  
+i. [Mapping back to consensus](#mapping-back-to-consensus)  
+j. [Mapping back to reference (optional)](#mapping-back-to-reference-optional)  
+k. [HTML report](#HTML-report)  
 5. [Output files](#output-files)  
 a. [Nextflow reports](#nextflow-reports)  
 b. [Preprocessing and quality check outputs](#preprocessing-and-quality-check-outputs)  
@@ -425,12 +424,11 @@ The results folder has the following structure:
 │       └── versions.yml
 ```
 
-### QC step
+### QC and preprocessing steps
 By default the pipeline will run a quality control check of the raw reads using [NanoPlot](https://github.com/wdecoster/NanoPlot).  
 
 **It is recommended to first run only the quality control step to have a preliminary look at the data before proceeding with downstream analyses by specifying the `qc_only: true` parameter.**
 
-### Preprocessing reads
 By defaut, the pipline expects that multiple fastq files exist for a single sample and the `merge: true` option is set. These fastq files will be merged using [`Fascat`](https://github.com/epi2me-labs/fastcat) 
 Then the read names of the fastq file created will be trimmed after the first whitespace in the read header, for compatiblity purposes with all downstream tools.  
 
@@ -456,7 +454,7 @@ Reads are then trimmed of adapters and optionally quality filtered:
   --- repeat for each adapter pair---
   ```
 
-- Perform a quality filtering step using [`Chopper`](https://github.com/wdecoster/chopper) by specifying  the ```qual_filt: true``` parameter. Chopper parameters to apply will need to be specified separately using the ```chopper_options: {options}```. Please refer to the Chopper manual.  
+- The user can perform a quality filtering step using [`Chopper`](https://github.com/wdecoster/chopper) by specifying  the ```qual_filt: true``` parameter. Chopper parameters to apply will need to be specified separately using the ```chopper_options: {options}```. Please refer to the Chopper manual.  
   For instance to filter reads shorter than 1000 bp and longer than 20000 bp, and reads with a minimum Phred average quality score of 10, you would specify in your parameter file: 
   ```
   qual_filt: true
