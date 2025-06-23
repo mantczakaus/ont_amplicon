@@ -542,7 +542,7 @@ If the fwd_primer and the rev_primer have been provided in the csv file, cluster
 If the gene targetted is Cytochrome oxidase I (COI), a preliminary megablast homology search against a COI database will be performed; then based on the strandedness of the blast results for the consensuses , some will be reverse complemented where required.  
 
 Blast homology search of the consensuses against NCBI is then performed and the top 10 hits are returned.
-A separate blast output is then derived using [pytaxonkit](https://github.com/bioforensics/pytaxonkit), to output preliminary taxonomic assignment to the top blast hit for each consensus. The nucleotide sequence of qseq (ie consensus match) and sseq (ie reference match) are extracted to use when mapping reads back to consensus and reference respectively (see steps below).  
+A separate blast output is then derived using [pytaxonkit](https://github.com/bioforensics/pytaxonkit), to output preliminary taxonomic assignment to the top blast hit for each consensus. The nucleotide sequence of qseq **(i.e. consensus match)** and sseq **(i.e. reference match)** are extracted to use when mapping reads back to consensus and reference respectively (see steps below).  
 
 ### Mapping back to consensus
 The quality filtered reads derived during the pre-processing step are mapped back to the consensus matches using Mimimap2. Samtools and Mosdepth are then used to derive bam files and coverage statistics. A summary of the blast results, preliminary taxonomic assignment, coverage statistics and associated **flags** are then derived for each consensus using python.  
@@ -559,7 +559,7 @@ The quality filtered reads derived during the pre-processing step are mapped bac
 | **6. READ LENGTH FLAG** | Number of mapped reads whose lengths are at least 90% of the consensus match length |  **>=200** |  **50-200** | **< 50** | The consensus returned no blast hits |
 | **7. MEAN MQ FLAG** | Average mapping quality of reads mapping to the consensus match | **>= 30** | **10-30** | **< 10** | The consensus returned no blast hits |
 
-The confidence score is also derived. It is based on a scoring system which assigns different weight to each flag colour for the 30X coverage flag, the target size, the mapped read count flag, the mena coverage flag, the read length flag and the mean MQ flag. It is a value bewteen 0 and 12. A higher score indicates a higher confidence in the quality of the consensus sequence.  
+A confidence score is also derived. It is based on a scoring system which assigns different weight to each flag colour for the 30X coverage flag, the target size, the mapped read count flag, the mean coverage flag, the read length flag and the mean MQ flag. It is a value bewteen 0 and 12. A higher score indicates a higher confidence in the quality of the consensus sequence.  
 The normalised confidence score is also provided. It is a value between 0 and 1 that is calculated by normalising the confidence score to the maximum possible score for this sequence. A value of 1 indicates the highest confidence in the quality of the consensus sequence.
   
 ### Mapping back to reference (optional)
