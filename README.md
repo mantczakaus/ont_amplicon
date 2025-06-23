@@ -30,8 +30,8 @@ c. [Clustering step outputs](#clustering-step-outputs)
 d. [Polishing step outputs](#polishing-step-outputs)  
 e. [Blast search outputs](#blast-search-outputs)  
 f. [Outputs from mapping back to consensus matches step](outputs-from-mapping-back-to-consensus-matches-step)  
-h. [Outputs from mapping back to reference matches step](outputs-from-mapping-back-to-reference-matches-step)  
-i. [HTML report output](#html-report-output)  
+g. [Outputs from mapping back to reference matches step](outputs-from-mapping-back-to-reference-matches-step)  
+h. [HTML report output](#html-report-output)  
 6. [Authors](#authors) 
 
 ## Pipeline overview
