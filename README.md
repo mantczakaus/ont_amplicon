@@ -429,7 +429,7 @@ By default the pipeline will run a quality control check of the raw reads using 
 
 **It is recommended to first run only the quality control step to have a preliminary look at the data before proceeding with downstream analyses by specifying the `qc_only: true` parameter.**
 
-By defaut, the pipline expects that multiple fastq files exist for a single sample and the `merge: true` option is set. These fastq files will be merged using [`Fascat`](https://github.com/epi2me-labs/fastcat) 
+By defaut, the pipeline expects that multiple fastq files exist for a single sample and the `merge: true` option is set. These fastq files will be merged using [`Fascat`](https://github.com/epi2me-labs/fastcat) 
 Then the read names of the fastq file created will be trimmed after the first whitespace in the read header, for compatiblity purposes with all downstream tools.  
 
 Reads are then trimmed of adapters and optionally quality filtered:  
