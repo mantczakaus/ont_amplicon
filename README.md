@@ -16,19 +16,23 @@ b. [Run the pipeline for the first time](#run-the-pipeline-for-the-first-time)
 c. [Run test data](#run-test-data)  
 d. [QC step](#qc-step)  
 e. [Preprocessing reads](#preprocessing-reads)  
-f. [Clustering step (RATTLE)](#clustering-step-(RATTLE))  
-g. [Primer search](#primer-search)  
-h. [Blast homology search against NCBI](#blast-homology-search-against-NCBI)  
-i. [Mapping back to consensus](#mapping-back-to-consensus)  
-j. [Mapping back to reference](#mapping-back-to-reference)  
-k. [HTML report](#HTML-report)  
-
+f. [Clustering step (RATTLE)](#clustering-step-(RATTLE))
+g. [Polishing step (optional)](#polishing-step-(optional))  
+h. [Primer search](#primer-search)  
+i. [Blast homology search against NCBI](#blast-homology-search-against-NCBI)  
+j. [Mapping back to consensus](#mapping-back-to-consensus)  
+k. [Mapping back to reference (optional)](#mapping-back-to-reference-(optional))  
+l. [HTML report](#HTML-report)  
 5. [Output files](#output-files)  
-a. [Nextflow reports](#nextflow reports)  
+a. [Nextflow reports](#nextflow-reports)  
 b. [Preprocessing and host read filtering outputs](#preprocessing-and-host-read-filtering-outputs)  
 c. [Clustering step outputs](#clustering-step-outputs)  
-d. [Polishing step outputs](#polishing-step-outputs)
-e. [Blast search outputs](#blast-search-outputs)
+d. [Polishing step outputs](#polishing-step-outputs)  
+e. [Blast search outputs](#blast-search-outputs)  
+f. [Outputs from mapping back to consensus matches step](outputs-from-mapping-back-to-consensus-matches-step)  
+h. [Outputs from mapping back to reference matches step](outputs-from-mapping-back-to-reference-matches-step)  
+i. [HTML report output](#html-report-output)  
+6. [Authors](#authors) 
 
 ## Pipeline overview
 
@@ -51,8 +55,8 @@ e. [Blast search outputs](#blast-search-outputs)
   - Remove adapters, if provided (Cutadapt)
   - Megablast homology search against COI database (if COI is targetted) and reverse complement where required
   - Megablast homology search against NCBI database
-  - Derive top candidate hits, assign preliminary taxonomy and set target organism flag (pytaxonkit)
-  - Map reads back to segment of consensus sequence that aligns to reference and derive BAM file and alignment statistics (Minimap2, Samtools and Mosdepth)
+  - Derive top candidate hits, assign preliminary taxonomy and set target organism flag (pytaxonkit)  
+  - Map reads back to segment of consensus sequence that aligns to reference and derive BAM file and alignment statistics (Minimap2, Samtools and Mosdepth)  
   - Map reads to segment of NCBI reference sequence that aligns to consensus and derive BAM file and consensus (Minimap2, Samtools) - optional
 
 
