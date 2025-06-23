@@ -51,7 +51,7 @@ h. [HTML report output](#html-report-output)
 - Clustering mode
   - Read clustering (Rattle)
   - Convert fastq to fasta format (seqtk)
-  - Polishing ([Minimap2](https://lh3.github.io/minimap2/minimap2.html), Racon, Medaka2, Samtools) - optional
+  - Polishing ([Minimap2](https://lh3.github.io/minimap2/minimap2.html), [Racon](https://github.com/lbcb-sci/racon), [Medaka2](https://github.com/nanoporetech/medaka), Samtools) - optional
   - Remove adapters, if provided (Cutadapt)
   - Megablast homology search against COI database (if COI is targetted) and reverse complement where required
   - Megablast homology search against NCBI database
@@ -534,7 +534,7 @@ mapping_back_to_ref: true
 ```
 
 ### Polishing step (optional)
-The clusters derived using RATTLE can be polished. The reads are first mapped back to the clusters using [Minimap2](https://lh3.github.io/minimap2/minimap2.html) and then the clusters are polished using Racon, Medaka2 and Samtools consensus. For Samtools consensus, we use the predefined sets of configuration parameters that have been optimised for ONT reads (i.e. r10.4_sup) (please see the configuration section of the [`Samtools consensus documentation`](https://www.htslib.org/doc/samtools-consensus.html)).
+The clusters derived using RATTLE can be polished. The reads are first mapped back to the clusters using [Minimap2](https://lh3.github.io/minimap2/minimap2.html) and then the clusters are polished using [Racon](https://github.com/lbcb-sci/racon), [Medaka2](https://github.com/nanoporetech/medaka) and [Samtools consensus](https://www.htslib.org/doc/samtools-consensus.html). For Samtools consensus, we use the predefined sets of configuration parameters that have been optimised for ONT reads (i.e. r10.4_sup) (please see the configuration section of the [`Samtools consensus documentation`](https://www.htslib.org/doc/samtools-consensus.html)).
 This polishing step is performed by default by the pipeline but can be skipped by specifying the paramater ``--polishing false``.  
 
 ### Primer search
@@ -685,14 +685,14 @@ A column called **FullLineage** provides the full taxonomic lineage derived from
 The colum **target_organism_match** indicates whether there was a taxon match between the target_organism specified in the samplesheet and the full taxonomic lineage.  
 The **n_read_cont_cluster** captures the number of reads that originally contributed to build the clusters during the RATTLE step.  
 
-The nucleotide sequence of qseq (ie consensus match) and sseq (ie reference match) are extracted to use when mapping reads back to consensus and reference respectively (see steps below). These are called **SampleName/megablast/SampleName_final_polished_consensus_match.fasta** and **SampleName/megablast/SampleName_reference_match.fasta** respectively.  
+The nucleotide sequence of qseq (i.e. **consensus match**) and sseq (i.e. **reference match)** are extracted to use when mapping reads back to consensus and reference respectively (see steps below). These are called **SampleName/05_mapping_to_consensus/SampleName_final_polished_consensus_match.fasta** and **SampleName/megablast/06_mapping_to_ref/SampleName_reference_match.fasta** respectively.  
 
 ### Outputs from the mapping reads back to consensus matches step
 (in progress)
 
 ### Outputs from mapping reads back to reference matches step
 By default the quality filtered reads derived during the pre-processing step are mapped back to the
-reference blast match. A bam file is generated and Samtools consensus is used to derive independent guided-reference consensuses that are stored in a file called **SampleName/mapping_back_to_ref/samtools_consensus_from_ref.fasta** file. Their nucleotide sequences can be compared to that of the original consensuses to resolve ambiguities (ie low complexity and repetitive regions). 
+reference blast match. A bam file is generated using Samtools and [Samtools consensus](https://www.htslib.org/doc/samtools-consensus.html) is used to derive independent guided-reference consensuses that are stored in a file called **SampleName/mapping_back_to_ref/samtools_consensus_from_ref.fasta** file. Their nucleotide sequences can be compared to that of the original consensuses to resolve ambiguities (ie low complexity and repetitive regions). 
 
 ### HTML report output
 (in progress)  
