@@ -667,7 +667,8 @@ The 10 top hits derived for each contig are listed in the file **SampleName/04_m
 - sframe => subject frame
 ```
 
-A separate blast output called **SampleName/04_megablast/SampleName_final_polished_consensus_megablast_top_hit.txt** is then derived using [pytaxonkit](https://github.com/bioforensics/pytaxonkit), which outputs preliminary taxonomic assignment to the top blast hit for each consensus. A **broad_taxonomic_category** column is generated which matches the cluster to broad taxon categories:
+ 
+A separate blast output only retaining the top blast hit is created (**SampleName/04_megablast/SampleName_final_polished_consensus_megablast_top_hit.txt**) which contains four additional columns. Preliminary taxonomic assignment is derived to the top blast hit for each consensus using [pytaxonkit](https://github.com/bioforensics/pytaxonkit). A **broad_taxonomic_category** column is generated which matches the cluster to broad taxon categories:
 - virus  
 - bacteria;phytoplasma  
 - bacteria;other  
@@ -681,7 +682,7 @@ A separate blast output called **SampleName/04_megablast/SampleName_final_polish
 
 A column called **FullLineage** provides the full taxonomic lineage derived from pytaxonkit.  
 The colum **target_organism_match** indicates whether there was a taxon match between the target_organism specified in the samplesheet and the full taxonomic lineage.  
-The **n_read_cont_cluster** captures the number of reads that originally contributed to build the clusters during the RATTLE step.  
+Finally, the **n_read_cont_cluster** captures the number of reads that originally contributed to build the clusters during the RATTLE step.  
 
 The nucleotide sequence of qseq (i.e. **consensus match**) and sseq (i.e. **reference match)** are extracted to use when mapping reads back to consensus and reference respectively (see steps below). These are called **SampleName/05_mapping_to_consensus/SampleName_final_polished_consensus_match.fasta** and **SampleName/megablast/06_mapping_to_ref/SampleName_reference_match.fasta** respectively.  
 
