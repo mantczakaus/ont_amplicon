@@ -480,7 +480,7 @@ It will include 3 flags:
 If the user wants to check the data after preprocessing before performing downstream analysis, they can apply the parameter `preprocessing_only: true`.
 
 ### Subsample reads 
-Pre-processed reads can be subsampled by specifying `subsample: false` and the number of reads to subsample can be specified using the parameter `reads_downsampling_size: [number of reads]` (set to 10,000 by default).  
+Pre-processed reads can be subsampled by specifying `subsample: true` and the number of reads to subsample can be specified using the parameter `reads_downsampling_size: [number of reads]` (set to 10,000 by default).  
 
 ### Clustering step (RATTLE)
 
