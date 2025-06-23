@@ -39,12 +39,12 @@ h. [HTML report output](#html-report-output)
 
 - Data quality check (QC) and preprocessing
   - Merge fastq.gz files (Fascat) - optional
-  - Quality check of raw fastq file (Nanoplot)
+  - Quality check of raw fastq file ([NanoPlot](https://github.com/wdecoster/NanoPlot))
   - Trim adaptors (PoreChop ABI)
   - Filter reads based on length and/or mean quality (Chopper) - optional
   - Reformat fastq files so read names are trimmed after the first whitespace (bbmap)
-  - Quality check of processed fastq file (Nanoplot)
-  - Subsample reads (seqkit)- optional
+  - Quality check of processed fastq file ([NanoPlot](https://github.com/wdecoster/NanoPlot))
+  - Subsample reads ([Seqkit](https://bioinf.shenwei.me/seqkit/0)) - optional
 - QC report
   - Derive read counts recovered pre and post data processing
 - Clustering mode
@@ -90,7 +90,6 @@ The pipeline will generate ~5-100Mb of files per sample, depending on the number
 **4. Important: To avoid nextflow installing the singularity containers each time you are running the pipeline, set your singularity container cache directory.** For example, the command below will set a cache directory called $HOME/.nextflow/NXF_SINGULARITY_CACHEDIR and this directs Nextflow to always save the containers into this centralised location:  
 ```
 [[ -d $HOME/.nextflow ]] || mkdir -p $HOME/.nextflow
-[[ -d $HOME/.nextflow/NXF_SINGULARITY_CACHEDIR ]] || mkdir -p $HOME/.nextflow/NXF_SINGULARITY_CACHEDIR
 
 mkdir $HOME/.nextflow/NXF_SINGULARITY_CACHEDIR
 
@@ -478,6 +477,9 @@ It will include 3 flags:
 - RED = < 2500 starting reads, < 200 quality filtered reads.
 
 If the user wants to check the data after preprocessing before performing downstream analysis, they can apply the parameter `preprocessing_only: true`.
+
+### Subsample reads 
+Pre-processed reads can be subsampled by specifying `subsample: false` and the number of reads to subsample can be specified using the parameter `reads_downsampling_size: [number of reads]` (set to 10,000 by default).  
 
 ### Clustering step (RATTLE)
 
