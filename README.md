@@ -431,20 +431,19 @@ By default the pipeline will run a quality control check of the raw reads using 
 **It is recommended to first run only the quality control step to have a preliminary look at the data before proceeding with downstream analyses by specifying the `qc_only: true` parameter.**
 
 ### Preprocessing reads
-If multiple fastq files exist for a single sample, they will first need to be merged using the `merge: true` option using [`Fascat`](https://github.com/epi2me-labs/fastcat).  
-Then the read names of the fastq file created will be trimmed after the first whitespace, for compatiblity purposes with all downstream tools.  
+By defaut, the pipline expects that multiple fastq files exist for a single sample and the `merge: true` option is set. These fastq files will be merged using [`Fascat`](https://github.com/epi2me-labs/fastcat) 
+Then the read names of the fastq file created will be trimmed after the first whitespace in the read header, for compatiblity purposes with all downstream tools.  
 
-Reads are trimmed of adapters and optionally quality filtered:  
-- Reads are searched for the presence of sequencing adapters using [`Porechop ABI`](https://github.com/rrwick/Porechop). Porechop ABI parameters can be specified using ```porechop_options: '{options} '```, making sure you leave a space at the end before the closing quote. Please refer to the Porechop manual.  
+Reads are then trimmed of adapters and optionally quality filtered:  
+- Reads are searched for the presence of sequencing adapters using [`Porechop ABI`](https://github.com/rrwick/Porechop). Other porechop ABI parameters can be specified using ```porechop_options: '{options} '```, making sure you leave a space at the end before the closing quote. Please refer to the Porechop manual.  
 
   **Special usage:**  
-  To limit the search to known adapters listed in [`adapter.py`](https://github.com/bonsai-team/Porechop_ABI/blob/master/porechop_abi/adapters.py), just specify the ```adapter_trimming: true``` parameter.  
-  To search ab initio for adapters on top of known adapters, specify:
+  To search for adapters ab initio on top of known adapters, specify:
   ```
   adapter_trimming: true 
   porechop_options: '-abi '
   ```  
-  To limit the search to custom adapters, specify 
+  To limit the search to custom adapters, specify: 
   ```
   adapter_trimming: true
   porechop_custom_primers: true
@@ -458,13 +457,13 @@ Reads are trimmed of adapters and optionally quality filtered:
   --- repeat for each adapter pair---
   ```
 
-- Perform a quality filtering step using [`Chopper`](https://github.com/wdecoster/chopper) by specifying  the ```qual_filt: true``` parameter. The following parameters can be specified using the ```chopper_options: {options}```. Please refer to the Chopper manual.  
+- Perform a quality filtering step using [`Chopper`](https://github.com/wdecoster/chopper) by specifying  the ```qual_filt: true``` parameter. Chopper parameters to apply will need to be specified separately using the ```chopper_options: {options}```. Please refer to the Chopper manual.  
   For instance to filter reads shorter than 1000 bp and longer than 20000 bp, and reads with a minimum Phred average quality score of 10, you would specify in your parameter file: 
   ```
   qual_filt: true
   chopper_options: -q 10 -l 1000 --maxlength 20000
   ```
-**Based on our benchmarking, we recommend using the following parameters ```chopper_options: -q 8 -l 100``` as a first pass**.  
+**Based on the benchmarking performed, we recommend using the following parameters ```chopper_options: -q 8 -l 100``` as a first pass**.  
 
   If you are analysing samples that are of poor quality (i.e. failed the QC_FLAG) or amplifying a very short amplicon (e.g. <150 bp), then we recommend using the following setting ```chopper_options: -q 8 -l 25``` to retain reads of all lengths.  
 
@@ -472,7 +471,7 @@ A zipped copy of the resulting **preprocessed** and/or **quality filtered fastq 
 
 After processing raw reads, an additional quality control step will be performed.  
 
-A qc report will be generated in text and html formats summarising the read counts recovered after the pre-processing step for all samples listed in the index.csv file.
+A **qc report** will be generated in text and html formats summarising the read counts recovered after the pre-processing step for all samples listed in the index.csv file.
 It will include 3 flags:  
 1) For the raw_reads_flag, if there were < 2500 raw reads, the column will display: "Less than 2500 raw reads".  
 2) For the qfiltered_flag, if there were < 200 quality_filtered_reads, the column will display: "Less than 200 processed reads".  
