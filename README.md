@@ -493,7 +493,7 @@ In the clustering mode, the tool [`RATTLE`](https://github.com/comprna/RATTLE#De
   The parameters `rattle_clustering_min_length: [number]` (by default: 150) and `rattle_clustering_max_length: [number]` (by default: 100,000) can also be specified in the parameter file to restrict lower and upper read size length.  
   Additional parameters (other than raw, lower-length, upper-length and max-variance) can be set using the parameter `rattle_clustering_options: [additional paramater]`.  
 
-Example of parameter file in which all reads will be retained during the clustering step:  
+Example of parameter file in which all reads will be retained during the quality filtering and clustering steps (polishing is also set to false):  
 ```
 {
 samplesheet: tests/index_mtdt.csv
@@ -511,7 +511,7 @@ mapping_back_to_ref: true
 }
 ```
 
-Example in which reads are first quality filtered using the tool chopper (only reads with a Phread average quality score above 8 and length >100 bp are retained). Then for the clustering step, only reads ranging between 500 and 2000 bp are retained:  
+Example in which reads are first quality filtered using the tool Chopper (only reads with a Phread average quality score above 8 and length >100 bp are retained). Then for the clustering step, only reads ranging between 500 and 2000 bp are retained:  
 ```
 {
 samplesheet: tests/index_mtdt.csv
