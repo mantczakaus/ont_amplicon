@@ -105,7 +105,7 @@ class RunQC(AbstractDataRow):
     def flag(self):
         raw_threshold = self.raw_reads > config.CRITERIA.MIN_RAW_READS
         qfiltered_threshold = (
-            self.processed_reads
+            (self.processed_reads or 0)
             > config.CRITERIA.MIN_FILTERED_READS)
         if qfiltered_threshold:
             if raw_threshold:

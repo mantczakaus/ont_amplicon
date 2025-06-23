@@ -2,34 +2,62 @@
 
 ## Introduction
 
-ont_amplicon is a Nextflow-based bioinformatics pipeline designed to derive consensus sequences from **amplicon sequencing data** that was generated using **rapid library preparation kit** from **Oxford nanopore Technologies**. The pipeline expects the fastq files to have been generated using a **high accuracy (HAC)** basecalling model.  **The pipeline will fail to run if the fastq files provided are generated with a Fast basecalling model.**
+ont_amplicon is a Nextflow-based bioinformatics pipeline designed to derive consensus sequences from **amplicon sequencing data** that were generated using **rapid library preparation kit** from **Oxford nanopore Technologies**. The pipeline expects the fastq files to have been generated using a **high accuracy (HAC)** basecalling model.  **The pipeline will fail to run if the fastq files provided are generated with a Fast basecalling model.**
 
-It takes compressed fastq files as input.
+It takes compressed fastq files (i.e. fastq.gz) as input.
 
+## Table of contents
+1. [Pipeline overview](#pipeline-overview)  
+2. [Installation](#installation)  
+a. [Requirements](#requirements)  
+3. [Running the pipeline](#running-the-pipeline)  
+a. [Quick start](#quick-start)  
+b. [Run the pipeline for the first time](#run-the-pipeline-for-the-first-time)  
+c. [Run test data](#run-test-data)  
+d. [QC step](#qc-step)  
+e. [Preprocessing reads](#preprocessing-reads)  
+f. [Clustering step (RATTLE)](#clustering-step-rattle)  
+g. [Polishing step (optional)](#polishing-step-optional)  
+h. [Primer search](#primer-search)  
+i. [Blast homology search against NCBI](#blast-homology-search-against-NCBI)  
+j. [Mapping back to consensus](#mapping-back-to-consensus)  
+k. [Mapping back to reference (optional)](#mapping-back-to-reference-optional)  
+l. [HTML report](#HTML-report)  
+5. [Output files](#output-files)  
+a. [Nextflow reports](#nextflow-reports)  
+b. [Preprocessing and host read filtering outputs](#preprocessing-and-host-read-filtering-outputs)  
+c. [Clustering step outputs](#clustering-step-outputs)  
+d. [Polishing step outputs](#polishing-step-outputs)  
+e. [Blast search outputs](#blast-search-outputs)  
+f. [Outputs from mapping back to consensus matches step](outputs-from-mapping-back-to-consensus-matches-step)  
+h. [Outputs from mapping back to reference matches step](outputs-from-mapping-back-to-reference-matches-step)  
+i. [HTML report output](#html-report-output)  
+6. [Authors](#authors) 
 
 ## Pipeline overview
 
 <p><img src="docs/images/ont_amplicon_workflow.png" width="625"></p>
 
 - Data quality check (QC) and preprocessing
-  - Merge fastq files (Fascat) - optional
-  - Raw fastq file QC (Nanoplot)
+  - Merge fastq.gz files (Fascat) - optional
+  - Quality check of raw fastq file (Nanoplot)
   - Trim adaptors (PoreChop ABI)
-  - Filter reads based on length and/or quality (Chopper) - optional
+  - Filter reads based on length and/or mean quality (Chopper) - optional
   - Reformat fastq files so read names are trimmed after the first whitespace (bbmap)
-  - Processed fastq file QC (if PoreChop and/or Chopper is run) (Nanoplot)
+  - Quality check of processed fastq file (Nanoplot)
+  - Subsample reads (seqkit)- optional
 - QC report
-  - Derive read counts recovered pre and post data processing and post host filtering
+  - Derive read counts recovered pre and post data processing
 - Clustering mode
   - Read clustering (Rattle)
   - Convert fastq to fasta format (seqtk)
-  - Polishing (Minimap2, Racon, Medaka2, Samtools - optional)
-  - Remove adapters if provided (Cutadapt)
+  - Polishing (Minimap2, Racon, Medaka2, Samtools) - optional
+  - Remove adapters, if provided (Cutadapt)
   - Megablast homology search against COI database (if COI is targetted) and reverse complement where required
   - Megablast homology search against NCBI database
-  - Derive top candidate hits, assign preliminary taxonomy and target organism flag (pytaxonkit)
-  - Map reads back to segment of consensus sequence that align to reference and derive BAM file and alignment statistics (Minimap2, Samtools and Mosdepth)
-  - Map reads to segment of NCBI reference sequence that align to consensus and derive BAM file and consensus (Minimap2, Samtools) - optional
+  - Derive top candidate hits, assign preliminary taxonomy and set target organism flag (pytaxonkit)  
+  - Map reads back to segment of consensus sequence that aligns to reference and derive BAM file and alignment statistics (Minimap2, Samtools and Mosdepth)  
+  - Map reads to segment of NCBI reference sequence that aligns to consensus and derive BAM file and consensus (Minimap2, Samtools) - optional
 
 
 ## Installation
@@ -44,12 +72,12 @@ If the pipeline is run on a local machine, it will require between 300-800Gb of 
 - 280Gb/760Gb for the blast NCBI database coreNT/NT
 - 3.4Gb for the MetaCOXI database  
 
-To run the pipeline will also require at least 2 cores and ~40Gb of memory per sample.  
+To run, the pipeline will also require at least 2 cores and ~40Gb of memory per sample.  
 The pipeline will generate ~5-100Mb of files per sample, depending on the number of consensuses recovered per sample and if mapping back to reference is required. Make sure you have enough space available on your local machine before running several samples at the same time.  
 
-1. Install Java if not already on your system. Follow the java download instructions provided on this [`page`](https://www.nextflow.io/docs/latest/getstarted.html#installation).
+**1. Install Java** if not already on your system. Follow the java download instructions provided on this [`page`](https://www.nextflow.io/docs/latest/getstarted.html#installation).
 
-2. Install [`Nextflow`](https://www.nextflow.io/docs/latest/getstarted.html#installation)
+**2. Install [`Nextflow`](https://www.nextflow.io/docs/latest/getstarted.html#installation)**
 
   Nextflow memory requirements
 
@@ -58,11 +86,13 @@ The pipeline will generate ~5-100Mb of files per sample, depending on the number
   NXF_OPTS='-Xms1g -Xmx4g'
   ```
 
-3. Install [`Singularity`](https://docs.sylabs.io/guides/3.0/user-guide/quick_start.html#quick-installation-steps) to suit your environment. The pipeline has been validated using singularity version 3.10.2-1 and apptainer version 1.3.6-1.el9 but has not yet been tested with singularity version 4.
+**3. Install [`Singularity`](https://docs.sylabs.io/guides/3.0/user-guide/quick_start.html#quick-installation-steps)** to suit your environment. The pipeline has been validated using singularity version 3.10.2-1 and apptainer version 1.3.6-1.el9 but has not yet been tested with singularity version 4.
 
-4. Set your singularity container cache directory. Copy paste the code below and press enter:  
+**4. Important: To avoid nextflow installing the singularity containers each time you are running the pipeline, set your singularity container cache directory.** For example, the command below will set a cache directory called $HOME/.nextflow/NXF_SINGULARITY_CACHEDIR and this directs Nextflow to always save the containers into this centralised location:  
 ```
 [[ -d $HOME/.nextflow ]] || mkdir -p $HOME/.nextflow
+[[ -d $HOME/.nextflow/NXF_SINGULARITY_CACHEDIR ]] || mkdir -p $HOME/.nextflow/NXF_SINGULARITY_CACHEDIR
+
 mkdir $HOME/.nextflow/NXF_SINGULARITY_CACHEDIR
 
 cat <<EOF > $HOME/.nextflow/config
@@ -74,10 +104,10 @@ singularity {
 Specify a different `cacheDir` location if space is limited in your home directory.  
 
 
-5. Install the taxonkit databases using the script install_taxonkit.sh located in the bin folder or follow the steps described on this [`page`](https://bioinf.shenwei.me/taxonkit/download/).
+**5. Install the taxonkit databases** using the script install_taxonkit.sh located in the bin folder or follow the steps described on this [`page`](https://bioinf.shenwei.me/taxonkit/download/).
 
 
-6. Install NCBI NT or coreNT.  
+**6. Install NCBI NT or coreNT.**  
 Download a local copy of the NCBI database of interest, following the detailed steps available at https://www.ncbi.nlm.nih.gov/books/NBK569850/. Create a folder where you will store your NCBI databases. It is good practice to include the date of download. For instance:
   ```
   mkdir blastDB/20230930
@@ -96,7 +126,7 @@ Download a local copy of the NCBI database of interest, following the detailed s
   blastn_db: /full/path/to/blastDB/20230930/nt
   ```
 
-7. Download the Cytochrome oxydase 1 (COI1) database if you are planning to analyse COI samples.
+**7. Download the Cytochrome oxydase 1 (COI1) database** if you are planning to analyse COI samples.
   ```
   wget https://zenodo.org/record/6246634/files/MetaCOXI_Seqs_1.tar.gz
   #extract MetaCOXI_Seqs.fasta from the MetaCOXI_Seqs.tar.gz file
@@ -113,29 +143,29 @@ Specify the full path to your COI database name in your in your parameter file.
 ## Running the pipeline  
 
 ### Quick start
-The typical command for running the pipeline is as follows:
+A typical command for running the pipeline is as follows:
 ```
-nextflow run main.nf -profile singularity -params-file params/params_mtdt_test.yml
+nextflow run main.nf -profile singularity -params-file params/params_example.yml
 ```
-With the following parmaters specified in the params_mtdt_test.yml. **Please update paths to databases to match your local set up**:
+With the following parmaters specified in the params_sample.yml. **Please update paths to databases to match your local set up**:
 ```
 {
-samplesheet: tests/index_mtdt.csv
+samplesheet: /full/path/to/index.csv
 merge: true
 qual_filt: true
 chopper_options: -q 8 -l 100
 polishing: true
-blastn_db: $HOME/ont_amplicon/tests/blastdb/reference.fasta
-blastn_COI: $HOME/ont_amplicon/tests/COIdb/MetaCOXI_Seqs.fasta
-taxdump: ~/.taxonkit
+blastn_db: /full/path/to/NCBI/core_nt
+blastn_COI: /full/path/to/MetaCOXI_Seqs.fasta
 blast_threads: 2
-analyst_name: John Smith
-facility: MTDT
+taxdump: ~/.taxonkit
+analyst_name: Maely Gauthier
+facility: QUT
 mapping_back_to_ref: true
 }
 ```
 
-And below is an example of an index.file:
+And below is an example of an **index.file**:
 ```
 sampleid,fastq_path,target_organism,target_gene,target_size,fwd_primer,rev_primer
 VE24-1279_COI,/work/tests/mtdt_data/barcode01_VE24-1279_COI/*fastq.gz,drosophilidae,COI,711,GGTCAACAAATCATAAAGATATTGG,ATTTTTTGGTCACCCTGAAGTTTA
@@ -169,11 +199,9 @@ MP24-1096B_gyrB,/work/tests/mtdt_data/barcode19_MP24-1096B_gyrB/*fastq.gz,bacter
    - **test** is a field specific to NAQS LIMS (optional)
    - **method** is a field specific to NAQS LIMS (optional)
 
-  To specify parameters, we recommend that you use a parameter file. Please refer to this document for additional information on how to pass parameters and how parameter passing priority works (https://software.pixelgen.com/nf-core-pixelator/1.3.x/usage/passing-parameters/).  
-
-  For the fastq files path, the pipeline can process 1) multiple fastq.gz files per sample located within one folder (default) or 2) a single fastq.gz file per sample.  
+  For the **fastq files path**, the pipeline can process 1) multiple fastq.gz files per sample located within one folder (default) or 2) a single fastq.gz file per sample.  
   If there are **multiple fastq.gz files per sample**, their full path can be specified on one line using **an asterisk (i.e. *fastq.gz)** and you will need to specify the parameter ```--merge``` in the parameter file (default setting).  
-  See an example of an index.csv file for 2 MTDT samples:  
+  See an example of an index.csv file for 3 MTDT samples:  
   ```
   sampleid,fastq_path,target_organism,target_gene,target_size
   VE24-1279_COI,/work/tests/mtdt_data/barcode01_VE24-1279_COI/*fastq.gz,drosophilidae,COI,711,GGTCAACAAATCATAAAGATATTGG,ATTTTTTGGTCACCCTGAAGTTTA
@@ -183,56 +211,89 @@ MP24-1096B_gyrB,/work/tests/mtdt_data/barcode19_MP24-1096B_gyrB/*fastq.gz,bacter
   For samples with **a single fastq.gz** file, specify **the full path to the fastq.gz file**  and set the merge parameter as **false**.  
 
   A python script is provided in the **bin** folder called derive_sample_sheet.py that will create an index.csv file with header and automatically populate the sample name and the fastq.gz file path.
-
-
-- Specify your container engine ```singularity``` in the profile:
+  It requires python to be installed on your local system.  
+  It expects fastq files to be in gzip format (i.e. fastq.gz).
+  
+  To run the script, specify the directory where the fastq.gz files are located with **-d [full/path/to/fastqgz/directory** and the output file name with  **-o index.csv**:  
+  ```
+  python derive_sample_sheet.py -d /full/path/to/fastqgz/directory -o index_example.csv
+  ```
+  If there is only a single fastq.gz file per sample, specify the single option with **-s**:  
+  ```
+  python derive_sample_sheet.py -d /full/path/to/fastqgz/directory -o index_example.csv -s
+  ```
+  **Please note that the script will derive sample names based on the fastq.gz file prefix. Adjust the sample name accordingly.**
+  
+- Specify your container engine ```singularity``` as the profile:
   ```
   nextflow run main.nf -profile singularity
   ```
+  
+- To specify parameters, we recommend that you provide a **params.yml** file with all your parameters. Please refer to this document for additional information on how to pass parameters and how parameter passing priority works (https://software.pixelgen.com/nf-core-pixelator/1.3.x/usage/passing-parameters/).  
 
-- Provide a params.yml file with all your parameters:
 ```
-nextflow run main.nf  -profile singularity -params-file params/params_mtdt_test.yml
+nextflow run main.nf  -profile singularity -params-file params/params_example.yml
 ```
-These are the default parameters set by the pipeline:
+The default parameters are provided in the default_params.yml under the params folder:
 ```
 {
-samplesheet: /full/path/to/index.csv
+samplesheet: index.csv
 merge: true
 qual_filt: true
-chopper_options: -q 8 -l 100
+chopper_options: -q 8
 polishing: true
-blastn_db: /full/path/to/NCBI/core_nt
-blastn_COI: /full/path/to/MetaCOXI_Seqs.fasta
-taxdump: ~/.taxonkit
-analyst_name: Gauthier
-facility: MTDT
+blastn_db: null
+taxdump: null
+blast_threads: 2
+analyst_name: null
+facility: null
+mapping_back_to_ref: true
+outdir: results
+help: false
+qc_only: false
+preprocessing_only: false
+porechop_options: null
+porechop_custom_primers: false
+porechop_custom_primers_path: ~/ont_amplicon/bin/adapters.txt
+chopper_options: null
+analysis_mode: clustering
+rattle_clustering_options: null
+rattle_clustering_min_length: null 
+rattle_clustering_max_length: null
+rattle_raw: false
+rattle_clustering_max_variance: 1000000
+rattle_polishing_options: null
+blastn_COI: null
+subsample: false
+reads_downsampling_size: 10000
 }
 ```
-- Specify the path to your blast and taxonkit databases in your parameter file.  The analysis cannot proceed without these being set.  
+- Specify the full path to your blast and taxonkit databases in your parameter file.  The analysis cannot proceed without these being set.
 
-- Specify the ``--analyst_name`` and the ``--facility`` in your parameter file.  The analysis cannot proceed without these being set.  
+- Specify the ``--analyst_name`` and the ``--facility`` in your parameter file.  The analysis cannot proceed without these being set.
 
-- If you are invoking the pipeline from another folder, create a config file (for example local.config) in which you specify the full path of your local ont_amplicon repository.  
-For example:  
+- Specify the full path to your COI database name in your in your parameter file if some of your gene targets are COI. The analysis will not process if one of your target gene is COI and the blastn_COI parameter is not set.   
+
+- If you are invoking the pipeline from another folder, create a config file (for example local.config) in which you specify the full path of your local ont_amplicon repository:  
 ```
 singularity {
   runOptions = '-B /full/path/to/ont_amplicon:/mnt/ont_amplicon'
   }
 ```
-
 And update your command to:  
-```nextflow run /full/path/to/main.nf  -profile singularity -resume  -params-file  params.yml -c local.config```.
+```
+nextflow run /full/path/to/main.nf  -profile singularity -resume  -params-file  params.yml -c local.config
+```
 
-- By default, nextflow saves the run log to a file called .nextflow.log in the folder from which the analysis is run. Add the `-log` option to your nextflow command to specify a different log file name and location.  
+- By default, nextflow saves the run log to a file called **.nextflow.log** in the folder from which the analysis is run. Add the **`-log` option** to your nextflow command to specify a different log file name and location.  
 
-### Run tests
-Two tests are currently provided to check if the pipeline was successfully installed and to demonstrate to users the current outputs generated by the pipeline prototype so they can provide feedback. 
+### Run test data
+Two tests are currently provided to check if the pipeline was successfully installed. 
 - The mtdt_test runs three samples provided by  MTDT (barcode01_VE24-1279_COI, barcode06_MP24-1051A_16S and barcode19_MP24-1096B_gyrB). 
 - The peq_test runs two samples provided by PEQ (ONT141 and ONT142). 
 A small NCBI blast database and COI database have been derived to speed up the analysis run in test mode.  
 
-To use the tests, change directory to ont_amplicon and run the following command for the MTDT test:
+To use the tests, change directory to the ont_amplicon github repository and run the following command for the MTDT test:
   ```
   nextflow run main.nf -profile singularity,mtdt_test -resume -params-file params/params_mtdt_test.yml
   ```
@@ -252,49 +313,49 @@ If the installation is successful, your screen should output something similar t
 ```
  N E X T F L O W   ~  version 24.10.5
 
-Launching `main.nf` [berserk_gutenberg] DSL2 - revision: 14779efa3e
+Launching `main.nf` [hungry_hilbert] DSL2 - revision: cea782866c
 
 executor >  pbspro (76)
-[8f/37f88f] process > TIMESTAMP_START                                     [100%] 1 of 1 ✔
-[9a/4ae987] process > FASTCAT (barcode19_MP24-1096B_gyrB)                 [100%] 3 of 3 ✔
-[4b/c28438] process > QC_PRE_DATA_PROCESSING (barcode19_MP24-1096B_gyrB)  [100%] 3 of 3 ✔
-[3a/3245aa] process > PORECHOP_ABI (barcode19_MP24-1096B_gyrB)            [100%] 3 of 3 ✔
-[be/1a6a24] process > CHOPPER (barcode19_MP24-1096B_gyrB)                 [100%] 3 of 3 ✔
-[e1/178003] process > REFORMAT (barcode19_MP24-1096B_gyrB)                [100%] 3 of 3 ✔
-[27/dfdee1] process > QC_POST_DATA_PROCESSING (barcode19_MP24-1096B_gyrB) [100%] 3 of 3 ✔
-[ed/547789] process > QCREPORT                                            [100%] 1 of 1 ✔
-[bf/0b1014] process > RATTLE (barcode19_MP24-1096B_gyrB)                  [100%] 3 of 3 ✔
-[71/803823] process > FASTQ2FASTA (barcode19_MP24-1096B_gyrB)             [100%] 3 of 3 ✔
-[6c/8c02c0] process > MINIMAP2_RACON (barcode19_MP24-1096B_gyrB)          [100%] 3 of 3 ✔
-[42/2b5a12] process > RACON (barcode19_MP24-1096B_gyrB)                   [100%] 3 of 3 ✔
-[13/02e7b3] process > MEDAKA2 (barcode19_MP24-1096B_gyrB)                 [100%] 3 of 3 ✔
-[9f/10d248] process > CUTADAPT (barcode19_MP24-1096B_gyrB)                [100%] 3 of 3 ✔
-[8d/636107] process > BLASTN_COI (barcode01_VE24-1279_COI)                [100%] 1 of 1 ✔
-[77/5b10fc] process > REVCOMP (barcode01_VE24-1279_COI)                   [100%] 1 of 1 ✔
-[c4/119cf8] process > BLASTN (barcode01_VE24-1279_COI)                    [100%] 1 of 1 ✔
-[fe/284a69] process > BLASTN2 (barcode19_MP24-1096B_gyrB)                 [100%] 2 of 2 ✔
-[8e/7623d2] process > EXTRACT_BLAST_HITS (barcode19_MP24-1096B_gyrB)      [100%] 3 of 3 ✔
-[ee/d92377] process > FASTA2TABLE (barcode19_MP24-1096B_gyrB)             [100%] 3 of 3 ✔
-[25/32f878] process > MINIMAP2_REF (barcode19_MP24-1096B_gyrB)            [100%] 3 of 3 ✔
-[9b/21ada5] process > SAMTOOLS (barcode19_MP24-1096B_gyrB)                [100%] 3 of 3 ✔
-[01/69286e] process > MINIMAP2_CONSENSUS (barcode19_MP24-1096B_gyrB)      [100%] 3 of 3 ✔
-[bf/351d07] process > SAMTOOLS_CONSENSUS (barcode19_MP24-1096B_gyrB)      [100%] 3 of 3 ✔
-[0b/783c9e] process > PYFAIDX (barcode19_MP24-1096B_gyrB)                 [100%] 3 of 3 ✔
-[bb/c64067] process > MOSDEPTH (barcode19_MP24-1096B_gyrB)                [100%] 3 of 3 ✔
-[4e/20a073] process > COVSTATS (barcode19_MP24-1096B_gyrB)                [100%] 3 of 3 ✔
-[6b/b98138] process > SEQTK (barcode19_MP24-1096B_gyrB)                   [100%] 3 of 3 ✔
-[73/fbfcfe] process > HTML_REPORT (3)                                     [100%] 3 of 3 ✔
-Completed at: 03-Apr-2025 09:47:49
-Duration    : 5m 49s
-CPU hours   : 0.2
+[8a/42602e] TIMESTAMP_START                                     [100%] 1 of 1 ✔
+[f9/ad32cb] FASTCAT (barcode19_MP24-1096B_gyrB)                 [100%] 3 of 3 ✔
+[76/8c97a7] QC_PRE_DATA_PROCESSING (barcode19_MP24-1096B_gyrB)  [100%] 3 of 3 ✔
+[e7/cfb6bf] PORECHOP_ABI (barcode19_MP24-1096B_gyrB)            [100%] 3 of 3 ✔
+[e7/f281b9] CHOPPER (barcode19_MP24-1096B_gyrB)                 [100%] 3 of 3 ✔
+[f8/987357] REFORMAT (barcode19_MP24-1096B_gyrB)                [100%] 3 of 3 ✔
+[d4/4333ad] QC_POST_DATA_PROCESSING (barcode19_MP24-1096B_gyrB) [100%] 3 of 3 ✔
+[1b/de3961] QCREPORT                                            [100%] 1 of 1 ✔
+[ae/563754] RATTLE (barcode19_MP24-1096B_gyrB)                  [100%] 3 of 3 ✔
+[d2/482ec5] CLUSTER2FASTA (barcode19_MP24-1096B_gyrB)           [100%] 3 of 3 ✔
+[61/6cc7fe] MINIMAP2_RACON (barcode19_MP24-1096B_gyrB)          [100%] 3 of 3 ✔
+[d1/5025de] RACON (barcode19_MP24-1096B_gyrB)                   [100%] 3 of 3 ✔
+[fa/4d7987] MEDAKA2 (barcode19_MP24-1096B_gyrB)                 [100%] 3 of 3 ✔
+[80/d7647f] CUTADAPT (barcode19_MP24-1096B_gyrB)                [100%] 3 of 3 ✔
+[74/f9c567] BLASTN_COI (barcode01_VE24-1279_COI)                [100%] 1 of 1 ✔
+[ed/aa205d] REVCOMP (barcode01_VE24-1279_COI)                   [100%] 1 of 1 ✔
+[e0/d44563] BLASTN (barcode01_VE24-1279_COI)                    [100%] 1 of 1 ✔
+[73/541c3f] BLASTN2 (barcode19_MP24-1096B_gyrB)                 [100%] 2 of 2 ✔
+[13/fc6720] EXTRACT_BLAST_HITS (barcode06_MP24-1051A_16S)       [100%] 3 of 3 ✔
+[b3/13c5ea] FASTA2TABLE (barcode19_MP24-1096B_gyrB)             [100%] 3 of 3 ✔
+[e0/2e5e64] MINIMAP2_CONSENSUS (barcode06_MP24-1051A_16S)       [100%] 3 of 3 ✔
+[78/2822af] SAMTOOLS_CONSENSUS (barcode06_MP24-1051A_16S)       [100%] 3 of 3 ✔
+[5c/9e082b] PYFAIDX (barcode06_MP24-1051A_16S)                  [100%] 3 of 3 ✔
+[34/ee513d] MOSDEPTH (barcode06_MP24-1051A_16S)                 [100%] 3 of 3 ✔
+[e7/b555f5] SEQTK (barcode06_MP24-1051A_16S)                    [100%] 3 of 3 ✔
+[7d/cb9d44] COVSTATS (barcode19_MP24-1096B_gyrB)                [100%] 3 of 3 ✔
+[70/c85da3] HTML_REPORT (2)                                     [100%] 3 of 3 ✔
+[96/3ff7d4] MINIMAP2_REF (barcode19_MP24-1096B_gyrB)            [100%] 3 of 3 ✔
+[29/f193f6] SAMTOOLS (barcode19_MP24-1096B_gyrB)                [100%] 3 of 3 ✔
+Completed at: 23-Jun-2025 11:14:02
+Duration    : 6m 18s
+CPU hours   : 0.3
 Succeeded   : 76
 ```
 
-By default, the output files will be saved under the **results** folder (this can be changed by setting the `outdir` parameter to soemthing else).  
+By default, the output files will be saved under the **results** folder (this can be changed by setting the **`--outdir`** parameter to something else).  
 
 The results folder has the following structure:  
 ```
-├── 00_qc_report
+├── 00_QC_report
 │   ├── run_qc_report_20250428-091847.html
 │   └── run_qc_report_20250428-091847.txt
 ├── 01_pipeline_info
@@ -326,48 +387,55 @@ The results folder has the following structure:
 │   ├── 02_clustering
 │   │   ├── barcode01_VE24-1279_COI_rattle.fasta
 │   │   └── barcode01_VE24-1279_COI_rattle.log
+│   │   └── barcode01_VE24-1279_COI_rattle_status.txt
 │   ├── 03_polishing
 │   │   ├── barcode01_VE24-1279_COI_cutadapt.log
 │   │   ├── barcode01_VE24-1279_COI_final_polished_consensus.fasta
 │   │   ├── barcode01_VE24-1279_COI_medaka_consensus.fasta
-│   │   ├── barcode01_VE24-1279_COI_racon_polished.fasta
-│   │   └── barcode01_VE24-1279_COI_samtools_consensus.fasta
+│   │   ├── barcode01_VE24-1279_COI_medaka.log
+│   │   ├── barcode01_VE24-1279_COI_racon_consensus.fasta
+│   │   ├── barcode01_VE24-1279_COI_racon.log
+│   │   ├── barcode01_VE24-1279_COI_samtools_consensus.fasta
+│   │   ├── barcode01_VE24-1279_COI_samtools_consensus.fastq
+│   │   └── barcode01_VE24-1279_COI_samtools_consensus.log
 │   ├── 04_megablast
-│   │   ├── barcode01_VE24-1279_COI_final_polished_consensus_match.fasta
+│   │   ├── barcode01_VE24-1279_COI_blast_status.txt
 │   │   ├── barcode01_VE24-1279_COI_final_polished_consensus_rc.fasta
 │   │   ├── barcode01_VE24-1279_COI_final_polished_consensus_rc_megablast_top_10_hits.txt
 │   │   ├── barcode01_VE24-1279_COI_final_polished_consensus_rc_megablast_top_hits.txt
-│   │   └── barcode01_VE24-1279_COI_reference_match.fasta
 │   ├── 05_mapping_to_consensus
 │   │   ├── barcode01_VE24-1279_COI_aln.sorted.bam
 │   │   ├── barcode01_VE24-1279_COI_aln.sorted.bam.bai
 │   │   ├── barcode01_VE24-1279_COI_coverage.txt
 │   │   ├── barcode01_VE24-1279_COI_final_polished_consensus_match.fasta
+│   │   ├── barcode01_VE24-1279_COI_final_polished_consensus_match.fastq
 │   │   └── barcode01_VE24-1279_COI_top_blast_with_cov_stats.txt
 │   ├── 06_mapping_to_ref
-│   │   ├── barcode01_VE24-1279_COI_aln.sorted.bam
-│   │   ├── barcode01_VE24-1279_COI_aln.sorted.bam.bai
 │   │   ├── barcode01_VE24-1279_COI_coverage.txt
+│   │   ├── barcode01_VE24-1279_COI_ref_aln.sorted.bam
+│   │   ├── barcode01_VE24-1279_COI_ref_aln.sorted.bam.bai
 │   │   ├── barcode01_VE24-1279_COI_reference_match.fasta
 │   │   └── barcode01_VE24-1279_COI_samtools_consensus_from_ref.fasta
 │   └── 07_html_report
-│       ├── bam-alignment.html
+│       ├── barcode01_VE24-1279_COI_bam-alignment.html
+│       ├── barcode01_VE24-1279_COI_report.html
+│       ├── default_params.yml
 │       ├── example_report_context.json
-│       ├── report.html
-│       └── run_qc_report.html
+│       ├── run_qc_report.html
+│       └── versions.yml
 ```
 
 ### QC step
-By default the pipeline will run a quality control check of the raw reads using NanoPlot.
+By default the pipeline will run a quality control check of the raw reads using [NanoPlot](https://github.com/wdecoster/NanoPlot).  
 
-- It is recommended to first run only the quality control step to have a preliminary look at the data before proceeding with downstream analyses by specifying the `qc_only: true` parameter.
+**It is recommended to first run only the quality control step to have a preliminary look at the data before proceeding with downstream analyses by specifying the `qc_only: true` parameter.**
 
 ### Preprocessing reads
-If multiple fastq files exist for a single sample, they will first need to be merged using the `merge: true` option using [`Fascat`](https://github.com/epi2me-labs/fastcat).
-Then the read names of the fastq file created will be trimmed after the first whitespace, for compatiblity purposes with all downstream tools.  
+By defaut, the pipline expects that multiple fastq files exist for a single sample and the `merge: true` option is set. These fastq files will be merged using [`Fascat`](https://github.com/epi2me-labs/fastcat) 
+Then the read names of the fastq file created will be trimmed after the first whitespace in the read header, for compatiblity purposes with all downstream tools.  
 
-Reads are trimmed of adapters and optionally quality filtered:  
-- Reads are searched for the presence of sequencing adapters using [`Porechop ABI`](https://github.com/rrwick/Porechop). Porechop ABI parameters can be specified using ```porechop_options: '{options} '```, making sure you leave a space at the end before the closing quote. Please refer to the Porechop manual.  
+Reads are then trimmed of adapters and optionally quality filtered:  
+- Reads are searched for the presence of sequencing adapters using [`Porechop ABI`](https://github.com/rrwick/Porechop). Other porechop ABI parameters can be specified using ```porechop_options: '{options} '```, making sure you leave a space at the end before the closing quote. Please refer to the Porechop manual.  
 
   **Special usage:**  
   By default, Porechop limits the search to known adapters listed in [`adapter.py`](https://github.com/bonsai-team/Porechop_ABI/blob/master/porechop_abi/adapters.py).  
@@ -375,7 +443,7 @@ Reads are trimmed of adapters and optionally quality filtered:
   ```
   porechop_options: '-abi '
   ```  
-  To limit the search to custom adapters, specify 
+  To limit the search to custom adapters, specify: 
   ```
   porechop_custom_primers: true
   porechop_options '-ddb '
@@ -388,13 +456,13 @@ Reads are trimmed of adapters and optionally quality filtered:
   --- repeat for each adapter pair---
   ```
 
-- Perform a quality filtering step using [`Chopper`](https://github.com/wdecoster/chopper) by specifying  the ```qual_filt: true``` parameter. The following parameters can be specified using the ```chopper_options: {options}```. Please refer to the Chopper manual.  
+- Perform a quality filtering step using [`Chopper`](https://github.com/wdecoster/chopper) by specifying  the ```qual_filt: true``` parameter. Chopper parameters to apply will need to be specified separately using the ```chopper_options: {options}```. Please refer to the Chopper manual.  
   For instance to filter reads shorter than 1000 bp and longer than 20000 bp, and reads with a minimum Phred average quality score of 10, you would specify in your parameter file: 
   ```
   qual_filt: true
   chopper_options: -q 10 -l 1000 --maxlength 20000
   ```
-**Based on our benchmarking, we recommend using the following parameters ```chopper_options: -q 8 -l 100``` as a first pass**.  
+**Based on the benchmarking performed, we recommend using the following parameters ```chopper_options: -q 8 -l 100``` as a first pass**.  
 
   If you are analysing samples that are of poor quality (i.e. failed the QC_FLAG) or amplifying a very short amplicon (e.g. <150 bp), then we recommend using the following setting ```chopper_options: -q 8 -l 25``` to retain reads of all lengths.  
 
@@ -402,7 +470,7 @@ A zipped copy of the resulting **preprocessed** and/or **quality filtered fastq 
 
 After processing raw reads, an additional quality control step will be performed.  
 
-A qc report will be generated in text and html formats summarising the read counts recovered after the pre-processing step for all samples listed in the index.csv file.
+A **qc report** will be generated in text and html formats summarising the read counts recovered after the pre-processing step for all samples listed in the index.csv file.
 It will include 3 flags:  
 1) For the raw_reads_flag, if there were < 2500 raw reads, the column will display: "Less than 2500 raw reads".  
 2) For the qfiltered_flag, if there were < 200 quality_filtered_reads, the column will display: "Less than 200 processed reads".  
@@ -423,18 +491,18 @@ In the clustering mode, the tool [`RATTLE`](https://github.com/comprna/RATTLE#De
 - Finally, the `rattle_clustering_max_variance` is set by default to 1,000,000.  
 
   **Special usage:**
-  The parameters `rattle_clustering_min_length: [number]` (by default: 150) and `rattle_clustering_max_length: [number]` (by default: 100,000) can also be specified in the parameter file to restrict read size more strictly.  
+  The parameters `rattle_clustering_min_length: [number]` (by default: 150) and `rattle_clustering_max_length: [number]` (by default: 100,000) can also be specified in the parameter file to restrict lower and upper read size length.  
   Additional parameters (other than raw, lower-length, upper-length and max-variance) can be set using the parameter `rattle_clustering_options: [additional paramater]`.  
 
-Example of parameter file in which all reads will be retained during the clustering step:  
+Example of parameter file in which all reads will be retained during the quality filtering and clustering steps (polishing is also set to false):  
 ```
 {
 samplesheet: tests/index_mtdt.csv
 merge: true
-qual_filt: true
-chopper_options: -q 8 -l 25
+<<<<<<< HEAD
+qual_filt: false
 rattle_raw: true
-polishing: true
+polishing: false
 blastn_db: $HOME/ont_amplicon/tests/blastdb/reference.fasta
 blastn_COI: $HOME/ont_amplicon/tests/COIdb/MetaCOXI_Seqs.fasta
 taxdump: ~/.taxonkit
@@ -443,15 +511,16 @@ analyst_name: John Smith
 facility: MTDT
 mapping_back_to_ref: true
 }
+```
 
-Example in which reads are first quality filtered using the tool chopper (only reads with a Phread average quality score above 10 are retained). Then for the clustering step, only reads ranging between 500 and 2000 bp will be retained:  
+Example in which reads are first quality filtered using the tool Chopper (only reads with a Phread average quality score above 8 and length >100 bp are retained). Then for the clustering step, only reads ranging between 500 and 2000 bp are retained:  
 ```
 {
 samplesheet: tests/index_mtdt.csv
 merge: true
 qual_filt: true
 chopper_options: -q 8 -l 100
-rattle_clustering_min_length: 200
+rattle_clustering_min_length: 500
 rattle_clustering_max_length: 2000
 polishing: true
 blastn_db: $HOME/ont_amplicon/tests/blastdb/reference.fasta
@@ -462,19 +531,20 @@ analyst_name: John Smith
 facility: MTDT
 mapping_back_to_ref: true
 }
+```
 
 ### Polishing step (optional)
 The clusters derived using RATTLE can be polished. The reads are first mapped back to the clusters using Minimap2 and then the clusters are polished using Racon, Medaka2 and Samtools consensus. For Samtools consensus, we use the predefined sets of configuration parameters that have been optimised for ONT reads (i.e. r10.4_sup) (please see the configuration section of the [`Samtools consensus documentation`](https://www.htslib.org/doc/samtools-consensus.html)).
 This polishing step is performed by default by the pipeline but can be skipped by specifying the paramater ``--polishing false``.  
 
 ### Primer search
-If the fwd_primer and the rev_primer have been provided in the csv file, clusters are then searched for primers using Cutadapt.  
+If the fwd_primer and the rev_primer have been provided in the csv file, clusters are then searched for primers using [Cutadapt](https://cutadapt.readthedocs.io/en/stable/reference.html).  
 
 ### Blast homology search against NCBI
-If the gene targetted is Cytochrome oxidase I (COI), a preliminary megablast homology search against a COI database will be performed; then based on the strandedness of the consensus in the blast results, some will be reverse complemented where required.  
+If the gene targetted is Cytochrome oxidase I (COI), a preliminary megablast homology search against a COI database will be performed; then based on the strandedness of the blast results for the consensuses , some will be reverse complemented where required.  
 
 Blast homology search of the consensuses against NCBI is then performed and the top 10 hits are returned.
-A separate blast output is then derived using pytaxonkit, which outputs preliminary taxonomic assignment to the top blast hit for each consensus. The nucleotide sequence of qseq (ie consensus match) and sseq (ie reference match) are extracted to use when mapping reads back to consensus and reference respectively (see steps below).  
+A separate blast output is then derived using [pytaxonkit](https://github.com/bioforensics/pytaxonkit), to output preliminary taxonomic assignment to the top blast hit for each consensus. The nucleotide sequence of qseq **(i.e. consensus match)** and sseq **(i.e. reference match)** are extracted to use when mapping reads back to consensus and reference respectively (see steps below).  
 
 ### Mapping back to consensus
 The quality filtered reads derived during the pre-processing step are mapped back to the consensus matches using Mimimap2. Samtools and Mosdepth are then used to derive bam files and coverage statistics. A summary of the blast results, preliminary taxonomic assignment, coverage statistics and associated **flags** are then derived for each consensus using python.  
@@ -491,19 +561,18 @@ The quality filtered reads derived during the pre-processing step are mapped bac
 | **6. READ LENGTH FLAG** | Number of mapped reads whose lengths are at least 90% of the consensus match length |  **>=200** |  **50-200** | **< 50** | The consensus returned no blast hits |
 | **7. MEAN MQ FLAG** | Average mapping quality of reads mapping to the consensus match | **>= 30** | **10-30** | **< 10** | The consensus returned no blast hits |
 
-The confidence score is also derived. It is based on a scoring system which assigns different weight to each flag colour for the 30X coverage flag, the target size, the mapped read count flag, the mena coverage flag, the read length flag and the mean MQ flag. It is a value bewteen 0 and 12. A higher score indicates a higher confidence in the quality of the consensus sequence.  
+A confidence score is also derived. It is based on a scoring system which assigns different weight to each flag colour for the 30X coverage flag, the target size, the mapped read count flag, the mean coverage flag, the read length flag and the mean MQ flag. It is a value bewteen 0 and 12. A higher score indicates a higher confidence in the quality of the consensus sequence.  
 The normalised confidence score is also provided. It is a value between 0 and 1 that is calculated by normalising the confidence score to the maximum possible score for this sequence. A value of 1 indicates the highest confidence in the quality of the consensus sequence.
   
 ### Mapping back to reference (optional)
-By default the quality filtered reads derived during the pre-processing step are also mapped back to the
-reference blast match and Samtools consensus is used to derive independent guided-reference consensuses. Their nucleotide sequences can be compared to that of the original consensuses to resolve ambiguities (ie low complexity and repetitive regions).  
+By default the quality filtered reads derived during the pre-processing step are also mapped back to the reference blast match and [Samtools consensus](http://www.htslib.org/doc/samtools-consensus.html) is used to derive independent guided-reference consensuses. Their nucleotide sequences can be compared to that of the original consensuses to resolve ambiguities (ie low complexity and repetitive regions).  
 
 ### HTML report
 An html summary report is generated for each sample, incorporating sample metadata, QC before and after 
-preprocessing, blast results and coverage statistics. It also provides a link to the bam files generated when ampping back to consensus.  
+preprocessing, blast results and coverage statistics. It also provides a link to the bam files generated when mapping back to consensus.  
 
 ## Output files
-The output files will be saved under the results folder by default. This can be changed by setting the `outdir` parameter.  
+The output files will be saved by default under the **results** folder. This can be changed by setting the **`--outdir` parameter**.  
 
 ### Nextflow reports
 Nextflow generates several outputs which are stored under the **01_pipeline_info** folder. Please find detailed information about these on this [page](https://www.nextflow.io/docs/latest/reports.html). All of these have the date and time appended as a suffix.
@@ -512,7 +581,7 @@ Nextflow generates several outputs which are stored under the **01_pipeline_info
 Nextflow outputs an **HTML execution report** which includes general metrics about the run. The report is organised into 3 main sections:  
 - The **Summary** section reports the execution status, the launch command, overall execution time and some other workflow metadata.  
 - The **Resources** section plots the distribution of resource usage for each workflow process. Plots are shown for CPU, memory, job duration and disk I/O. They have two (or three) tabs with the raw values and a percentage representation showing what proportion of the requested resources were used. These plots are very helpful to check that task resources are used efficiently.  
-- The **Tasks** section lists all executed tasks, reporting for each of them the status, the actual command script, and many other metrics.  
+- The **Tasks** section lists all executed tasks, reporting for each of them the status, the actual command script, and several other metrics.  
 
 #### Trace file
 Nextflow creates an execution tracing text file that contains some useful information about each process executed in your pipeline script, including: submission time, start time, completion time, cpu and memory used.  
@@ -527,9 +596,9 @@ As each process can spawn many tasks, colors are used to identify those tasks be
 #### Workflow diagram
 The pipeline executed is represented as an HTML diagram in direct acyclic graph format. The vertices in the graph represent the pipeline’s processes and operators, while the edges represent the data dependencies (i.e. channels) between them.
 
-### Preprocessing and host read filtering outputs
-If a merge step is required, fastcat will create a summary text file showing the read length distribution.  
-Quality check will be performed on the raw fastq file using [NanoPlot](https://github.com/wdecoster/NanoPlot) which is a tool that can be used to produce general quality metrics e.g. quality score distribution, read lengths and other general stats. A NanoPlot-report.html file will be saved under the **SampleName/qc/nanoplot** folder with the prefix **raw**. This report displays 6 plots as well as a table of summary statistics.  
+### Preprocessing and quality check outputs (Sample_name/00_preprocessing, Sample_name/01_QC & 00_QC_report)
+If the fastq.gz files need to be merged for a sample, the resulting fastq.g file will be stored under the **SampleName/01_QC/fastcat** folder. The basecallign model used will also be captured in this folder in a file called **basecalling_model_inference.txt**.  
+A quality check will be performed on the raw fastq file using [NanoPlot](https://github.com/wdecoster/NanoPlot) which is a tool that can be used to produce general quality metrics e.g. quality score distribution, read lengths and other general stats. A NanoPlot-report.html file will be saved under the **SampleName/01_QC/nanoplot** folder with the prefix **raw**. This report displays 6 plots as well as a table of summary statistics.  
 
 <p align="center"><img src="docs/images/Example_Statistics.png" width="1000"></p>
 
@@ -537,27 +606,27 @@ Example of output plots:
 <p align="center"><img src="docs/images/Example_raw_WeightedHistogramReadlength.png" width="750"></p>
 <p align="center"><img src="docs/images/Example_LengthvsQualityScatterPlot.png" width="750"></p>
 
-A preprocessed fastq file will be saved in the **SampleName/preprocessing** output directory which will minimally have its read names trimmed after the first whitespace, for compatiblity purposes with all downstream tools. This fastq file will be trimmed of adapters (PoreChopABI) and optionally filtered based on quality and length (if Chopper was run).  
+A preprocessed fastq file will be saved in the **SampleName/00_preprocessing** output directory which will have its read names trimmed after the first whitespace, for compatiblity purposes with all downstream tools. This fastq file will also be trimmed of adapters (PoreChopABI) and optionally filtered based on quality and/or length (if Chopper was run).  
 
-After adapter trimming, a PoreChopABI log will be saved under the **SampleName/preprocessing/porechop** folder.  
+After adapter trimming, a PoreChopABI log will be saved under the **SampleName/00_preprocessing/porechop** folder.  
 
 After quality/length trimming, a Chopper log file will be saved under the **SampleName/preprocessing/chopper** folder.  
 
-A second quality check will be performed on the processsed fastq file and a NanoPlot-report.html file will be saved under the **SampleName/qc/nanoplot** folder with the prefix **filtered**.  
+A second quality check will be performed on the processsed fastq file and a NanoPlot-report.html file will be saved under the **SampleName/01_QC/nanoplot** folder with the prefix **filtered**.  
 
-A QC report will be saved both in text and html format (i.e. **run_qc_report_YYYYMMDD-HHMMSS.txt** and **run_qc_report_YYYYMMDD-HHMMSS.html**) under the **qc_report** folder.  
+A QC report, which captures the date and time in the file name, will be saved both in text and html format (i.e. **run_qc_report_YYYYMMDD-HHMMSS.txt** and **run_qc_report_YYYYMMDD-HHMMSS.html**) under the **00_QC_report** folder.  
 
 Example of report:
 
-| Sample| raw_reads | quality_filtered_reads | percent_quality_filtered | raw_reads_flag | qfiltered_flag | QC_FLAG |
+| Sample| raw_reads | processed_reads | percent_processed | raw_reads_flag | processed_reads_flag | QC_FLAG |
 | --- | --- | --- | --- | --- | --- | --- |
 | ONT141 | 10929 | 2338 | 21.39 | | | GREEN |
 | ONT142| 21849 | 4232 | 9.37 | | | GREEN |
 
-### Clustering step outputs  
-In this mode, the output from Rattle will be saved under **SampleName/clustering/rattle/SampleName_rattle.fasta**. The number of reads contributing to each clusters is listed in the header. The amplicon of interest is usually amongst the most abundant clusters (i.e. the ones represented by the most reads).  
+### Clustering step outputs (Sample_name02_clustering)
+The output from Rattle will be saved under **SampleName/02_clustering/SampleName_rattle.fasta**. The number of reads contributing to each clusters is listed in the header. The amplicon of interest is usually amongst the most abundant clusters (i.e. the ones represented by the most reads). The rattle log (**SampleName_rattle.log**) is also available in the same folder as well as a file called **SampleName_rattle.status** that catches whether the clustering step ran succesfully or not.  
 
-### Polishing step outputs 
+### Polishing step outputs (Sample_name03_polishing)
 (in progress)  
 
 ### Blast search outputs  
