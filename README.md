@@ -492,7 +492,7 @@ In the clustering mode, the tool [`RATTLE`](https://github.com/comprna/RATTLE#De
 - Finally, the `rattle_clustering_max_variance` is set by default to 1,000,000.  
 
   **Special usage:**
-  The parameters `rattle_clustering_min_length: [number]` (by default: 150) and `rattle_clustering_max_length: [number]` (by default: 100,000) can also be specified in the parameter file to restrict read size more strictly.  
+  The parameters `rattle_clustering_min_length: [number]` (by default: 150) and `rattle_clustering_max_length: [number]` (by default: 100,000) can also be specified in the parameter file to restrict lower and upper read size length.  
   Additional parameters (other than raw, lower-length, upper-length and max-variance) can be set using the parameter `rattle_clustering_options: [additional paramater]`.  
 
 Example of parameter file in which all reads will be retained during the clustering step:  
