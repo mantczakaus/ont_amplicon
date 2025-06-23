@@ -540,7 +540,7 @@ This polishing step is performed by default by the pipeline but can be skipped b
 ### Primer search
 If the fwd_primer and the rev_primer have been provided in the csv file, clusters are then searched for primers using [Cutadapt](https://cutadapt.readthedocs.io/en/stable/reference.html).  
 
-### Blast homology search against NCBI
+### Blast homology searches
 If the gene targetted is Cytochrome oxidase I (COI), a preliminary megablast homology search against a COI database will be performed; then based on the strandedness of the blast results for the consensuses , some will be reverse complemented where required.  
 
 Blast homology search of the consensuses against NCBI is then performed and the top 10 hits are returned.
@@ -623,45 +623,47 @@ Example of report:
 | ONT141 | 10929 | 2338 | 21.39 | | | GREEN |
 | ONT142| 21849 | 4232 | 9.37 | | | GREEN |
 
-### Clustering step outputs (Sample_name02_clustering)
+### Clustering step outputs (Sample_name/02_clustering)
 The output from Rattle will be saved under **SampleName/02_clustering/SampleName_rattle.fasta**. The number of reads contributing to each clusters is listed in the header. The amplicon of interest is usually amongst the most abundant clusters (i.e. the ones represented by the most reads). The rattle log (**SampleName_rattle.log**) is also available in the same folder as well as a file called **SampleName_rattle.status** that catches whether the clustering step ran succesfully or not.  
 
-### Polishing step outputs (Sample_name03_polishing)
+### Polishing step outputs (Sample_name/03_polishing)
 (in progress)  
 
-### Blast search outputs  
-All the top hits derived for each contig are listed in the file **SampleName/megablast/SampleName_final_polished_consensus_megablast_top_10_hits.txt**. This file contains the following 26 columns:
+### Blast search outputs  (Sample_name/04_megablast
+If the target gene is COI, then the consensuses will first be mapped to a cyctochrome oxidase I database and based on the strandedness of the blast results, consensuses will be reverse complemented where required. All consensuses will be saved in **Sample_name/04_megablast/Sample_name_final_polished_consensus_rc.fasta**.  
+All consensuses are then blasted against NCBI.  If at least one consensus returns a blast hit, this will be captured in the **Sample_name/04_megablast/Sample_name_final_blast_status.txt** file.  
+The 10 top hits derived for each contig are listed in the file **SampleName/04_megablast/SampleName_final_polished_consensus_megablast_top_10_hits.txt**. This file contains the following 26 columns:
 ```
-- qseqid
-- sgi
-- sacc
-- length
-- nident
-- pident
-- mismatch
-- gaps
-- gapopen
-- qstart
-- qend
-- qlen
-- sstart
-- send
-- slen
-- sstrand
-- evalue
-- bitscore
-- qcovhsp
-- stitle
-- staxids
-- qseq
-- sseq
-- sseqid
-- qcovs
-- qframe
-- sframe
+- qseqid => query or source (gene) sequence id
+- sgi => subject GI
+- sacc => subject accession
+- length => alignment length (sequence overlap)
+- nident => number of identical matches
+- pident => percentage of identical positions
+- mismatch => number of mismatches
+- gaps => total number of gaps
+- gapopen => number of gap openings
+- qstart => start of alignment in query
+- qend => end of alignment in query
+- qlen => query sequence length
+- sstart => start of alignment in query
+- send => end of alignment in query
+- slen => subject sequence length
+- sstrand => subject Strand
+- evalue => expect value
+- bitscore => bitscore
+- qcovhsp => query Coverage Per HSP
+- stitle => subject Title
+- staxids => subject taxonomy ID(s), separated by a ';'
+- qseq => aligned part of query sequence
+- sseq => aligned part of subject sequence
+- sseqid => subject or target (reference genome) sequence id
+- qcovs => query Coverage Per Subject
+- qframe => query frame
+- sframe => subject frame
 ```
 
-A separate blast output called **SampleName/megablast/SampleName_final_polished_consensus_megablast_top_hit.txt** is then derived using pytaxonkit, which outputs preliminary taxonomic assignment to the top blast hit for each consensus. A **broad_taxonomic_category** column is generated which matches the cluster to broad taxon categories:
+A separate blast output called **SampleName/04_megablast/SampleName_final_polished_consensus_megablast_top_hit.txt** is then derived using pytaxonkit, which outputs preliminary taxonomic assignment to the top blast hit for each consensus. A **broad_taxonomic_category** column is generated which matches the cluster to broad taxon categories:
 - virus  
 - bacteria;phytoplasma  
 - bacteria;other  
