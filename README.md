@@ -635,8 +635,9 @@ File are located under the Sample_name/03_polishing folder.
 
 ### Blast search outputs
 The files are located under the Sample_name/04_megablast folder.  
-If the target gene is COI, then the consensuses will first be mapped to a cyctochrome oxidase I database and based on the strandedness of the blast results, consensuses will be reverse complemented where required. All consensuses will be saved in **Sample_name/04_megablast/Sample_name_final_polished_consensus_rc.fasta**.  
-All consensuses are then blasted against NCBI.  If at least one consensus returns a blast hit, this will be captured in the **Sample_name/04_megablast/Sample_name_final_blast_status.txt** file.  
+If the target gene is COI, then the consensuses will first be mapped to a cyctochrome oxidase I database and based on the strandedness of the blast results, consensuses will be reverse complemented where required. All consensuses will be saved in the **Sample_name/04_megablast/Sample_name_final_polished_consensus_rc.fasta** file.  
+All consensuses are then blasted against NCBI.  The outcome of the blast search will be captured in the **Sample_name/04_megablast/Sample_name_final_blast_status.txt** file (e.g. if at least one consensus returned a blast hit, it will display 'passed', if no consensuses returned a blast hit, it will display 'failed').  
+
 The 10 top hits derived for each contig are listed in the file **SampleName/04_megablast/SampleName_final_polished_consensus_megablast_top_10_hits.txt**. This file contains the following 26 columns:
 ```
 - qseqid => query or source (gene) sequence id
@@ -681,7 +682,7 @@ A separate blast output called **SampleName/04_megablast/SampleName_final_polish
 - other  
 
 A column called **FullLineage** provides the full taxonomic lineage derived from taxonkit.  
-The colum **target_organism_match** indicates whether there is a taxon match between the target_organism specified in the samplesheet and the full taxonomic lineage.  
+The colum **target_organism_match** indicates whether there was a taxon match between the target_organism specified in the samplesheet and the full taxonomic lineage.  
 The **n_read_cont_cluster** captures the number of reads that originally contributed to build the clusters during the RATTLE step.  
 
 The nucleotide sequence of qseq (ie consensus match) and sseq (ie reference match) are extracted to use when mapping reads back to consensus and reference respectively (see steps below). These are called **SampleName/megablast/SampleName_final_polished_consensus_match.fasta** and **SampleName/megablast/SampleName_reference_match.fasta** respectively.  
