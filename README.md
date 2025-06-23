@@ -440,12 +440,10 @@ Reads are then trimmed of adapters and optionally quality filtered:
   **Special usage:**  
   To search for adapters ab initio on top of known adapters, specify:
   ```
-  adapter_trimming: true 
   porechop_options: '-abi '
   ```  
   To limit the search to custom adapters, specify: 
   ```
-  adapter_trimming: true
   porechop_custom_primers: true
   porechop_options '-ddb '
   ```
@@ -511,6 +509,7 @@ analyst_name: John Smith
 facility: MTDT
 mapping_back_to_ref: true
 }
+```
 
 Example in which reads are first quality filtered using the tool chopper (only reads with a Phread average quality score above 8 are retained). Then for the clustering step, only reads ranging between 500 and 2000 bp will be retained:  
 ```
