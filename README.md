@@ -500,7 +500,6 @@ Example of parameter file in which all reads will be retained during the cluster
 {
 samplesheet: tests/index_mtdt.csv
 merge: true
-adapter_trimming: true
 qual_filt: false
 rattle_raw: true
 polishing: false
@@ -518,7 +517,6 @@ Example in which reads are first quality filtered using the tool chopper (only r
 {
 samplesheet: tests/index_mtdt.csv
 merge: true
-adapter_trimming: true
 qual_filt: true
 chopper_options: -q 8 -l 100
 rattle_clustering_min_length: 500
