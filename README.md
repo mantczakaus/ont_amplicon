@@ -55,7 +55,7 @@ h. [HTML report output](#html-report-output)
   - Remove adapters, if provided (Cutadapt)
   - Megablast homology search against COI database (if COI is targetted) and reverse complement where required
   - Megablast homology search against NCBI database
-  - Derive top candidate hits, assign preliminary taxonomy and set target organism flag (pytaxonkit)  
+  - Derive top candidate hits, assign preliminary taxonomy and set target organism flag ([pytaxonkit](https://github.com/bioforensics/pytaxonkit))  
   - Map reads back to segment of consensus sequence that aligns to reference and derive BAM file and alignment statistics ([Minimap2](https://lh3.github.io/minimap2/minimap2.html), Samtools and Mosdepth)  
   - Map reads to segment of NCBI reference sequence that aligns to consensus and derive BAM file and consensus ([Minimap2](https://lh3.github.io/minimap2/minimap2.html), Samtools) - optional
 
@@ -669,7 +669,7 @@ The 10 top hits derived for each contig are listed in the file **SampleName/04_m
 - sframe => subject frame
 ```
 
-A separate blast output called **SampleName/04_megablast/SampleName_final_polished_consensus_megablast_top_hit.txt** is then derived using pytaxonkit, which outputs preliminary taxonomic assignment to the top blast hit for each consensus. A **broad_taxonomic_category** column is generated which matches the cluster to broad taxon categories:
+A separate blast output called **SampleName/04_megablast/SampleName_final_polished_consensus_megablast_top_hit.txt** is then derived using [pytaxonkit](https://github.com/bioforensics/pytaxonkit), which outputs preliminary taxonomic assignment to the top blast hit for each consensus. A **broad_taxonomic_category** column is generated which matches the cluster to broad taxon categories:
 - virus  
 - bacteria;phytoplasma  
 - bacteria;other  
@@ -681,7 +681,7 @@ A separate blast output called **SampleName/04_megablast/SampleName_final_polish
 - eukaryota; other  
 - other  
 
-A column called **FullLineage** provides the full taxonomic lineage derived from taxonkit.  
+A column called **FullLineage** provides the full taxonomic lineage derived from pytaxonkit.  
 The colum **target_organism_match** indicates whether there was a taxon match between the target_organism specified in the samplesheet and the full taxonomic lineage.  
 The **n_read_cont_cluster** captures the number of reads that originally contributed to build the clusters during the RATTLE step.  
 
