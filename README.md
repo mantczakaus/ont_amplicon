@@ -501,10 +501,9 @@ Example of parameter file in which all reads will be retained during the cluster
 samplesheet: tests/index_mtdt.csv
 merge: true
 adapter_trimming: true
-qual_filt: true
-chopper_options: -q 8 -l 25
+qual_filt: false
 rattle_raw: true
-polishing: true
+polishing: false
 blastn_db: $HOME/ont_amplicon/tests/blastdb/reference.fasta
 blastn_COI: $HOME/ont_amplicon/tests/COIdb/MetaCOXI_Seqs.fasta
 taxdump: ~/.taxonkit
@@ -514,7 +513,7 @@ facility: MTDT
 mapping_back_to_ref: true
 }
 
-Example in which reads are first quality filtered using the tool chopper (only reads with a Phread average quality score above 10 are retained). Then for the clustering step, only reads ranging between 500 and 2000 bp will be retained:  
+Example in which reads are first quality filtered using the tool chopper (only reads with a Phread average quality score above 8 are retained). Then for the clustering step, only reads ranging between 500 and 2000 bp will be retained:  
 ```
 {
 samplesheet: tests/index_mtdt.csv
@@ -522,7 +521,7 @@ merge: true
 adapter_trimming: true
 qual_filt: true
 chopper_options: -q 8 -l 100
-rattle_clustering_min_length: 200
+rattle_clustering_min_length: 500
 rattle_clustering_max_length: 2000
 polishing: true
 blastn_db: $HOME/ont_amplicon/tests/blastdb/reference.fasta
@@ -533,6 +532,7 @@ analyst_name: John Smith
 facility: MTDT
 mapping_back_to_ref: true
 }
+```
 
 ### Polishing step (optional)
 The clusters derived using RATTLE can be polished. The reads are first mapped back to the clusters using Minimap2 and then the clusters are polished using Racon, Medaka2 and Samtools consensus. For Samtools consensus, we use the predefined sets of configuration parameters that have been optimised for ONT reads (i.e. r10.4_sup) (please see the configuration section of the [`Samtools consensus documentation`](https://www.htslib.org/doc/samtools-consensus.html)).
