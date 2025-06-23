@@ -10,7 +10,7 @@ It takes compressed fastq files (i.e. fastq.gz) as input.
 1. [Pipeline overview](#pipeline-overview)  
 2. [Installation](#installation)  
 a. [Requirements](#requirements)  
-3. [Running the pipeline](#running-the-pipeline)
+3. [Running the pipeline](#running-the-pipeline)  
 a. [Quick start](#quick-start)  
 b. [Run the pipeline for the first time](#run-the-pipeline-for-the-first-time)  
 c. [Run test data](#run-test-data)  
