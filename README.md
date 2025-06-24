@@ -493,7 +493,6 @@ Example of parameter file in which all reads will be retained during the quality
 {
 samplesheet: tests/index_mtdt.csv
 merge: true
-<<<<<<< HEAD
 qual_filt: false
 rattle_raw: true
 polishing: false
@@ -528,7 +527,7 @@ mapping_back_to_ref: true
 ```
 
 ### Polishing step (optional)
-The clusters derived using RATTLE can be polished. The reads are first mapped back to the clusters using [Minimap2](https://lh3.github.io/minimap2/minimap2.html) and then the clusters are polished using [Racon](https://github.com/lbcb-sci/racon) and [Medaka2](https://github.com/nanoporetech/medaka). Samtools consensus is then used to identify positions showing poor base and mapping qualities, using the predefined sets of configuration parameters that have been optimised for ONT reads (i.e. r10.4_sup) (please see the configuration section at the bottom of the [`Samtools consensus documentation`](https://www.htslib.org/doc/samtools-consensus.html)). Any stretches of Ns at the 5' and 3' end of the consensuses are then removed with [Cutadapt](https://cutadapt.readthedocs.io/en/stable/reference.html).  
+The clusters derived using RATTLE can be polished. The reads are first mapped back to the clusters using [Minimap2](https://lh3.github.io/minimap2/minimap2.html) and then the clusters are polished using [Racon](https://github.com/lbcb-sci/racon) and [Medaka2](https://github.com/nanoporetech/medaka). Samtools consensus is then used to identify positions showing poor base and mapping qualities, using the predefined sets of configuration parameters that have been optimised for ONT reads (i.e. r10.4_sup) (please see the configuration section at the bottom of the [`Samtools consensus documentation`](https://www.htslib.org/doc/samtools-consensus.html)). Any stretches of Ns at the 5' and 3' end of the consensuses are then removed with [Cutadapt](https://cutadapt.readthedocs.io/en/stable/reference.html). If a polishing step fails, it will be skipped.  
 This polishing step is performed by default by the pipeline but can be skipped by specifying the paramater ``--polishing false``.  
 
 ### Primer search
