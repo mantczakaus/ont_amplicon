@@ -716,7 +716,9 @@ An HTML report example can be found [here](https://github.com/maelyg/ont_amplico
 
 The report consists of 3 main parts: input parameters, input data quality report and Consensus sequences.  
 
-The **input parameters section** captures the metadata that was provided in the samplesheet: 
+On the top left corner of the report, the **Facility**, **Analyst**, time the **Analysis started**, time the **Analysis completed** and **Wall time**	are captured.
+
+Just under it, the **input parameters section** captures the metadata that was provided in the samplesheet: 
 - Sample ID  
 - FASTQ files  
 - Target taxon  
