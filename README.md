@@ -45,7 +45,7 @@ h. [HTML report output](#html-report-output)
   - Filter reads based on length and/or mean quality ([Chopper](https://github.com/wdecoster/chopper)) - optional
   - Reformat fastq files so read names are trimmed after the first whitespace ([bbmap](https://github.com/BioInfoTools/BBMap))
   - Quality check of processed fastq file ([NanoPlot](https://github.com/wdecoster/NanoPlot))
-  - Subsample reads ([Seqkit](https://bioinf.shenwei.me/seqkit/usage/) - optional
+  - Subsample reads ([Seqkit](https://bioinf.shenwei.me/seqkit/usage/)) - optional
 - QC report
   - Derive read counts recovered pre and post data processing
 - Clustering mode
@@ -53,10 +53,10 @@ h. [HTML report output](#html-report-output)
   - Convert fastq to fasta format ([seqtk](https://github.com/lh3/seqtk))
   - Polishing ([Minimap2](https://lh3.github.io/minimap2/minimap2.html), [Racon](https://github.com/lbcb-sci/racon), [Medaka2](https://github.com/nanoporetech/medaka), [Samtools](http://www.htslib.org/doc/samtools.html)) - optional
   - Remove adapters, if provided (Cutadapt](https://cutadapt.readthedocs.io/en/stable/reference.html))
-  - Megablast homology search against COI database (if COI is targetted) and reverse complement where required ([Blast+](https://www.ncbi.nlm.nih.gov/books/NBK279690/)
-  - Megablast homology search against NCBI database ([Blast+](https://www.ncbi.nlm.nih.gov/books/NBK279690/)
+  - Megablast homology search against COI database (if COI is targetted) and reverse complement where required ([Blast+](https://www.ncbi.nlm.nih.gov/books/NBK279690/))
+  - Megablast homology search against NCBI database ([Blast+](https://www.ncbi.nlm.nih.gov/books/NBK279690/))
   - Derive top candidate hits, assign preliminary taxonomy and set target organism flag ([pytaxonkit](https://github.com/bioforensics/pytaxonkit))  
-  - Map reads back to segment of consensus sequence that aligns to reference and derive BAM file and alignment statistics ([Minimap2](https://lh3.github.io/minimap2/minimap2.html), [Samtools](http://www.htslib.org/doc/samtools.html) and [Mosdepth)](https://github.com/brentp/mosdepth)  
+  - Map reads back to segment of consensus sequence that aligns to reference and derive BAM file and alignment statistics ([Minimap2](https://lh3.github.io/minimap2/minimap2.html), [Samtools](http://www.htslib.org/doc/samtools.html) and [Mosdepth)](https://github.com/brentp/mosdepth))  
   - Map reads to segment of NCBI reference sequence that aligns to consensus and derive BAM file and consensus ([Minimap2](https://lh3.github.io/minimap2/minimap2.html), [Samtools](http://www.htslib.org/doc/samtools.html)) - optional
 
 
