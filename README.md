@@ -29,8 +29,8 @@ b. [Preprocessing and quality check outputs](#preprocessing-and-quality-check-ou
 c. [Clustering step outputs](#clustering-step-outputs)  
 d. [Polishing step outputs](#polishing-step-outputs)  
 e. [Blast search outputs](#blast-search-outputs)  
-f. [Outputs from mapping reads back to consensus matches step](outputs-from-mapping-reads-back-to-consensus-matches-step)  
-g. [Outputs from mapping reads back to reference matches step](outputs-from-mapping-reads-back-to-reference-matches-step)
+f. [Outputs from mapping reads back to consensus matches step](#outputs-from-mapping-reads-back-to-consensus-matches-step)  
+g. [Outputs from mapping reads back to reference matches step](#outputs-from-mapping-reads-back-to-reference-matches-step)  
 h. [HTML report output](#html-report-output)  
 7. [Authors](#authors) 
 
