@@ -716,7 +716,7 @@ An HTML report example can be found [here](https://github.com/maelyg/ont_amplico
 
 The report consists of 3 main parts: input parameters, input data quality report and Consensus sequences.  
 
-On the top left corner of the report, the **Facility**, **Analyst**, time the **Analysis started**, time the **Analysis completed** and **Wall time**	are captured.
+On the top left corner of the report, the **Facility**, **Analyst**, the time at which the **Analysis started**, the time at which the **Analysis completed** and the **Wall time**	are captured.
 
 Just under it, the **input parameters section** displays the metadata that was provided in the samplesheet: 
 - Sample ID  
@@ -729,7 +729,7 @@ Just under it, the **input parameters section** displays the metadata that was p
 - Test (opotional)  
 - Method (optional)  
 
-At the bottom of the **input parameters section**, there is also a **View all parameters** tab which lists all the default pipeline parameters on the left and the ones specifially set by the user for this sample on the right (which match the parameters set in the yml file specified the user under the -params-file option).  The **View tool versions** displays the version of all the bioinformatics tools that were used by the nextflow pipeline processes.  
+At the bottom of the **input parameters section**, there is also a **View all parameters** tab which is a link to a list of all the default pipeline parameters on the left and the parameters specifially set by the user for this sample on the right (and which match the parameters set in the yml file specified the user under the -params-file option).  The **View tool versions** displays the version of all the bioinformatics tools that were used by the nextflow pipeline processes.  
 
 The **input data quality report section** displays the QC report output for the sample, and captures the number of starting raw reads and cleaned reads, and what percentage of the starting raw reads these represent. The outcome column refers to the **QC_FLAG**. Links to the Nanoplot reports for the raw and preprocessed reads are also available as well as the QC report for all the samples that were analysed at the same time.  
 
