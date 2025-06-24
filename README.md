@@ -77,9 +77,9 @@ The pipeline will generate ~5-100Mb of files per sample, depending on the number
 
 **1. Install Java** if not already on your system. Follow the java download instructions provided on this [`page`](https://www.nextflow.io/docs/latest/getstarted.html#installation).
 
-**2. Install [`Nextflow`](https://www.nextflow.io/docs/latest/getstarted.html#installation)**
+**2. Install [`Nextflow`](https://www.nextflow.io/docs/latest/getstarted.html#installation)**.
 
-  Nextflow memory requirements
+  Nextflow memory requirements:
 
   In some cases, the Nextflow Java virtual machines can start to request a large amount of memory. We recommend adding the following line to your environment to limit this (typically in ~/.bashrc or ~./bash_profile): 
   ```
