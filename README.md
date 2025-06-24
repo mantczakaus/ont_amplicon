@@ -712,10 +712,11 @@ reference blast match. A bam file is generated using Samtools and [Samtools cons
 
 ### HTML report output
 (in progress)  
-An example of report can be found [here](https://github.com/maelyg/ont_amplicon/blob/master/docs/HTML_report_example.zip).  
+An HTML report example can be found [here](https://github.com/maelyg/ont_amplicon/blob/master/docs/HTML_report_example.zip). It is provided within a gzipped folder with all associated files. It is too large to open in github, but if you git pull the repository onto your local machine, you can then unzip the folder and open the html file.  
+
 The report consists of 3 main parts: input parameters, input data quality report and Consensus sequences.  
 
-The i**nput paramteers section** captures the metadata that was provided in the samplesheet: 
+The **input parameters section** captures the metadata that was provided in the samplesheet: 
 - Sample ID  
 - FASTQ files  
 - Target taxon  
@@ -726,7 +727,7 @@ The i**nput paramteers section** captures the metadata that was provided in the 
 - Test (opotional)  
 - Method (optional)  
 
-
+At the bottom of the **input parameters section**, there is also a **View all parameters** tab which lists all the default pipeline parameters on the left and the ones specifially set by the user for this sample on the right (which match the parameters set in the yml file by the user).  The **View tool versions** displays the version of all the bioinformatics tools that were used by the nextflow pipeline processes.  
 
 
 ## Authors
