@@ -718,7 +718,7 @@ The report consists of 3 main parts: input parameters, input data quality report
 
 On the top left corner of the report, the **Facility**, **Analyst**, time the **Analysis started**, time the **Analysis completed** and **Wall time**	are captured.
 
-Just under it, the **input parameters section** captures the metadata that was provided in the samplesheet: 
+Just under it, the **input parameters section** displays the metadata that was provided in the samplesheet: 
 - Sample ID  
 - FASTQ files  
 - Target taxon  
@@ -731,6 +731,7 @@ Just under it, the **input parameters section** captures the metadata that was p
 
 At the bottom of the **input parameters section**, there is also a **View all parameters** tab which lists all the default pipeline parameters on the left and the ones specifially set by the user for this sample on the right (which match the parameters set in the yml file specified the user under the -params-file option).  The **View tool versions** displays the version of all the bioinformatics tools that were used by the nextflow pipeline processes.  
 
+The **input data quality report section** displays the QC report output for the sample, and captures the number of starting raw reads and cleaned reads, and what percentage of the starting raw reads the clean reads represent. The outcome column refers to the QC_FLAG. Links to the Nanoplot reports for the raw and preprocessed reads are also available as well as the QC report for all the samples that were analysed at the same time.  
 
 ## Authors
 Marie-Emilie Gauthier gauthiem@qut.edu.au  
