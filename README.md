@@ -713,8 +713,9 @@ reference blast match. A bam file is generated using Samtools and [Samtools cons
 ### HTML report output
 (in progress)  
 An example of report can be found [here](https://github.com/maelyg/ont_amplicon/blob/master/docs/HTML_report_example.zip).  
-the report consists of 3 main parts: input parameters, input data quality report and Consensus sequences
-The input paramters section captures the metadata that was provided in the samplesheet: 
+The report consists of 3 main parts: input parameters, input data quality report and Consensus sequences.  
+
+The i**nput paramteers section** captures the metadata that was provided in the samplesheet: 
 - Sample ID  
 - FASTQ files  
 - Target taxon  
