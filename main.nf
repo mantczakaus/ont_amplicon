@@ -692,6 +692,9 @@ process QCREPORT {
     """
 }
 
+//Polish draft consensus with `racon` (one round only). `racon` params are taken from epi2me-labs/wf-amplicon and pomoxis `mini_assemble`. 
+//`--no-trimming` is added as it sometimes trims the consensus too aggressively. We trim the sequences downstream instead.
+
 process RACON {
   publishDir "${params.outdir}/${sampleid}/03_polishing", mode: 'copy', pattern: '{*_racon_consensus.fasta,*.log}'
   tag "${sampleid}"
