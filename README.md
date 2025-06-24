@@ -39,25 +39,25 @@ h. [HTML report output](#html-report-output)
 <p><img src="docs/images/ont_amplicon_workflow.png" width="625"></p>
 
 - Data quality check (QC) and preprocessing
-  - Merge fastq.gz files (Fascat) - optional
+  - Merge fastq.gz files ([Fascat](https://github.com/epi2me-labs/fastcat)) - optional
   - Quality check of raw fastq file ([NanoPlot](https://github.com/wdecoster/NanoPlot))
-  - Trim adaptors (PoreChop ABI)
-  - Filter reads based on length and/or mean quality (Chopper) - optional
-  - Reformat fastq files so read names are trimmed after the first whitespace (bbmap)
+  - Trim adaptors ([PoreChop ABI](https://github.com/bonsai-team/Porechop_ABI))
+  - Filter reads based on length and/or mean quality ([Chopper](https://github.com/wdecoster/chopper)) - optional
+  - Reformat fastq files so read names are trimmed after the first whitespace ([bbmap](https://github.com/BioInfoTools/BBMap))
   - Quality check of processed fastq file ([NanoPlot](https://github.com/wdecoster/NanoPlot))
   - Subsample reads ([Seqkit](https://bioinf.shenwei.me/seqkit/0)) - optional
 - QC report
   - Derive read counts recovered pre and post data processing
 - Clustering mode
-  - Read clustering (Rattle)
-  - Convert fastq to fasta format (seqtk)
-  - Polishing ([Minimap2](https://lh3.github.io/minimap2/minimap2.html), [Racon](https://github.com/lbcb-sci/racon), [Medaka2](https://github.com/nanoporetech/medaka), Samtools) - optional
-  - Remove adapters, if provided (Cutadapt)
-  - Megablast homology search against COI database (if COI is targetted) and reverse complement where required
-  - Megablast homology search against NCBI database
+  - Read clustering ([Rattle](https://github.com/comprna/RATTLE))
+  - Convert fastq to fasta format ([seqtk](https://github.com/lh3/seqtk))
+  - Polishing ([Minimap2](https://lh3.github.io/minimap2/minimap2.html), [Racon](https://github.com/lbcb-sci/racon), [Medaka2](https://github.com/nanoporetech/medaka), [Samtools](http://www.htslib.org/doc/samtools.html)) - optional
+  - Remove adapters, if provided (Cutadapt](https://cutadapt.readthedocs.io/en/stable/reference.html))
+  - Megablast homology search against COI database (if COI is targetted) and reverse complement where required ([Blast+](https://www.ncbi.nlm.nih.gov/books/NBK279690/)
+  - Megablast homology search against NCBI database ([Blast+](https://www.ncbi.nlm.nih.gov/books/NBK279690/)
   - Derive top candidate hits, assign preliminary taxonomy and set target organism flag ([pytaxonkit](https://github.com/bioforensics/pytaxonkit))  
-  - Map reads back to segment of consensus sequence that aligns to reference and derive BAM file and alignment statistics ([Minimap2](https://lh3.github.io/minimap2/minimap2.html), Samtools and Mosdepth)  
-  - Map reads to segment of NCBI reference sequence that aligns to consensus and derive BAM file and consensus ([Minimap2](https://lh3.github.io/minimap2/minimap2.html), Samtools) - optional
+  - Map reads back to segment of consensus sequence that aligns to reference and derive BAM file and alignment statistics ([Minimap2](https://lh3.github.io/minimap2/minimap2.html), [Samtools](http://www.htslib.org/doc/samtools.html) and [Mosdepth)](https://github.com/brentp/mosdepth)  
+  - Map reads to segment of NCBI reference sequence that aligns to consensus and derive BAM file and consensus ([Minimap2](https://lh3.github.io/minimap2/minimap2.html), [Samtools](http://www.htslib.org/doc/samtools.html)) - optional
 
 
 ## Installation
@@ -425,12 +425,12 @@ The results folder has the following structure:
 ```
 
 ### QC and preprocessing steps
-By default the pipeline will run a quality control check of the raw reads using [NanoPlot](https://github.com/wdecoster/NanoPlot).  
+By defaut, the pipeline expects that multiple fastq files exist for a single sample and the `merge: true` option is set. These fastq files will be merged using [`Fascat`](https://github.com/epi2me-labs/fastcat).  
+Then the read names of the fastq file created will be trimmed after the first whitespace in the read header, for compatiblity purposes with all downstream tools.  
+
+The pipeline will run a quality control check of the raw reads using [NanoPlot](https://github.com/wdecoster/NanoPlot).  
 
 **It is recommended to first run only the quality control step to have a preliminary look at the data before proceeding with downstream analyses by specifying the `qc_only: true` parameter.**
-
-By defaut, the pipeline expects that multiple fastq files exist for a single sample and the `merge: true` option is set. These fastq files will be merged using [`Fascat`](https://github.com/epi2me-labs/fastcat) 
-Then the read names of the fastq file created will be trimmed after the first whitespace in the read header, for compatiblity purposes with all downstream tools.  
 
 Reads are then trimmed of adapters and optionally quality filtered:  
 - Reads are searched for the presence of sequencing adapters using [`Porechop ABI`](https://github.com/rrwick/Porechop). Other porechop ABI parameters can be specified using ```porechop_options: '{options} '```, making sure you leave a space at the end before the closing quote. Please refer to the Porechop manual.  
@@ -441,7 +441,7 @@ Reads are then trimmed of adapters and optionally quality filtered:
   ```
   porechop_options: '-abi '
   ```  
-  To limit the search to custom adapters, specify: 
+  If you want instead to limit the search to custom adapters, specify: 
   ```
   porechop_custom_primers: true
   porechop_options '-ddb '
@@ -462,20 +462,13 @@ Reads are then trimmed of adapters and optionally quality filtered:
   ```
 **Based on the benchmarking performed, we recommend using the following parameters ```chopper_options: -q 8 -l 100``` as a first pass**.  
 
-  If you are analysing samples that are of poor quality (i.e. failed the QC_FLAG) or amplifying a very short amplicon (e.g. <150 bp), then we recommend using the following setting ```chopper_options: -q 8 -l 25``` to retain reads of all lengths.  
+  If you are analysing samples that are of poor quality (i.e. failed the QC_FLAG) or amplifying a very short amplicon (e.g. <150 bp), then we recommend using the following setting `qual_filt: true` and `chopper_options: -q 8 -l 25`, or skip the quality trimming step altogther (i.e. `qual_filt: flase`) if you want to retain all reads.  
 
 A zipped copy of the resulting **preprocessed** and/or **quality filtered fastq file** will be saved in the preprocessing folder.  
 
 After processing raw reads, an additional quality control step will be performed.  
 
-A **qc report** will be generated in text and html formats summarising the read counts recovered after the pre-processing step for all samples listed in the index.csv file.
-It will include 3 flags:  
-1) For the raw_reads_flag, if there were < 2500 raw reads, the column will display: "Less than 2500 raw reads".  
-2) For the qfiltered_flag, if there were < 200 quality_filtered_reads, the column will display: "Less than 200 processed reads".  
-3) QC_FLAG:
-- GREEN = >= 2500 starting reads, >= 200 quality filtered reads.
-- ORANGE = < 2500 starting reads, >= 200 quality filtered reads.
-- RED = < 2500 starting reads, < 200 quality filtered reads.
+A **qc report** will be generated in text and html formats summarising the read counts recovered before and after the pre-processing step for all samples listed in the index.csv file.
 
 If the user wants to check the data after preprocessing before performing downstream analysis, they can apply the parameter `preprocessing_only: true`.
 
@@ -617,7 +610,14 @@ After quality/length trimming, a Chopper log file will be saved under the **Samp
 
 A second quality check will be performed on the processsed fastq file and a NanoPlot-report.html file will be saved under the **SampleName/01_QC/nanoplot** folder with the prefix **filtered**.  
 
-A QC report, which captures the date and time in the file name, will be saved both in text and html format (i.e. **run_qc_report_YYYYMMDD-HHMMSS.txt** and **run_qc_report_YYYYMMDD-HHMMSS.html**) under the **00_QC_report** folder.  
+A QC report, which captures the date and time in the file name, will be generated in text and html format (i.e. **run_qc_report_YYYYMMDD-HHMMSS.txt** and **run_qc_report_YYYYMMDD-HHMMSS.html**) under the **00_QC_report** folder.  It summarises the read counts recovered before and after the pre-processing step for all samples listed in the index.csv file.  
+It will include 3 flags:  
+1) For the **raw_reads_flag**, if there were < 2500 raw reads, the column will display: "Less than 2500 raw reads".  
+2) For the **processed_reads_flag**, if there were < 200 processed_reads, the column will display: "Less than 200 processed reads".  
+3) **QC_FLAG**:
+- GREEN: >= 2500 starting reads, >= 200 processed_reads.
+- ORANGE: < 2500 starting reads, >= 200 processed_reads.
+- RED: < 2500 starting reads, < 200 processed_reads.
 
 Example of report:
 
