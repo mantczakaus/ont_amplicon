@@ -1,0 +1,402 @@
+{
+  "title": "Amplicon sequencing assembly report",
+  "subtitle_html": "Results generated through the <a href=\"https://github.com/maelyg/ont_amplicon\" target=\"_blank\">ONT-amplicon NextFlow workflow</a>.",
+  "sample_id": "VE24-1105_COI",
+  "analyst_name": "Maely_Gauthier",
+  "facility": "QUT",
+  "versions": {
+    "bbmap": 39.01,
+    "blastn": "2.16.0",
+    "chopper": "0.5.0",
+    "cutadapt": 5.0,
+    "fastcat": "0.15.1",
+    "medaka": "2.0.1",
+    "minimap2": "2.24-r1122",
+    "mosdepth": "0.3.3",
+    "nanoplot": "1.41.0",
+    "porechop_abi": "0.5.0",
+    "pyfaidx": "0.8.1.3",
+    "pytaxonkit": "0.9.1",
+    "python": "3.12.9",
+    "racon": "1.5.0",
+    "rattle": 1.0,
+    "samtools": "1.16.1",
+    "seqtk": "1.3-r106"
+  },
+  "start_time": "2025-06-18 14:55:27",
+  "end_time": "2025-06-18 14:55:55",
+  "wall_time": {
+    "hours": "00",
+    "minutes": "00",
+    "seconds": "28"
+  },
+  "metadata": {
+    "fastq_path": "/work/hia_mt18005/raw_data/20240806_MTDT/MTDT/barcode05_VE24-1105_COI/*fastq.gz",
+    "target_size": 711,
+    "target_organism": "aphididae;aphidiinae",
+    "target_gene": "COI",
+    "fwd_primer": "",
+    "rev_primer": "",
+    "test": "",
+    "method": "general invertebrate COI"
+  },
+  "parameters": {
+    "samplesheet": {
+      "default": "index.csv",
+      "user": "/work/hia_mt18005/diagnostics/2024/20240419_24_30_MTDT/index.csv"
+    },
+    "merge": {
+      "default": true,
+      "user": null
+    },
+    "qual_filt": {
+      "default": true,
+      "user": true
+    },
+    "chopper_options": {
+      "default": null,
+      "user": "-q 8 -l 100"
+    },
+    "polishing": {
+      "default": true,
+      "user": null
+    },
+    "blastn_db": {
+      "default": null,
+      "user": "/scratch/datasets/blast_db/20250318/core_nt"
+    },
+    "taxdump": {
+      "default": null,
+      "user": "~/.taxonkit"
+    },
+    "blast_threads": {
+      "default": 2,
+      "user": null
+    },
+    "analyst_name": {
+      "default": null,
+      "user": "Maely Gauthier"
+    },
+    "facility": {
+      "default": null,
+      "user": "QUT"
+    },
+    "mapping_back_to_ref": {
+      "default": true,
+      "user": null
+    },
+    "outdir": {
+      "default": "results",
+      "user": null
+    },
+    "help": {
+      "default": false,
+      "user": null
+    },
+    "qc_only": {
+      "default": false,
+      "user": null
+    },
+    "preprocessing_only": {
+      "default": false,
+      "user": null
+    },
+    "porechop_options": {
+      "default": null,
+      "user": null
+    },
+    "porechop_custom_primers": {
+      "default": false,
+      "user": null
+    },
+    "porechop_custom_primers_path": {
+      "default": "~/ont_amplicon/bin/adapters.txt",
+      "user": null
+    },
+    "analysis_mode": {
+      "default": "clustering",
+      "user": null
+    },
+    "rattle_clustering_options": {
+      "default": null,
+      "user": null
+    },
+    "rattle_clustering_min_length": {
+      "default": null,
+      "user": null
+    },
+    "rattle_clustering_max_length": {
+      "default": null,
+      "user": null
+    },
+    "rattle_raw": {
+      "default": false,
+      "user": null
+    },
+    "rattle_clustering_max_variance": {
+      "default": 1000000,
+      "user": null
+    },
+    "rattle_polishing_options": {
+      "default": null,
+      "user": null
+    },
+    "blastn_COI": {
+      "default": null,
+      "user": "/work/hia_mt18005/diagnostics/2024/20240419_24_30_MTDT/MetaCOXI/MetaCOXI_Seqs.fasta"
+    },
+    "subsample": {
+      "default": false,
+      "user": false
+    },
+    "reads_downsampling_size": {
+      "default": 10000,
+      "user": null
+    }
+  },
+  "run_qc": {
+    "raw_reads": 11472,
+    "processed_reads": 9396,
+    "percent_processed": 81.9,
+    "raw_reads_flag": "",
+    "processed_flag": null
+  },
+  "bam_html_file": "VE24-1105_COI_bam-alignment.html",
+  "consensus_blast_hits": [
+    {
+      "sample_name": "VE24-1105_COI",
+      "qseqid": "cluster_0_RC6924",
+      "consensus_seq": "NNNNNNNNNNNNAAACGCTTTCACNTNNTNNNNNNNNNNNNATTCTTAAANNCCATCTTTAATTTTATTATTAGTTAGAGGTTTAATAAATTCAGGTGTTGGTACNNNNNNNNNNNNNNTCCCCCTTTATCATTGACTTTAGGACATAGAGGTGTAGCAGTAGATTTTGCTATTTTTTCATTACATTTAGCAGGTATTTCCTCTATTATAGGAGCTATTAATTTTATTNNTNNNNNNNNNNNNNNNNNGATAAAGATATTGGAACTTTATATTTTTTATTTGGTATTTGATCAGGTATAATTGGATCTTCACTTAGAATTTTAATTCGATTAGAATTAAGACAAATTAATTCAATTATTAATAATAATCAACTATATAATGTAATTGTTACAATTCATGCTTTTATTATAATTTTTTTTATAACTATACCAATTGTAATTGGAGGTTTTGGAAATTGATTAATTCCTATAATAATAGGATGCCCCNNNNNNNNNNNTGTCCAAAAAATCAAAATAAATGTTGATATAAAATTGGATCCCCACCACCAGCAAAATCAAAAAAAGTAGTATTTAAGTTACGATCTGTTAATAATATAGTAATAGCTCCTGCTAAAACAGGTAATGATAATAGTAATAAAATAGTAGTAATTAAAACTGATCAAATTAATAATGAAATTTGATCTATTTTAATATTATAAGATCGTATATTAAAAATAGTACTAATAAAATTAATAGCTCCTATAATAGAGGAAATACCTGCTAAATGTAATGAAAAAATAGCAAAATCTACTGCTACACCTCTATGTCCTAAAGTCAATGATAAAGGGGGATAAACAGTTCAACCTGTACCAACACCTGAATTTATTAAACCTCTAACTAATAATAAAATTAAAGATGGAATTAATAATCAAAATCTTATATTATTTATTCGAGGAAAAGCTATATCAGGGGCTCCTAATATTAAAGGAATTAATCAATTACCAAATCCACCAATTATAATAGGTATAACCATAAAGAAAATTATTACAAAAGCATGAGCAGTTACAGTACTATTATAAATTTGATCATTACCAATTAATCTACCAGTAATTCTTAATTCTATACGAATTAATAATCTTATAGATAGACCTAATACTCCAGATCATATACCAAAAATAAAATATAAAATTCCAATATCTTTATGANNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN",
+      "sgi": "2246020874",
+      "sacc": "ON623641",
+      "alignment_length": "680",
+      "nident": "678",
+      "pident": "99.706",
+      "mismatch": "2",
+      "gaps": "0",
+      "gapopen": "0",
+      "qstart": "5",
+      "qend": "684",
+      "qlen": "1,171",
+      "sstart": "1",
+      "send": "680",
+      "slen": "680",
+      "sstrand": "plus",
+      "evalue": "0.0",
+      "bitscore": "1245.0",
+      "qcovhsp": "58",
+      "stitle": "Aphidius ervi isolate def2 cytochrome c oxidase subunit I (COX1) gene, partial cds; mitochondrial",
+      "staxids": "37627",
+      "qseq": "AAAGATATTGGAATTTTATATTTTATTTTTGGTATATGATCTGGAGTATTAGGTCTATCTATAAGATTATTAATTCGTATAGAATTAAGAATTACTGGTAGATTAATTGGTAATGATCAAATTTATAATAGTACTGTAACTGCTCATGCTTTTGTAATAATTTTCTTTATGGTTATACCTATTATAATTGGTGGATTTGGTAATTGATTAATTCCTTTAATATTAGGAGCCCCTGATATAGCTTTTCCTCGAATAAATAATATAAGATTTTGATTATTAATTCCATCTTTAATTTTATTATTAGTTAGAGGTTTAATAAATTCAGGTGTTGGTACAGGTTGAACTGTTTATCCCCCTTTATCATTGACTTTAGGACATAGAGGTGTAGCAGTAGATTTTGCTATTTTTTCATTACATTTAGCAGGTATTTCCTCTATTATAGGAGCTATTAATTTTATTAGTACTATTTTTAATATACGATCTTATAATATTAAAATAGATCAAATTTCATTATTAATTTGATCAGTTTTAATTACTACTATTTTATTACTATTATCATTACCTGTTTTAGCAGGAGCTATTACTATATTATTAACAGATCGTAACTTAAATACTACTTTTTTTGATTTTGCTGGTGGTGGGGATCCAATTTTATATCAACATTTATTTTGATTTTTTGG",
+      "sseq": "AAAGATATTGGAATTTTATATTTTATTTTTGGTATATGATCTGGAGTATTAGGTCTATCTATAAGATTATTAATTCGTATAGAATTAAGAATTACTGGTAGATTAATTGGTAATGATCAAATTTATAATAGTATTGTAACTGCTCATGCTTTTGTAATAATTTTCTTTATGGTTATACCTATTATAATTGGTGGATTTGGTAATTGATTAATTCCTTTAATATTAGGAGCCCCTGATATAGCTTTTCCTCGAATAAATAATATAAGATTTTGATTATTAATTCCATCTTTAATTTTATTATTAGTTAGAGGTTTAATAAATTCAGGTGTTGGTACAGGTTGAACTGTTTATCCCCCTTTATCATTGACTTTAGGACATAGAGGTGTAGCAGTAGATTTTGCTATTTTTTCATTACATTTAGCAGGTATTTCCTCTATTATAGGAGCTATTAATTTTATTAGTACTATTTTTAATATACGATCTTATAATATTAAAATAGATCAAATTTCATTATTAATTTGATCAGTTTTAATTACTGCTATTTTATTACTATTATCATTACCTGTTTTAGCAGGAGCTATTACTATATTATTAACAGATCGTAACTTAAATACTACTTTTTTTGATTTTGCTGGTGGTGGGGATCCAATTTTATATCAACATTTATTTTGATTTTTTGG",
+      "sseqid": "gi|2246020874|gb|ON623641.1|",
+      "qcovs": "73",
+      "qframe": "1",
+      "sframe": "1",
+      "species": "Aphidius ervi",
+      "broad_taxonomic_category": "eukaryota;protostomia",
+      "FullLineage": "cellular_organisms;eukaryota;opisthokonta;metazoa;eumetazoa;bilateria;protostomia;ecdysozoa;panarthropoda;arthropoda;mandibulata;pancrustacea;hexapoda;insecta;dicondylia;pterygota;neoptera;endopterygota;hymenoptera;apocrita;ichneumonoidea;braconidae;aphidiinae;aphidius;aphidius_ervi",
+      "target_organism_match": "Y",
+      "n_read_cont_cluster": "6,924",
+      "query_match_length": "680",
+      "qseq_mapping_read_count": "4,979",
+      "qseq_mean_depth": "2620.3",
+      "qseq_pc_mapping_read": "53.0",
+      "qseq_pc_cov_30X": "100.0",
+      "30X_COVERAGE_FLAG": "GREEN",
+      "MEAN_COVERAGE_FLAG": "GREEN",
+      "MAPPED_READ_COUNT_FLAG": "GREEN",
+      "TARGET_ORGANISM_FLAG": "GREEN",
+      "TARGET_SIZE_FLAG": "GREEN",
+      "READ_LENGTH_FLAG": "GREEN",
+      "MEAN_MQ_FLAG": "GREEN",
+      "TOTAL_CONF_SCORE": 12.0,
+      "NORMALISED_CONF_SCORE": 1.0,
+      "bs_class": "success"
+    },
+    {
+      "sample_name": "VE24-1105_COI",
+      "qseqid": "cluster_1_RC897",
+      "consensus_seq": "NACCATGGAAAAAGGAATTTGATTTAATTTTATATTATTAGGTATTATATTTAAAATAGTGCAAACAAAATTAATTGCTCCTAAAATTGATGAAATACCTGCTAGATGAAGGGAAAAAATAGTTAAATCAACTGAAATATTATTATGGGCAATATTATTTGATAGGGGTGGATAAATAGTTCATCCTGTTCCTGTTCCGTTATTAATTATAAATCTACAAATTATTATTATTAGTGATGGTGGTAATAATCAAAATCTAATATTATTTAATCGTGGGAAAGATATGTCTGGGCATCCTATTATTATAGGAATTAATCAATTTCCAAAACCTCCAATTACAATTGGTATAGTTATAAAAAAAATTATAATAAAAGCATGAATTGTAACAATTACATTATATAGTTGATTATTATTAATAATTGAATTAATTTGTCTTAATTCTAATCGAATTAAAATTCTAAGTGAAGATCCAATTATACCTGATCAAATACCAAATAAAAAATATAAAGTTCCAATATCTTTATAATGTTTTNTTACTTCGTTCAGTTATNTNNNNANCCGATATTAACNNNNNNNNTNTCNAGTNANCNGNGTTTTCGCATTTATCGTGAAACGCTTTCGCGTTTTTNN",
+      "sgi": "913022322",
+      "sacc": "KR085014",
+      "alignment_length": "523",
+      "nident": "521",
+      "pident": "99.618",
+      "mismatch": "0",
+      "gaps": "2",
+      "gapopen": "2",
+      "qstart": "105",
+      "qend": "625",
+      "qlen": "627",
+      "sstart": "3",
+      "send": "525",
+      "slen": "671",
+      "sstrand": "plus",
+      "evalue": "0.0",
+      "bitscore": "953.0",
+      "qcovhsp": "83",
+      "stitle": "Aphis fabae voucher Afab1 cytochrome oxidase subunit 1 (COI) gene, partial cds; mitochondrial",
+      "staxids": "191316",
+      "qseq": "ATAAAGATATTGGAACTTTATATTTTTTATTTGGTATTTGATCAGGTATAATTGGATCTTCACTTAGAATTTTAATTCGATTAGAATTAAGACAAATTAATTCAATTATTAATAATAATCAACTATATAATGTAATTGTTACAATTCATGCTTTTATTATAATTTTTTTTATAACTATACCAATTGTAATTGGAGGTTTTGGAAATTGATTAATTCCTATAATAATAGGATGCCCAGACATATCTTTCCCACGATTAAATAATATTAGATTTTGATTATTACCACCATCACTAATAATAATAATTTGTAGATTTATAATTAATAACGGAACAGGAACAGGATGAACTATTTATCCACCCCTATCAAATAATATTGCCCATAATAATATTTCAGTTGATTTAACTATTTTTTCCCTTCATCTAGCAGGTATTTCATCAATTTTAGGAGCAATTAATTTTGTTTGCACTATTTTAAATATAATACCTAATAATATAAAATTAAATCAAATTCCT-T-TTTCCATG",
+      "sseq": "ATAAAGATATTGGAACTTTATATTTTTTATTTGGTATTTGATCAGGTATAATTGGATCTTCACTTAGAATTTTAATTCGATTAGAATTAAGACAAATTAATTCAATTATTAATAATAATCAACTATATAATGTAATTGTTACAATTCATGCTTTTATTATAATTTTTTTTATAACTATACCAATTGTAATTGGAGGTTTTGGAAATTGATTAATTCCTATAATAATAGGATGCCCAGACATATCTTTCCCACGATTAAATAATATTAGATTTTGATTATTACCACCATCACTAATAATAATAATTTGTAGATTTATAATTAATAACGGAACAGGAACAGGATGAACTATTTATCCACCCCTATCAAATAATATTGCCCATAATAATATTTCAGTTGATTTAACTATTTTTTCCCTTCATCTAGCAGGTATTTCATCAATTTTAGGAGCAATTAATTTTGTTTGCACTATTTTAAATATAATACCTAATAATATAAAATTAAATCAAATTCCTCTATTTCCATG",
+      "sseqid": "gi|913022322|gb|KR085014.1|",
+      "qcovs": "83",
+      "qframe": "1",
+      "sframe": "1",
+      "species": "Aphis fabae",
+      "broad_taxonomic_category": "eukaryota;protostomia",
+      "FullLineage": "cellular_organisms;eukaryota;opisthokonta;metazoa;eumetazoa;bilateria;protostomia;ecdysozoa;panarthropoda;arthropoda;mandibulata;pancrustacea;hexapoda;insecta;dicondylia;pterygota;neoptera;paraneoptera;hemiptera;sternorrhyncha;aphidomorpha;aphidoidea;aphididae;aphidinae;aphidini;aphis;aphis;aphis_fabae",
+      "target_organism_match": "Y",
+      "n_read_cont_cluster": "897",
+      "query_match_length": "521",
+      "qseq_mapping_read_count": "3,308",
+      "qseq_mean_depth": "2185.8",
+      "qseq_pc_mapping_read": "35.2",
+      "qseq_pc_cov_30X": "100.0",
+      "30X_COVERAGE_FLAG": "GREEN",
+      "MEAN_COVERAGE_FLAG": "GREEN",
+      "MAPPED_READ_COUNT_FLAG": "GREEN",
+      "TARGET_ORGANISM_FLAG": "GREEN",
+      "TARGET_SIZE_FLAG": "ORANGE",
+      "READ_LENGTH_FLAG": "GREEN",
+      "MEAN_MQ_FLAG": "GREEN",
+      "TOTAL_CONF_SCORE": 11.0,
+      "NORMALISED_CONF_SCORE": 0.917,
+      "bs_class": "success"
+    },
+    {
+      "sample_name": "VE24-1105_COI",
+      "qseqid": "cluster_2_RC33",
+      "consensus_seq": "CATATATTTATGAAGANNNNNNTTTCACAGATATTTCAATATCAACAGCTTTTTTATTTTATNNNNNNNNATTCAAATGTTGATAAAGAATTGGATCTCCTCCTCCTGCTGGGTCAAAAAATGATGTATTTAAATTTCGATCAGTTAATAATATAGTAATAGCACCAGCTAAAACTGGTAAGGATAAAATTAATAATATGGCTGTAATTAAGATTGATCATGGAAATAGAGGAATTTGATTTAATTTTATATTATTAGGTATTATATTTAAAATAGTGCAAACAAAATTAATTGCTCCTAAAATTGATGAAATACCTGCTAGATGAAGGGAAAAAATAGTTAAATCAACTGAAATATTATTATGGGCAATATTATTTGATAGGGGTGGATGGNN",
+      "sgi": "913022322",
+      "sacc": "KR085014",
+      "alignment_length": "316",
+      "nident": "316",
+      "pident": "100.0",
+      "mismatch": "0",
+      "gaps": "0",
+      "gapopen": "0",
+      "qstart": "3",
+      "qend": "318",
+      "qlen": "392",
+      "sstart": "354",
+      "send": "669",
+      "slen": "671",
+      "sstrand": "plus",
+      "evalue": "2.95e-162",
+      "bitscore": "584.0",
+      "qcovhsp": "81",
+      "stitle": "Aphis fabae voucher Afab1 cytochrome oxidase subunit 1 (COI) gene, partial cds; mitochondrial",
+      "staxids": "191316",
+      "qseq": "ATCCACCCCTATCAAATAATATTGCCCATAATAATATTTCAGTTGATTTAACTATTTTTTCCCTTCATCTAGCAGGTATTTCATCAATTTTAGGAGCAATTAATTTTGTTTGCACTATTTTAAATATAATACCTAATAATATAAAATTAAATCAAATTCCTCTATTTCCATGATCAATCTTAATTACAGCCATATTATTAATTTTATCCTTACCAGTTTTAGCTGGTGCTATTACTATATTATTAACTGATCGAAATTTAAATACATCATTTTTTGACCCAGCAGGAGGAGGAGATCCAATTCTTTATCAACATTT",
+      "sseq": "ATCCACCCCTATCAAATAATATTGCCCATAATAATATTTCAGTTGATTTAACTATTTTTTCCCTTCATCTAGCAGGTATTTCATCAATTTTAGGAGCAATTAATTTTGTTTGCACTATTTTAAATATAATACCTAATAATATAAAATTAAATCAAATTCCTCTATTTCCATGATCAATCTTAATTACAGCCATATTATTAATTTTATCCTTACCAGTTTTAGCTGGTGCTATTACTATATTATTAACTGATCGAAATTTAAATACATCATTTTTTGACCCAGCAGGAGGAGGAGATCCAATTCTTTATCAACATTT",
+      "sseqid": "gi|913022322|gb|KR085014.1|",
+      "qcovs": "81",
+      "qframe": "1",
+      "sframe": "1",
+      "species": "Aphis fabae",
+      "broad_taxonomic_category": "eukaryota;protostomia",
+      "FullLineage": "cellular_organisms;eukaryota;opisthokonta;metazoa;eumetazoa;bilateria;protostomia;ecdysozoa;panarthropoda;arthropoda;mandibulata;pancrustacea;hexapoda;insecta;dicondylia;pterygota;neoptera;paraneoptera;hemiptera;sternorrhyncha;aphidomorpha;aphidoidea;aphididae;aphidinae;aphidini;aphis;aphis;aphis_fabae",
+      "target_organism_match": "Y",
+      "n_read_cont_cluster": "33",
+      "query_match_length": "316",
+      "qseq_mapping_read_count": "1,946",
+      "qseq_mean_depth": "1395.2",
+      "qseq_pc_mapping_read": "20.7",
+      "qseq_pc_cov_30X": "100.0",
+      "30X_COVERAGE_FLAG": "GREEN",
+      "MEAN_COVERAGE_FLAG": "GREEN",
+      "MAPPED_READ_COUNT_FLAG": "GREEN",
+      "TARGET_ORGANISM_FLAG": "GREEN",
+      "TARGET_SIZE_FLAG": "RED",
+      "READ_LENGTH_FLAG": "ORANGE",
+      "MEAN_MQ_FLAG": "GREEN",
+      "TOTAL_CONF_SCORE": 9.0,
+      "NORMALISED_CONF_SCORE": 0.75,
+      "bs_class": "warning"
+    }
+  ],
+  "consensus_blast_stats": {
+    "count": 3,
+    "percent": 100
+  },
+  "consensus_fasta": {
+    "cluster_0_RC6924": "AAACGCTTTCACNTNNTNNNNNNNNNNNNATTCTTAAANNCCATCTTTAATTTTATTATTAGTTAGAGGTTTAATAAATTCAGGTGTTGGTACNNNNNNNNNNNNNNTCCCCCTTTATCATTGACTTTAGGACATAGAGGTGTAGCAGTAGATTTTGCTATTTTTTCATTACATTTAGCAGGTATTTCCTCTATTATAGGAGCTATTAATTTTATTNNTNNNNNNNNNNNNNNNNNGATAAAGATATTGGAACTTTATATTTTTTATTTGGTATTTGATCAGGTATAATTGGATCTTCACTTAGAATTTTAATTCGATTAGAATTAAGACAAATTAATTCAATTATTAATAATAATCAACTATATAATGTAATTGTTACAATTCATGCTTTTATTATAATTTTTTTTATAACTATACCAATTGTAATTGGAGGTTTTGGAAATTGATTAATTCCTATAATAATAGGATGCCCCNNNNNNNNNNNTGTCCAAAAAATCAAAATAAATGTTGATATAAAATTGGATCCCCACCACCAGCAAAATCAAAAAAAGTAGTATTTAAGTTACGATCTGTTAATAATATAGTAATAGCTCCTGCTAAAACAGGTAATGATAATAGTAATAAAATAGTAGTAATTAAAACTGATCAAATTAATAATGAAATTTGATCTATTTTAATATTATAAGATCGTATATTAAAAATAGTACTAATAAAATTAATAGCTCCTATAATAGAGGAAATACCTGCTAAATGTAATGAAAAAATAGCAAAATCTACTGCTACACCTCTATGTCCTAAAGTCAATGATAAAGGGGGATAAACAGTTCAACCTGTACCAACACCTGAATTTATTAAACCTCTAACTAATAATAAAATTAAAGATGGAATTAATAATCAAAATCTTATATTATTTATTCGAGGAAAAGCTATATCAGGGGCTCCTAATATTAAAGGAATTAATCAATTACCAAATCCACCAATTATAATAGGTATAACCATAAAGAAAATTATTACAAAAGCATGAGCAGTTACAGTACTATTATAAATTTGATCATTACCAATTAATCTACCAGTAATTCTTAATTCTATACGAATTAATAATCTTATAGATAGACCTAATACTCCAGATCATATACCAAAAATAAAATATAAAATTCCAATATCTTTATGA",
+    "cluster_1_RC897": "ACCATGGAAAAAGGAATTTGATTTAATTTTATATTATTAGGTATTATATTTAAAATAGTGCAAACAAAATTAATTGCTCCTAAAATTGATGAAATACCTGCTAGATGAAGGGAAAAAATAGTTAAATCAACTGAAATATTATTATGGGCAATATTATTTGATAGGGGTGGATAAATAGTTCATCCTGTTCCTGTTCCGTTATTAATTATAAATCTACAAATTATTATTATTAGTGATGGTGGTAATAATCAAAATCTAATATTATTTAATCGTGGGAAAGATATGTCTGGGCATCCTATTATTATAGGAATTAATCAATTTCCAAAACCTCCAATTACAATTGGTATAGTTATAAAAAAAATTATAATAAAAGCATGAATTGTAACAATTACATTATATAGTTGATTATTATTAATAATTGAATTAATTTGTCTTAATTCTAATCGAATTAAAATTCTAAGTGAAGATCCAATTATACCTGATCAAATACCAAATAAAAAATATAAAGTTCCAATATCTTTATAATGTTTTNTTACTTCGTTCAGTTATNTNNNNANCCGATATTAACNNNNNNNNTNTCNAGTNANCNGNGTTTTCGCATTTATCGTGAAACGCTTTCGCGTTTTT",
+    "cluster_2_RC33": "CATATATTTATGAAGANNNNNNTTTCACAGATATTTCAATATCAACAGCTTTTTTATTTTATNNNNNNNNATTCAAATGTTGATAAAGAATTGGATCTCCTCCTCCTGCTGGGTCAAAAAATGATGTATTTAAATTTCGATCAGTTAATAATATAGTAATAGCACCAGCTAAAACTGGTAAGGATAAAATTAATAATATGGCTGTAATTAAGATTGATCATGGAAATAGAGGAATTTGATTTAATTTTATATTATTAGGTATTATATTTAAAATAGTGCAAACAAAATTAATTGCTCCTAAAATTGATGAAATACCTGCTAGATGAAGGGAAAAAATAGTTAAATCAACTGAAATATTATTATGGGCAATATTATTTGATAGGGGTGGATGG"
+  },
+  "consensus_match_fasta": {
+    "cluster_0_RC6924": "AAAGATATTGGAATTTTATATTTTATTTTTGGTATATGATCTGGAGTATTAGGTCTATCTATAAGATTATTAATTCGTATAGAATTAAGAATTACTGGTAGATTAATTGGTAATGATCAAATTTATAATAGTACTGTAACTGCTCATGCTTTTGTAATAATTTTCTTTATGGTTATACCTATTATAATTGGTGGATTTGGTAATTGATTAATTCCTTTAATATTAGGAGCCCCTGATATAGCTTTTCCTCGAATAAATAATATAAGATTTTGATTATTAATTCCATCTTTAATTTTATTATTAGTTAGAGGTTTAATAAATTCAGGTGTTGGTACAGGTTGAACTGTTTATCCCCCTTTATCATTGACTTTAGGACATAGAGGTGTAGCAGTAGATTTTGCTATTTTTTCATTACATTTAGCAGGTATTTCCTCTATTATAGGAGCTATTAATTTTATTAGTACTATTTTTAATATACGATCTTATAATATTAAAATAGATCAAATTTCATTATTAATTTGATCAGTTTTAATTACTACTATTTTATTACTATTATCATTACCTGTTTTAGCAGGAGCTATTACTATATTATTAACAGATCGTAACTTAAATACTACTTTTTTTGATTTTGCTGGTGGTGGGGATCCAATTTTATATCAACATTTATTTTGATTTTTTGG",
+    "cluster_1_RC897": "ATAAAGATATTGGAACTTTATATTTTTTATTTGGTATTTGATCAGGTATAATTGGATCTTCACTTAGAATTTTAATTCGATTAGAATTAAGACAAATTAATTCAATTATTAATAATAATCAACTATATAATGTAATTGTTACAATTCATGCTTTTATTATAATTTTTTTTATAACTATACCAATTGTAATTGGAGGTTTTGGAAATTGATTAATTCCTATAATAATAGGATGCCCAGACATATCTTTCCCACGATTAAATAATATTAGATTTTGATTATTACCACCATCACTAATAATAATAATTTGTAGATTTATAATTAATAACGGAACAGGAACAGGATGAACTATTTATCCACCCCTATCAAATAATATTGCCCATAATAATATTTCAGTTGATTTAACTATTTTTTCCCTTCATCTAGCAGGTATTTCATCAATTTTAGGAGCAATTAATTTTGTTTGCACTATTTTAAATATAATACCTAATAATATAAAATTAAATCAAATTCCTTTTTCCATG",
+    "cluster_2_RC33": "ATCCACCCCTATCAAATAATATTGCCCATAATAATATTTCAGTTGATTTAACTATTTTTTCCCTTCATCTAGCAGGTATTTCATCAATTTTAGGAGCAATTAATTTTGTTTGCACTATTTTAAATATAATACCTAATAATATAAAATTAAATCAAATTCCTCTATTTCCATGATCAATCTTAATTACAGCCATATTATTAATTTTATCCTTACCAGTTTTAGCTGGTGCTATTACTATATTATTAACTGATCGAAATTTAAATACATCATTTTTTGACCCAGCAGGAGGAGGAGATCCAATTCTTTATCAACATTT"
+  },
+  "flags": [
+    {
+      "FLAG NAME": "QC_FLAG",
+      "DEFINITION": " Number of starting raw reads and quality filtered reads recovered for each sample",
+      "GREEN": ">= 2500 starting reads & >= 200 quality filtered reads",
+      "ORANGE": "< 2500 starting reads & >= 200 quality filtered reads",
+      "RED": "< 2500 starting reads & < 200 quality filtered reads",
+      "GREY": "NA"
+    },
+    {
+      "FLAG NAME": "30X COVERAGE FLAG",
+      "DEFINITION": "The percentage of bases that attained at least 30X sequence coverage when mapping back to the consensus match (ie qseq)",
+      "GREEN": "> 90%",
+      "ORANGE": "75-90%",
+      "RED": "< 75%",
+      "GREY": "The consensus returned no blast hits"
+    },
+    {
+      "FLAG NAME": "TARGET ORGANISM FLAG",
+      "DEFINITION": "Flag based on whether the consensus matched to the target organism(s) by blast homology search and the % blast identity recovered",
+      "GREEN": "Target organism detected and blast identity > 90%",
+      "ORANGE": "Target organism was detected and blast identity < 90%",
+      "RED": "Target organism not detected",
+      "GREY": "The consensus returned no blast hits"
+    },
+    {
+      "FLAG NAME": "TARGET SIZE FLAG",
+      "DEFINITION": "Length of the consensus match (ie qseq) relative to the expected target_size",
+      "GREEN": "within \u00b120%",
+      "ORANGE": "\u00b120%-\u00b140%",
+      "RED": "outside the range of \u00b140%",
+      "GREY": "The consensus returned no blast hits"
+    },
+    {
+      "FLAG NAME": "MAPPED READ COUNT FLAG",
+      "DEFINITION": "Number of reads mapping back to the consensus match (ie qseq)",
+      "GREEN": ">= 1000",
+      "ORANGE": "200-1000",
+      "RED": "< 200",
+      "GREY": "The consensus returned no blast hits"
+    },
+    {
+      "FLAG NAME": "MEAN COVERAGE FLAG",
+      "DEFINITION": "Mean read coverage of each base when mapping back to the consensus match (ie qseq)",
+      "GREEN": ">= 500",
+      "ORANGE": "100-500",
+      "RED": "< 100",
+      "GREY": "The consensus returned no blast hits"
+    },
+    {
+      "FLAG NAME": "READ LENGTH FLAG",
+      "DEFINITION": "Number of mapped reads whose lengths are at least 90% of the consensus match length",
+      "GREEN": ">=200",
+      "ORANGE": "50-200",
+      "RED": "< 50",
+      "GREY": "The consensus returned no blast hits"
+    },
+    {
+      "FLAG NAME": "MEAN MQ FLAG",
+      "DEFINITION": "Average mapping quality of reads mapping to the consensus match",
+      "GREEN": ">= 30",
+      "ORANGE": "10-30",
+      "RED": "< 10",
+      "GREY": "The consensus returned no blast hits"
+    }
+  ],
+  "blast_passed": true,
+  "rattle_passed": true
+}
