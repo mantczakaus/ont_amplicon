@@ -712,7 +712,7 @@ reference blast match. A bam file is generated using Samtools and [Samtools cons
 
 ### HTML report output
 (in progress)  
-An example of report can be found [here](https://github.com/maelyg/ont_amplicon/blob/master/docs/images/VE24-1105_COI_report.html).
+An example of report can be found [here](https://github.com/maelyg/ont_amplicon/blob/master/docs/HTML_report_example.zip).  
 
 ## Authors
 Marie-Emilie Gauthier gauthiem@qut.edu.au  
