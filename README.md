@@ -30,9 +30,9 @@ c. [Clustering step outputs](#clustering-step-outputs)
 d. [Polishing step outputs](#polishing-step-outputs)  
 e. [Blast search outputs](#blast-search-outputs)  
 f. [Outputs from mapping back to consensus matches step](outputs-from-mapping-back-to-consensus-matches-step)  
-g. [Outputs from mapping back to reference matches step](outputs-from-mapping-back-to-reference-matches-step)  
+g. [Outputs from mapping back to reference matches step](outputs-from-mapping-back-to-reference-matches-step)
 h. [HTML report output](#html-report-output)  
-6. [Authors](#authors) 
+7. [Authors](#authors) 
 
 ## Pipeline overview
 
@@ -672,7 +672,7 @@ Finally, the **n_read_cont_cluster** captures the number of reads that originall
 
 The nucleotide sequence of qseq (i.e. **consensus match**) and sseq (i.e. **reference match)** are extracted to use when mapping reads back to consensus and reference respectively (see steps below). These are called **SampleName/05_mapping_to_consensus/SampleName_final_polished_consensus_match.fasta** and **SampleName/megablast/06_mapping_to_ref/SampleName_reference_match.fasta** respectively.  
 
-### Outputs from the mapping reads back to consensus matches step  
+### Outputs from mapping reads back to consensus matches step  
 The files are located under the **Sample_name/05_mapping_to_consensus**.  
 
 A BAM file of the pre-processed reads mapped back to the consensus matches is generated (**Sample_name/05_mapping_to_consensus/Sample_name_aln.sorted.bam** and **Sample_name/05_mapping_to_consensus/Sample_name_aln.sorted.bam.bai**) and coverage statistics are derived. A final summary file is generated which combines the previously generated final_polished_consensus_megablast_top_hit.txt file with coverage statistics, flags and confidence scores for each consensus blast match. This file includes the following additional columns: 
