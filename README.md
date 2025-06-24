@@ -48,7 +48,7 @@ h. [HTML report output](#html-report-output)
   - Subsample reads ([Seqkit](https://bioinf.shenwei.me/seqkit/usage/)) - optional
 - QC report
   - Derive read counts recovered pre and post data processing
-- Read clustering ([Rattle](https://github.com/comprna/RATTLE))
+- Read clustering ([RATTLE](https://github.com/comprna/RATTLE))
 - Convert fastq to fasta format ([seqtk](https://github.com/lh3/seqtk))
 - Polishing ([Minimap2](https://lh3.github.io/minimap2/minimap2.html), [Racon](https://github.com/lbcb-sci/racon), [Medaka2](https://github.com/nanoporetech/medaka), [Samtools](http://www.htslib.org/doc/samtools.html)) - optional
 - Search for and remove primers for amplicon target, if primers have been provided (Cutadapt](https://cutadapt.readthedocs.io/en/stable/reference.html))
@@ -479,7 +479,7 @@ Pre-processed reads can be subsampled by specifying `subsample: true` and the nu
 In the clustering mode, the tool [`RATTLE`](https://github.com/comprna/RATTLE#Description-of-clustering-parameters) will be run. 
 
 - The ont_amplicon pipeline will automatically set a **lower read length** of **100** bp during the RATTLE clustering step if the amplicon target_size specified in the csv file is **<=300 bp**.  
-- If the amplicon target_size specified in the csv file is **>300 bp**, the lower read length of **150 bp** (Rattle default) will be applied at the RATTLE clustering step instead.  
+- If the amplicon target_size specified in the csv file is **>300 bp**, the lower read length of **150 bp** (RATTLE default) will be applied at the RATTLE clustering step instead.  
 - For poor quality samples (i.e. failed the QC_FLAG) or if your amplicon is known to be shorter than 150 bp, use the parameter `rattle_raw: true` to use all the reads without any length filtering during the RATTLE clustering step.  
 - Finally, the `rattle_clustering_max_variance` is set by default to 1,000,000.  
 
@@ -526,27 +526,26 @@ mapping_back_to_ref: true
 ```
 
 ### Polishing step (optional)
-The clusters derived using RATTLE can be polished. The reads are first mapped back to the clusters using [Minimap2](https://lh3.github.io/minimap2/minimap2.html) and then the clusters are polished using [Racon](https://github.com/lbcb-sci/racon) and [Medaka2](https://github.com/nanoporetech/medaka). Samtools consensus is then used to identify positions showing poor base and mapping qualities, using the predefined sets of configuration parameters that have been optimised for ONT reads (i.e. r10.4_sup) (please see the configuration section at the bottom of the [`Samtools consensus documentation`](https://www.htslib.org/doc/samtools-consensus.html)). Any stretches of Ns at the 5' and 3' end of the consensuses are then removed with [Cutadapt](https://cutadapt.readthedocs.io/en/stable/reference.html). If a polishing step fails, it will be skipped.  
-This polishing step is performed by default by the pipeline but can be skipped by specifying the paramater ``--polishing false``.  
+The clusters derived using RATTLE can be polished. This polishing step is performed by default by the pipeline but can be skipped by specifying the paramater `--polishing false`. The reads are first mapped back to the clusters using [Minimap2](https://lh3.github.io/minimap2/minimap2.html) and then the clusters are polished using [Racon](https://github.com/lbcb-sci/racon) and [Medaka2](https://github.com/nanoporetech/medaka). Samtools consensus is then used to identify positions showing poor base and mapping qualities, using the predefined sets of configuration parameters that have been optimised for ONT reads (i.e. r10.4_sup) (please see the configuration section at the bottom of the [`Samtools consensus documentation`](https://www.htslib.org/doc/samtools-consensus.html)). Any stretches of Ns at the 5' and 3' end of the consensuses are then removed with [Cutadapt](https://cutadapt.readthedocs.io/en/stable/reference.html). If a polishing step fails, it will be skipped.  
 
 ### Primer search
-If the fwd_primer and the rev_primer have been provided in the samplesheet, clusters are then searched for primers using [Cutadapt](https://cutadapt.readthedocs.io/en/stable/reference.html).  
+If the fwd_primer and the rev_primer have been specified in the samplesheet, clusters are then searched for primers using [Cutadapt](https://cutadapt.readthedocs.io/en/stable/reference.html).  
 
 ### Blast homology searches
 If the gene targetted is Cytochrome oxidase I (COI), a preliminary megablast homology search against a COI database will be performed; then based on the strandedness of the blast results for the consensuses , some will be reverse complemented where required.  
 
-Blast homology search of the consensuses against NCBI is then performed and the top 10 hits are returned.
+Blast homology search of the consensuses against NCBI is then performed and up to top 10 hits are returned.
 A separate blast output is then derived using [pytaxonkit](https://github.com/bioforensics/pytaxonkit), to output preliminary taxonomic assignment to the top blast hit for each consensus. The nucleotide sequence of qseq **(i.e. consensus match)** and sseq **(i.e. reference match)** are extracted to use when mapping reads back to consensus and reference respectively (see steps below).  
 
 ### Mapping back to consensus
-The quality filtered reads derived during the pre-processing step are mapped back to the consensus matches using Mimimap2. Samtools and Mosdepth are then used to derive bam files and coverage statistics. A summary of the blast results, preliminary taxonomic assignment, coverage statistics and associated **flags** and **confidence scores** are then derived for each consensus using python.  
+The pre=processed reads are mapped back to the consensus matches using Mimimap2. Samtools and Mosdepth are then used to derive BAM files. A summary of the blast results, preliminary taxonomic assignment, coverage statistics and associated **flags** and **confidence scores** are then derived for each consensus using python.  
 
 ### Mapping back to reference (optional)
-By default the quality filtered reads derived during the pre-processing step are also mapped back to the reference blast match and [Samtools consensus](http://www.htslib.org/doc/samtools-consensus.html) is used to derive independent guided-reference consensuses. Their nucleotide sequences can be compared to that of the original consensuses to resolve ambiguities (ie low complexity and repetitive regions).  
+By default the processed reads are also mapped back to the reference blast match and [Samtools consensus](http://www.htslib.org/doc/samtools-consensus.html) is used to derive independent guided-reference consensuses. Their nucleotide sequences can be compared to that of the original consensuses to resolve ambiguities (ie low complexity and repetitive regions).  
 
 ### HTML report
 An html summary report is generated for each sample, incorporating sample metadata, QC before and after 
-preprocessing, blast results and coverage statistics. It also provides a link to the bam files generated when mapping back to consensus.  
+preprocessing, blast results and coverage statistics. It also provides a link to the BAM files generated when mapping back to consensus.  
 
 ## Output files
 The output files will be saved by default under the **results** folder. This can be changed by setting the **`--outdir` parameter**.  
@@ -611,7 +610,7 @@ Example of report:
 
 ### Clustering step outputs
 The files are located under the **Sample_name/02_clustering folder**.  
-The output from Rattle will be saved under **SampleName/02_clustering/SampleName_rattle.fasta**. The number of reads contributing to each clusters is listed in the header. The amplicon of interest is usually amongst the most abundant clusters (i.e. the ones represented by the most reads). The rattle log (**SampleName_rattle.log**) is also available in the same folder as well as a file called **SampleName_rattle.status** that catches whether the clustering step ran succesfully or not.  
+The output from RATTLE will be saved under **SampleName/02_clustering/SampleName_rattle.fasta**. The number of reads contributing to each clusters is listed in the header. The amplicon of interest is usually amongst the most abundant clusters (i.e. the ones represented by the most reads). The RTAYYLE log (**SampleName_rattle.log**) is also available in the same folder as well as a file called **SampleName_rattle.status** that catches whether the clustering step ran succesfully or not.  
 
 ### Polishing step outputs 
 The files are located under the **Sample_name/03_polishing folder**.  
@@ -707,7 +706,7 @@ A BAM file of the pre-processed reads mapped back to the consensus matches is ge
 
 ### Outputs from mapping reads back to reference matches step
 By default the quality filtered reads derived during the pre-processing step are mapped back to the
-reference blast match. A bam file is generated using Samtools and [Samtools consensus](https://www.htslib.org/doc/samtools-consensus.html) is used to derive independent guided-reference consensuses that are stored in a file called **SampleName/mapping_back_to_ref/samtools_consensus_from_ref.fasta** file. Their nucleotide sequences can be compared to that of the original consensuses to resolve ambiguities (ie low complexity and repetitive regions). 
+reference blast match. A BAM file is generated using Samtools and [Samtools consensus](https://www.htslib.org/doc/samtools-consensus.html) is used to derive independent guided-reference consensuses that are stored in a file called **SampleName/mapping_back_to_ref/samtools_consensus_from_ref.fasta** file. Their nucleotide sequences can be compared to that of the original consensuses to resolve ambiguities (ie low complexity and repetitive regions). 
 
 ### HTML report output
 (in progress)  
