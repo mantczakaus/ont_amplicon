@@ -45,7 +45,7 @@ h. [HTML report output](#html-report-output)
   - Filter reads based on length and/or mean quality ([Chopper](https://github.com/wdecoster/chopper)) - optional
   - Reformat fastq files so read names are trimmed after the first whitespace ([bbmap](https://github.com/BioInfoTools/BBMap))
   - Quality check of processed fastq file ([NanoPlot](https://github.com/wdecoster/NanoPlot))
-  - Subsample reads ([Seqkit](https://bioinf.shenwei.me/seqkit/0)) - optional
+  - Subsample reads ([Seqkit](https://bioinf.shenwei.me/seqkit/usage/) - optional
 - QC report
   - Derive read counts recovered pre and post data processing
 - Clustering mode
