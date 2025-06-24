@@ -727,7 +727,7 @@ The **input parameters section** captures the metadata that was provided in the 
 - Test (opotional)  
 - Method (optional)  
 
-At the bottom of the **input parameters section**, there is also a **View all parameters** tab which lists all the default pipeline parameters on the left and the ones specifially set by the user for this sample on the right (which match the parameters set in the yml file by the user).  The **View tool versions** displays the version of all the bioinformatics tools that were used by the nextflow pipeline processes.  
+At the bottom of the **input parameters section**, there is also a **View all parameters** tab which lists all the default pipeline parameters on the left and the ones specifially set by the user for this sample on the right (which match the parameters set in the yml file specified the user under the -params-file option).  The **View tool versions** displays the version of all the bioinformatics tools that were used by the nextflow pipeline processes.  
 
 
 ## Authors
