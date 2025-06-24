@@ -462,7 +462,7 @@ Reads are then trimmed of adapters and optionally quality filtered:
   ```
 **Based on the benchmarking performed, we recommend using the following parameters ```chopper_options: -q 8 -l 100``` as a first pass**.  
 
-  If you are analysing samples that are of poor quality (i.e. failed the QC_FLAG) or amplifying a very short amplicon (e.g. <150 bp), then we recommend using the following setting `qual_filt: true` and `chopper_options: -q 8 -l 25`, or skip the quality trimming step altogther (i.e. `qual_filt: flase`) if you want to retain all reads.  
+  If you are analysing samples that are of poor quality (i.e. failed the QC_FLAG) or amplifying a very short amplicon (e.g. <150 bp), then we recommend using the following setting `qual_filt: true` and `chopper_options: -q 8 -l 25`, or skip the quality trimming step altogther (i.e. `qual_filt: false`) if you want to retain all reads.  
 
 A zipped copy of the resulting **preprocessed** and/or **quality filtered fastq file** will be saved in the preprocessing folder.  
 
