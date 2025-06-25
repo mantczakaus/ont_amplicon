@@ -674,22 +674,22 @@ The nucleotide sequence of qseq (i.e. **consensus match**) and sseq (i.e. **refe
 The files are located under the **Sample_name/05_mapping_to_consensus**.  
 
 A BAM file of the pre-processed reads mapped back to the consensus matches is generated (**Sample_name/05_mapping_to_consensus/Sample_name_aln.sorted.bam** and **Sample_name/05_mapping_to_consensus/Sample_name_aln.sorted.bam.bai**) and coverage statistics are derived. A final summary file is generated (**Sample_name/05_mapping_to_consensus/Sample_name_top_blast_with_cov_stats.txt**, which combines the previously generated final_polished_consensus_megablast_top_hit.txt file with coverage statistics, flags and confidence scores for each consensus blast match. This file includes the following additional columns: 
-- query_match_length: length of consensus match used as reference when mapping back pre-processed reads 
-- qseq_mapping_read_count: number of reads mapping back to the consensus match  
-- qseq_mean_depth: mean read coverage of each base when mapping back to the consensus match  
-- qseq_pc_mapping_read: the percentage of processed reads that map to the consensus match  
-- qseq_pc_cov_30X: the percentage of bases that attained at least 30X sequence coverage when mapping back to the consensus match  
-- mean_MQ: average mapping quality of reads mapping to the consensus match  
-- num_passing_90: number of mapped reads whose lengths are at least 90% of the consensus match length   
-- 30X_COVERAGE_FLAG: see FLAGS section below  
-- MAPPED_READ_COUNT_FLAG: see FLAGS section below   
-- MEAN_COVERAGE_FLAG: see FLAGS section below    
-- TARGET_ORGANISM_FLAG: see FLAGS section below  
-- TARGET_SIZE_FLAG: see FLAGS section below    
-- READ_LENGTH_FLAG: see FLAGS section below    
-- MEAN_MQ_FLAG: see FLAGS section below    
-- TOTAL_CONF_SCORE: a scoring system which assigns different weight to each flag colour for the 30X coverage flag, the target size, the mapped read count flag, the mean coverage flag, the read length flag and the mean MQ flag. It is a value bewteen 0 and 12. A higher score indicates a higher confidence in the quality of the consensus sequence  
-- NORMALISED_CONF_SCORE: a value between 0 and 1 that is calculated by normalising the confidence score to the maximum possible score for this sequence. A value of 1 indicates the highest confidence in the quality of the consensus sequence  
+- **query_match_length**: length of consensus match used as reference when mapping back pre-processed reads 
+- **qseq_mapping_read_count**: number of reads mapping back to the consensus match  
+- **qseq_mean_depth**: mean read coverage of each base when mapping back to the consensus match  
+- **qseq_pc_mapping_read**: the percentage of processed reads that map to the consensus match  
+- **qseq_pc_cov_30X**: the percentage of bases that attained at least 30X sequence coverage when mapping back to the consensus match  
+- **mean_MQ**: average mapping quality of reads mapping to the consensus match  
+- **num_passing_90**: number of mapped reads whose lengths are at least 90% of the consensus match length   
+- **30X_COVERAGE_FLAG**: see FLAGS section below  
+- **MAPPED_READ_COUNT_FLAG**: see FLAGS section below   
+- **MEAN_COVERAGE_FLAG**: see FLAGS section below    
+- **TARGET_ORGANISM_FLAG**: see FLAGS section below  
+- **TARGET_SIZE_FLAG**: see FLAGS section below    
+- **READ_LENGTH_FLAG**: see FLAGS section below    
+- **MEAN_MQ_FLAG**: see FLAGS section below    
+- **TOTAL_CONF_SCORE**: a scoring system which assigns different weight to each flag colour for the 30X coverage flag, the target size, the mapped read count flag, the mean coverage flag, the read length flag and the mean MQ flag. It is a value bewteen 0 and 12. A higher score indicates a higher confidence in the quality of the consensus sequence  
+- **NORMALISED_CONF_SCORE**: a value between 0 and 1 that is calculated by normalising the confidence score to the maximum possible score for this sequence. A value of 1 indicates the highest confidence in the quality of the consensus sequence  
 
 #### FLAGS
 **Seven** flags are providded to help with interpretation. They will display GREEN, ORANGE, RED or GREY depending on whether they fill specific criteria:
