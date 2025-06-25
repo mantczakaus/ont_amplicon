@@ -705,14 +705,12 @@ A BAM file of the pre-processed reads mapped back to the consensus matches is ge
 | **7. MEAN MQ FLAG** | Average mapping quality of reads mapping to the consensus match | **>= 30** | **10-30** | **< 10** | The consensus returned no blast hits |
 
 ### Outputs from mapping reads back to reference matches step
-By default the quality filtered reads derived during the pre-processing step are mapped back to the
-reference blast match. A BAM file is generated using Samtools and [Samtools consensus](https://www.htslib.org/doc/samtools-consensus.html) is used to derive independent guided-reference consensuses that are stored in a file called **SampleName/mapping_back_to_ref/samtools_consensus_from_ref.fasta** file. Their nucleotide sequences can be compared to that of the original consensuses to resolve ambiguities (ie low complexity and repetitive regions). 
+By default the processsed reads are mapped back to the reference blast match. A BAM file is generated using Samtools and [Samtools consensus](https://www.htslib.org/doc/samtools-consensus.html) is used to derive independent guided-reference consensuses that are stored in a file called **SampleName/mapping_back_to_ref/samtools_consensus_from_ref.fasta** file. Their nucleotide sequences can be compared to that of the original consensuses to resolve ambiguities (ie low complexity and repetitive regions). 
 
 ### HTML report output
-(in progress)  
 An HTML report example can be found [here](https://github.com/maelyg/ont_amplicon/blob/master/docs/HTML_report_example.zip). It is provided within a gzipped folder with all associated files. It is too large to open in github, but if you git pull the repository onto your local machine, you can then unzip the folder and open the html file.  
 
-The report consists of 3 main parts: input parameters, input data quality report and Consensus sequences.  
+The report consists of 3 main parts: **input parameters**, **input data quality report** and **Consensus sequences**.  
 
 On the top left corner of the report, the **Facility**, **Analyst**, the time at which the **Analysis started**, the time at which the **Analysis completed** and the **Wall time**	are captured.
 
