@@ -673,7 +673,7 @@ The nucleotide sequence of qseq (i.e. **consensus match**) and sseq (i.e. **refe
 ### Outputs from mapping reads back to consensus matches step  
 The files are located under the **Sample_name/05_mapping_to_consensus**.  
 
-A BAM file of the pre-processed reads mapped back to the consensus matches is generated (**Sample_name/05_mapping_to_consensus/Sample_name_aln.sorted.bam** and **Sample_name/05_mapping_to_consensus/Sample_name_aln.sorted.bam.bai**) and coverage statistics are derived. A final summary file is generated which combines the previously generated final_polished_consensus_megablast_top_hit.txt file with coverage statistics, flags and confidence scores for each consensus blast match. This file includes the following additional columns: 
+A BAM file of the pre-processed reads mapped back to the consensus matches is generated (**Sample_name/05_mapping_to_consensus/Sample_name_aln.sorted.bam** and **Sample_name/05_mapping_to_consensus/Sample_name_aln.sorted.bam.bai**) and coverage statistics are derived. A final summary file is generated (**Sample_name/05_mapping_to_consensus/Sample_name_top_blast_with_cov_stats.txt**, which combines the previously generated final_polished_consensus_megablast_top_hit.txt file with coverage statistics, flags and confidence scores for each consensus blast match. This file includes the following additional columns: 
 - query_match_length: length of consensus match used as reference when mapping back pre-processed reads 
 - qseq_mapping_read_count: number of reads mapping back to the consensus match  
 - qseq_mean_depth: mean read coverage of each base when mapping back to the consensus match  
@@ -725,9 +725,13 @@ Just under it, the **input parameters section** displays the metadata that was p
 - Test (opotional)  
 - Method (optional)  
 
-At the bottom of the **input parameters section**, there is also a **View all parameters** tab which is a link to a list of all the default pipeline parameters on the left and the parameters specifially set by the user for this sample on the right (these match the parameters set in the yml file specified the user under the -params-file option).  The **View tool versions** displays the version of all the bioinformatics tools that were used by the nextflow pipeline processes.  
+At the bottom of the **input parameters** section, there is also a **View all parameters** tab which is a link to a list of all the default pipeline parameters on the left and the parameters specifially set by the user for this sample on the right (these match the parameters set in the yml file specified the user under the -params-file option).  The **View tool versions** displays the version of all the bioinformatics tools that were used by the nextflow pipeline processes.  
 
 The **input data quality report section** displays the QC report output for the sample, and captures the number of starting raw reads and cleaned reads, and what percentage of the starting raw reads these represent. The outcome column refers to the **QC_FLAG**. Links to the Nanoplot reports for the raw and preprocessed reads are also available as well as the QC report for all the samples that were analysed at the same time.  
+
+The user can leave comments pertaining to the quality report section of the sample in the **Analyst evaluation** comments section.
+
+The **Consensus sequences** section lists how many consensuses were recovered and a table shows a selection of columns from the 
 
 ## Authors
 Marie-Emilie Gauthier gauthiem@qut.edu.au  
