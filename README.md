@@ -747,7 +747,7 @@ Several tabs are also available at the bottom of this section:
 
 
 Example of Consensus sequences section:  
-<p><img src="docs/images/Example_Consensus_section.png" width="625"></p>
+<p><img src="docs/images/Example_Consensus_section.png" width="1000"></p>
 
 The analyst can add comments related to the consensus section of the sample in the **Analyst evaluation**A comments area. Final edited consensus sequences can also be pasted here.
 
