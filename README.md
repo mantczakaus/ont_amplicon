@@ -618,7 +618,7 @@ By default, the clusters derived using RATTLE will be polished with Racon follow
 
 ### Blast search outputs
 The files are located under the **Sample_name/04_megablast folder**.  
-If the target gene is COI, then the consensuses will first be mapped to a cyctochrome oxidase I database and based on the strandedness of the blast results, consensuses will be reverse complemented where required. All consensuses will be saved in the **Sample_name/04_megablast/Sample_name_final_polished_consensus_rc.fasta** file.  
+If the target gene is COI, then the consensuses will first be mapped to a cyctochrome oxidase I database and based on the strandedness of the blast results, consensuses will be reverse complemented where required. All consensuses will be saved in the **Sample_name/04_megablast/Sample_name_final_polished_consensus.fasta** file.  
 All consensuses are then blasted against NCBI.  The outcome of the blast search will be captured in the **Sample_name/04_megablast/Sample_name_final_blast_status.txt** file (e.g. if at least one consensus returned a blast hit, it will display 'passed', if no consensuses returned a blast hit, it will display 'failed').  
 
 The 10 top hits derived for each contig are listed in the file **SampleName/04_megablast/SampleName_final_polished_consensus_megablast_top_10_hits.txt**. This file contains the following 26 columns:
@@ -731,7 +731,17 @@ The **input data quality report section** displays the QC report output for the 
 
 The user can leave comments pertaining to the quality report section of the sample in the **Analyst evaluation** comments section.
 
-The **Consensus sequences** section lists how many consensuses were recovered and a table shows a selection of columns from the 
+The **Consensus sequences** section lists how many consensuses were recovered and a table shows a selection of columns from the **SampleName/05_mapping_to_consensus/Sample_name_top_blast_with_cov_stats.txt**.  
+Several tabs are also available at the bottom of this section:  
+- The **Consensus statistics** displays additional columns from the ****SampleName/05_mapping_to_consensus/Sample_name_top_blast_with_cov_stats.txt**. 
+- The **All consensus sequences** tabs display the **Sample_name/04_megablast/Sample_name_final_polished_consensus.fasta**.  
+- The **All matching consensus sequences** tab display the **SampleName/05_mapping_to_consensus/SampleName_final_polished_consensus_match.fasta**.  
+- The **Read alignment (BAM)** displays the **Sample_name/05_mapping_to_consensus/Sample_name_aln.sorted.bam**.  
+- The **Flag definitions** tab displays the flags used during the analysis.  
+
+The user can leave comments pertaining to the consensus section of the sample in the **Analyst evaluation** comments section. Final edited consensuses can be pasted here too.  
+
+Once the results have been reviewed and all comments recorded, the report can be saved uisng the **Save report** tab at the right hand side of the report.  
 
 ## Authors
 Marie-Emilie Gauthier gauthiem@qut.edu.au  
