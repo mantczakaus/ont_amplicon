@@ -724,24 +724,24 @@ Just under it, the **input parameters section** displays the metadata that was p
 - REV primer sequences (optional)  
 - Test (opotional)  
 - Method (optional)  
+ 
+At the bottom of the **Input Parameters**i section, there is also a **View All Parameters** tab. This tab links to a page that displays all default pipeline parameters on the left, and the user-specified parameters for this sample on the right (these correspond to those set in the YAML file provided by the user via the -params-file option). The **View Tool Versions** tab shows the versions of all bioinformatics tools used in the Nextflow pipeline processes.  
 
-At the bottom of the **input parameters** section, there is also a **View all parameters** tab which is a link to a list of all the default pipeline parameters on the left and the parameters specifially set by the user for this sample on the right (these match the parameters set in the yml file specified the user under the -params-file option).  The **View tool versions** displays the version of all the bioinformatics tools that were used by the nextflow pipeline processes.  
+The **input data quality report section** presents the QC results for the sample, including the number of raw reads at the start and the number of cleaned reads after preprocessing. It also indicates what percentage of the original raw reads remain after cleaning. The **Outcome** column corresponds to the **QC_FLAG**. Links to the Nanoplot reports for the raw and preprocessed reads are also available as well as the QC report for all the samples that were analysed at the same time.  
 
-The **input data quality report section** displays the QC report output for the sample, and captures the number of starting raw reads and cleaned reads; it also records what percentage of the starting raw reads the cleaned reads represent. The outcome column refers to the **QC_FLAG**. Links to the Nanoplot reports for the raw and preprocessed reads are also available as well as the QC report for all the samples that were analysed at the same time.  
-
-The user can leave comments pertaining to the quality report section of the sample in the **Analyst evaluation** comments section.
+The user can leave comments pertaining to the quality report section of the sample in the **Analyst evaluation** comments section.  
 
 The **Consensus sequences** section lists how many consensuses were recovered and a table shows a selection of columns from the **SampleName/05_mapping_to_consensus/Sample_name_top_blast_with_cov_stats.txt**.  
 Several tabs are also available at the bottom of this section:  
-- The **Consensus statistics** displays additional columns from the ****SampleName/05_mapping_to_consensus/Sample_name_top_blast_with_cov_stats.txt**. 
+- The **Consensus statistics** displays additional columns from the ****SampleName/05_mapping_to_consensus/Sample_name_top_blast_with_cov_stats.txt**.  
 - The **All consensus sequences** tabs display the **Sample_name/04_megablast/Sample_name_final_polished_consensus.fasta**.  
 - The **All matching consensus sequences** tab display the **SampleName/05_mapping_to_consensus/SampleName_final_polished_consensus_match.fasta**.  
 - The **Read alignment (BAM)** displays the **Sample_name/05_mapping_to_consensus/Sample_name_aln.sorted.bam**.  
 - The **Flag definitions** tab displays the flags used during the analysis.  
 
-The user can leave comments pertaining to the consensus section of the sample in the **Analyst evaluation** comments section. Final edited consensuses can be pasted here too.  
+The analyst can add comments related to the consensus section of the sample in the **AAnalyst evaluation**A comments area. Final edited consensus sequences can also be pasted here.
 
-Once the results have been reviewed and all comments recorded, the report can be saved uisng the **Save report** tab at the right hand side of the report. Please note that to keep the report file size suitable for email, the link to the BAM file will become inactive once the report is saved.  
+Once the results have been reviewed and all comments recorded, the report can be saved uisng the **Save report** tab located on the right hand side of the report. Please note that to keep the report file size suitable for email, the link to the BAM file will become inactive once the report is saved.  
 
 ## Authors
 Marie-Emilie Gauthier gauthiem@qut.edu.au  
