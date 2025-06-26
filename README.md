@@ -749,9 +749,9 @@ Several tabs are also available at the bottom of this section:
 Example of Consensus sequences section:  
 <p><img src="docs/images/Example_Consensus_section.png" width="1000"></p>
 
-The analyst can add comments related to the consensus section of the sample in the **Analyst evaluation**A comments area. Final edited consensus sequences can also be pasted here.
+The analyst can add comments related to the consensus section of the sample in the **Analyst evaluation** comments area. Final edited consensus sequences can also be pasted here.
 
-Once the results have been reviewed and all comments recorded, the report can be saved uisng the **Save report** tab located on the right hand side of the report. Please note that to keep the report file size suitable for email, the link to the BAM file will become inactive once the report is saved.  
+Once the results have been reviewed and all comments recorded, the report can be saved using the **Save report** tab located on the right hand side of the report. Please note that to keep the report file size suitable for email, the link to the BAM file will become inactive once the report is saved.  
 
 ## Authors
 Marie-Emilie Gauthier gauthiem@qut.edu.au  
