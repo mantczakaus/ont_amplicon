@@ -739,9 +739,9 @@ The user can leave comments pertaining to the quality report section of the samp
 
 The **Consensus sequences** section lists how many consensuses were recovered and a table shows a selection of columns from the **SampleName/05_mapping_to_consensus/Sample_name_top_blast_with_cov_stats.txt**.  
 Several tabs are also available at the bottom of this section:  
-- The **Consensus statistics** displays additional columns from the **SampleName/05_mapping_to_consensus/Sample_name_top_blast_with_cov_stats.txt**.  
-- The **All consensus sequences** tabs display the **Sample_name/04_megablast/Sample_name_final_polished_consensus.fasta**.  
-- The **All matching consensus sequences** tab display the **SampleName/05_mapping_to_consensus/SampleName_final_polished_consensus_match.fasta**.  
+- The **Consensus statistics** tab displays additional columns from the **SampleName/05_mapping_to_consensus/Sample_name_top_blast_with_cov_stats.txt**.  
+- The **All consensus sequences** tab displays the **Sample_name/04_megablast/Sample_name_final_polished_consensus.fasta**.  
+- The **All matching consensus sequences** tab displays the **SampleName/05_mapping_to_consensus/SampleName_final_polished_consensus_match.fasta**.  
 - The **Read alignment (BAM)** displays the **Sample_name/05_mapping_to_consensus/Sample_name_aln.sorted.bam**.  
 - The **Flag definitions** tab displays the flags used during the analysis.  
 
