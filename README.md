@@ -675,7 +675,7 @@ The nucleotide sequence of qseq (i.e. **consensus match**) and sseq (i.e. **refe
 ### Outputs from mapping reads back to consensus matches step  
 The files are located under the **Sample_name/05_mapping_to_consensus**.  
 
-A BAM file of the pre-processed reads mapped back to the consensus matches is generated (**Sample_name/05_mapping_to_consensus/Sample_name_aln.sorted.bam** and **Sample_name/05_mapping_to_consensus/Sample_name_aln.sorted.bam.bai**) and coverage statistics are derived. A final summary file is generated (**Sample_name/05_mapping_to_consensus/Sample_name_top_blast_with_cov_stats.txt**, which combines the previously generated final_polished_consensus_megablast_top_hit.txt file with coverage statistics, flags and confidence scores for each consensus blast match. This file includes the following additional columns: 
+A BAM file of the pre-processed reads mapped back to the consensus matches is generated (**Sample_name/05_mapping_to_consensus/Sample_name_aln.sorted.bam** and **Sample_name/05_mapping_to_consensus/Sample_name_aln.sorted.bam.bai**) and coverage statistics are derived. A final summary file is generated (**Sample_name/05_mapping_to_consensus/Sample_name_top_blast_with_cov_stats.txt**), which combines the previously generated final_polished_consensus_megablast_top_hit.txt file with coverage statistics, flags and confidence scores for each consensus blast match. This file includes the following additional columns: 
 - **query_match_length**: length of consensus match used as reference when mapping back pre-processed reads 
 - **qseq_mapping_read_count**: number of reads mapping back to the consensus match  
 - **qseq_mean_depth**: mean read coverage of each base when mapping back to the consensus match  
