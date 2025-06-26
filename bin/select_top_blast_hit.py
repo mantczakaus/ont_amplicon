@@ -68,7 +68,7 @@ def enrich_with_taxonomy(df, taxonkit_dir):
                         np.where(
                             (lineage_df["FullLineage"].str.contains(";fungi;")) &
                             (~lineage_df["FullLineage"].str.contains(";erysiphaceae;")),
-                            "eukaryota;fungi",
+                            "eukaryota;fungi;other",
                             np.where(
                                 (lineage_df["FullLineage"].str.contains(";deuterostomia;")),
                                 "eukaryota;deuterostomia",

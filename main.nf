@@ -925,12 +925,13 @@ process HTML_REPORT {
 
   script:
   analyst_name = params.analyst_name.replaceAll(/ /, '_')
+  facility = params.facility.replaceAll(/ /, '_')
     """
     cp ${qcreport_html} run_qc_report.html
     cp ${params.tool_versions} versions.yml
     cp ${params.default_params} default_params.yml
 
-    build_report.py --samplesheet ${samplesheet} --result_dir . --params_file ${configyaml} --analyst ${analyst_name} --facility ${params.facility} --versions versions.yml --default_params_file default_params.yml
+    build_report.py --samplesheet ${samplesheet} --result_dir . --params_file ${configyaml} --analyst ${analyst_name} --facility ${facility} --versions versions.yml --default_params_file default_params.yml
     """
 }
 
