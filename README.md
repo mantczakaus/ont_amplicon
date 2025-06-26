@@ -291,7 +291,7 @@ Two tests are currently provided to check if the pipeline was successfully insta
 - The peq_test runs two samples provided by PEQ (ONT141 and ONT142). 
 A small NCBI blast database and COI database have been derived to speed up the analysis run in test mode.  
 
-To use the tests, change directory to the ont_amplicon github repository and run the following command for the MTDT test:
+To use the tests, change directory to the ont_amplicon GitHub repository and run the following command for the MTDT test:
   ```
   nextflow run main.nf -profile singularity,mtdt_test -resume -params-file params/params_mtdt_test.yml
   ```
@@ -708,7 +708,7 @@ A BAM file of the pre-processed reads mapped back to the consensus matches is ge
 By default the processsed reads are mapped back to the reference blast match. A BAM file is generated using Samtools and [Samtools consensus](https://www.htslib.org/doc/samtools-consensus.html) is used to derive independent guided-reference consensuses that are stored in a file called **SampleName/mapping_back_to_ref/samtools_consensus_from_ref.fasta** file. Their nucleotide sequences can be compared to that of the original consensuses to resolve ambiguities (ie low complexity and repetitive regions). 
 
 ### HTML report output  
-An example HTML report can be found [here](https://github.com/maelyg/ont_amplicon/blob/master/docs/HTML_report_example.zip) in a gzipped folder that includes all necessary files. IDue to its size, it can't be viewed directly on GitHub. However, you can clone the repository to your local machine, extract the folder, and then open the HTML file locally.  
+An example HTML report can be found [here](https://github.com/maelyg/ont_amplicon/blob/master/docs/HTML_report_example.zip) in a gzipped folder that includes all necessary files. Due to its size, it cannot be viewed directly on GitHub. However, you can clone the repository to your local machine, extract the folder, and then open the HTML file locally.  
 
 The report is divided into three main sections: **Input parameters**, **Input data quality report** and **Consensus sequences**.  
 
