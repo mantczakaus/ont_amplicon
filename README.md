@@ -710,11 +710,11 @@ By default the processsed reads are mapped back to the reference blast match. A 
 ### HTML report output  
 An example HTML report can be found [here](https://github.com/maelyg/ont_amplicon/blob/master/docs/HTML_report_example.zip) in a gzipped folder that includes all necessary files. IDue to its size, it can't be viewed directly on GitHub. However, you can clone the repository to your local machine, extract the folder, and then open the HTML file locally.  
 
-The report consists of 3 main parts: **input parameters**, **input data quality report** and **Consensus sequences**.  
+The report is divided into three main sections: **Input parameters**, **Input data quality report** and **Consensus sequences**.  
 
-On the top left corner of the report, the **Facility**, **Analyst**, the time at which the **Analysis started**, the time at which the **Analysis completed** and the **Wall time**	are captured.
+In the top left corner, the report provides key details including  the **Facility**, **Analyst** name, Analysis Start Time (**Analysis started**), Analysis Completion Time (**Analysis completed**), and Wall Time.  
 
-Just under it, the **input parameters section** displays the metadata that was provided in the samplesheet: 
+Directly below this, the **Input parameters section** displays the metadata that was provided in the samplesheet:  
 - Sample ID  
 - FASTQ files  
 - Target taxon  
@@ -727,10 +727,12 @@ Just under it, the **input parameters section** displays the metadata that was p
  
 At the bottom of the **Input Parameters**i section, there is also a **View All Parameters** tab. This tab links to a page that displays all default pipeline parameters on the left, and the user-specified parameters for this sample on the right (these correspond to those set in the YAML file provided by the user via the -params-file option). The **View Tool Versions** tab shows the versions of all bioinformatics tools used in the Nextflow pipeline processes.  
 
+Example of input parameter section:  
 <p><img src="docs/images/Example_input_parameters_section.png" width="625"></p>
 
 The **input data quality report section** presents the QC results for the sample, including the number of raw reads at the start and the number of cleaned reads after preprocessing. It also indicates what percentage of the original raw reads remain after cleaning. The **Outcome** column corresponds to the **QC_FLAG**. Links to the Nanoplot reports for the raw and preprocessed reads are also available as well as the QC report for all the samples that were analysed at the same time.  
 
+Example of input data quality report section:  
 <p><img src="docs/images/Example_input_data_quality_report.png" width="625"></p>
 
 The user can leave comments pertaining to the quality report section of the sample in the **Analyst evaluation** comments section.  
