@@ -48,16 +48,15 @@ h. [HTML report output](#html-report-output)
   - Subsample reads ([Seqkit](https://bioinf.shenwei.me/seqkit/usage/)) - optional
 - QC report
   - Derive read counts recovered pre and post data processing
-- Clustering mode
-  - Read clustering ([Rattle](https://github.com/comprna/RATTLE))
-  - Convert fastq to fasta format ([seqtk](https://github.com/lh3/seqtk))
-  - Polishing ([Minimap2](https://lh3.github.io/minimap2/minimap2.html), [Racon](https://github.com/lbcb-sci/racon), [Medaka2](https://github.com/nanoporetech/medaka), [Samtools](http://www.htslib.org/doc/samtools.html)) - optional
-  - Remove adapters, if provided (Cutadapt](https://cutadapt.readthedocs.io/en/stable/reference.html))
-  - Megablast homology search against COI database (if COI is targetted) and reverse complement where required ([Blast+](https://www.ncbi.nlm.nih.gov/books/NBK279690/))
-  - Megablast homology search against NCBI database ([Blast+](https://www.ncbi.nlm.nih.gov/books/NBK279690/))
-  - Derive top candidate hits, assign preliminary taxonomy and set target organism flag ([pytaxonkit](https://github.com/bioforensics/pytaxonkit))  
-  - Map reads back to segment of consensus sequence that aligns to reference and derive BAM file and alignment statistics ([Minimap2](https://lh3.github.io/minimap2/minimap2.html), [Samtools](http://www.htslib.org/doc/samtools.html) and [Mosdepth)](https://github.com/brentp/mosdepth))  
-  - Map reads to segment of NCBI reference sequence that aligns to consensus and derive BAM file and consensus ([Minimap2](https://lh3.github.io/minimap2/minimap2.html), [Samtools](http://www.htslib.org/doc/samtools.html)) - optional
+- Read clustering ([RATTLE](https://github.com/comprna/RATTLE))
+- Convert fastq to fasta format ([seqtk](https://github.com/lh3/seqtk))
+- Polishing ([Minimap2](https://lh3.github.io/minimap2/minimap2.html), [Racon](https://github.com/lbcb-sci/racon), [Medaka2](https://github.com/nanoporetech/medaka), [Samtools](http://www.htslib.org/doc/samtools.html)) - optional
+- Search for and remove primers for amplicon target, if primers have been provided (Cutadapt](https://cutadapt.readthedocs.io/en/stable/reference.html))
+- Megablast homology search against COI database (if COI is targetted) and reverse complement where required ([Blast+](https://www.ncbi.nlm.nih.gov/books/NBK279690/))
+- Megablast homology search against NCBI database ([Blast+](https://www.ncbi.nlm.nih.gov/books/NBK279690/))
+- Derive top candidate hits, assign preliminary taxonomy and set target organism flag ([pytaxonkit](https://github.com/bioforensics/pytaxonkit))  
+- Map reads back to segment of consensus sequence that aligns to reference and derive BAM file and alignment statistics, flasg and confidence score ([Minimap2](https://lh3.github.io/minimap2/minimap2.html), [Samtools](http://www.htslib.org/doc/samtools.html) and [Mosdepth)](https://github.com/brentp/mosdepth))  
+- Map reads to segment of NCBI reference sequence that aligns to consensus and derive BAM file and consensus ([Minimap2](https://lh3.github.io/minimap2/minimap2.html), [Samtools](http://www.htslib.org/doc/samtools.html)) - optional
 
 
 ## Installation
@@ -480,7 +479,7 @@ Pre-processed reads can be subsampled by specifying `subsample: true` and the nu
 In the clustering mode, the tool [`RATTLE`](https://github.com/comprna/RATTLE#Description-of-clustering-parameters) will be run. 
 
 - The ont_amplicon pipeline will automatically set a **lower read length** of **100** bp during the RATTLE clustering step if the amplicon target_size specified in the csv file is **<=300 bp**.  
-- If the amplicon target_size specified in the csv file is **>300 bp**, the lower read length of **150 bp** (Rattle default) will be applied at the RATTLE clustering step instead.  
+- If the amplicon target_size specified in the csv file is **>300 bp**, the lower read length of **150 bp** (RATTLE default) will be applied at the RATTLE clustering step instead.  
 - For poor quality samples (i.e. failed the QC_FLAG) or if your amplicon is known to be shorter than 150 bp, use the parameter `rattle_raw: true` to use all the reads without any length filtering during the RATTLE clustering step.  
 - Finally, the `rattle_clustering_max_variance` is set by default to 1,000,000.  
 
@@ -527,27 +526,26 @@ mapping_back_to_ref: true
 ```
 
 ### Polishing step (optional)
-The clusters derived using RATTLE can be polished. The reads are first mapped back to the clusters using [Minimap2](https://lh3.github.io/minimap2/minimap2.html) and then the clusters are polished using [Racon](https://github.com/lbcb-sci/racon) and [Medaka2](https://github.com/nanoporetech/medaka). Samtools consensus is then used to identify positions showing poor base and mapping qualities, using the predefined sets of configuration parameters that have been optimised for ONT reads (i.e. r10.4_sup) (please see the configuration section at the bottom of the [`Samtools consensus documentation`](https://www.htslib.org/doc/samtools-consensus.html)). Any stretches of Ns at the 5' and 3' end of the consensuses are then removed with [Cutadapt](https://cutadapt.readthedocs.io/en/stable/reference.html). If a polishing step fails, it will be skipped.  
-This polishing step is performed by default by the pipeline but can be skipped by specifying the paramater ``--polishing false``.  
+The clusters derived using RATTLE can be polished. This polishing step is performed by default by the pipeline but can be skipped by specifying the paramater `--polishing false`. The reads are first mapped back to the clusters using [Minimap2](https://lh3.github.io/minimap2/minimap2.html) and then the clusters are polished using [Racon](https://github.com/lbcb-sci/racon) and [Medaka2](https://github.com/nanoporetech/medaka). Samtools consensus is then used to identify positions showing poor base and mapping qualities, using the predefined sets of configuration parameters that have been optimised for ONT reads (i.e. r10.4_sup) (please see the configuration section at the bottom of the [`Samtools consensus documentation`](https://www.htslib.org/doc/samtools-consensus.html)). Any stretches of Ns at the 5' and 3' end of the consensuses are then removed with [Cutadapt](https://cutadapt.readthedocs.io/en/stable/reference.html). If a polishing step fails, it will be skipped.  
 
 ### Primer search
-If the fwd_primer and the rev_primer have been provided in the samplesheet, clusters are then searched for primers using [Cutadapt](https://cutadapt.readthedocs.io/en/stable/reference.html).  
+If the fwd_primer and the rev_primer have been specified in the samplesheet, clusters are then searched for primers using [Cutadapt](https://cutadapt.readthedocs.io/en/stable/reference.html).  
 
 ### Blast homology searches
 If the gene targetted is Cytochrome oxidase I (COI), a preliminary megablast homology search against a COI database will be performed; then based on the strandedness of the blast results for the consensuses , some will be reverse complemented where required.  
 
-Blast homology search of the consensuses against NCBI is then performed and the top 10 hits are returned.
+Blast homology search of the consensuses against NCBI is then performed and up to top 10 hits are returned.
 A separate blast output is then derived using [pytaxonkit](https://github.com/bioforensics/pytaxonkit), to output preliminary taxonomic assignment to the top blast hit for each consensus. The nucleotide sequence of qseq **(i.e. consensus match)** and sseq **(i.e. reference match)** are extracted to use when mapping reads back to consensus and reference respectively (see steps below).  
 
 ### Mapping back to consensus
-The quality filtered reads derived during the pre-processing step are mapped back to the consensus matches using Mimimap2. Samtools and Mosdepth are then used to derive bam files and coverage statistics. A summary of the blast results, preliminary taxonomic assignment, coverage statistics and associated **flags** and **confidence scores** are then derived for each consensus using python.  
+The pre=processed reads are mapped back to the consensus matches using Mimimap2. Samtools and Mosdepth are then used to derive BAM files. A summary of the blast results, preliminary taxonomic assignment, coverage statistics and associated **flags** and **confidence scores** are then derived for each consensus using python.  
 
 ### Mapping back to reference (optional)
-By default the quality filtered reads derived during the pre-processing step are also mapped back to the reference blast match and [Samtools consensus](http://www.htslib.org/doc/samtools-consensus.html) is used to derive independent guided-reference consensuses. Their nucleotide sequences can be compared to that of the original consensuses to resolve ambiguities (ie low complexity and repetitive regions).  
+By default the processed reads are also mapped back to the reference blast match and [Samtools consensus](http://www.htslib.org/doc/samtools-consensus.html) is used to derive independent guided-reference consensuses. Their nucleotide sequences can be compared to that of the original consensuses to resolve ambiguities (ie low complexity and repetitive regions).  
 
 ### HTML report
 An html summary report is generated for each sample, incorporating sample metadata, QC before and after 
-preprocessing, blast results and coverage statistics. It also provides a link to the bam files generated when mapping back to consensus.  
+preprocessing, blast results and coverage statistics. It also provides a link to the BAM files generated when mapping back to consensus.  
 
 ## Output files
 The output files will be saved by default under the **results** folder. This can be changed by setting the **`--outdir` parameter**.  
@@ -612,7 +610,7 @@ Example of report:
 
 ### Clustering step outputs
 The files are located under the **Sample_name/02_clustering folder**.  
-The output from Rattle will be saved under **SampleName/02_clustering/SampleName_rattle.fasta**. The number of reads contributing to each clusters is listed in the header. The amplicon of interest is usually amongst the most abundant clusters (i.e. the ones represented by the most reads). The rattle log (**SampleName_rattle.log**) is also available in the same folder as well as a file called **SampleName_rattle.status** that catches whether the clustering step ran succesfully or not.  
+The output from RATTLE will be saved under **SampleName/02_clustering/SampleName_rattle.fasta**. The number of reads contributing to each clusters is listed in the header. The amplicon of interest is usually amongst the most abundant clusters (i.e. the ones represented by the most reads). The RTAYYLE log (**SampleName_rattle.log**) is also available in the same folder as well as a file called **SampleName_rattle.status** that catches whether the clustering step ran succesfully or not.  
 
 ### Polishing step outputs 
 The files are located under the **Sample_name/03_polishing folder**.  
@@ -620,7 +618,7 @@ By default, the clusters derived using RATTLE will be polished with Racon follow
 
 ### Blast search outputs
 The files are located under the **Sample_name/04_megablast folder**.  
-If the target gene is COI, then the consensuses will first be mapped to a cyctochrome oxidase I database and based on the strandedness of the blast results, consensuses will be reverse complemented where required. All consensuses will be saved in the **Sample_name/04_megablast/Sample_name_final_polished_consensus_rc.fasta** file.  
+If the target gene is COI, then the consensuses will first be mapped to a cyctochrome oxidase I database and based on the strandedness of the blast results, consensuses will be reverse complemented where required. All consensuses will be saved in the **Sample_name/04_megablast/Sample_name_final_polished_consensus.fasta** file.  
 All consensuses are then blasted against NCBI.  The outcome of the blast search will be captured in the **Sample_name/04_megablast/Sample_name_final_blast_status.txt** file (e.g. if at least one consensus returned a blast hit, it will display 'passed', if no consensuses returned a blast hit, it will display 'failed').  
 
 The 10 top hits derived for each contig are listed in the file **SampleName/04_megablast/SampleName_final_polished_consensus_megablast_top_10_hits.txt**. This file contains the following 26 columns:
@@ -675,23 +673,23 @@ The nucleotide sequence of qseq (i.e. **consensus match**) and sseq (i.e. **refe
 ### Outputs from mapping reads back to consensus matches step  
 The files are located under the **Sample_name/05_mapping_to_consensus**.  
 
-A BAM file of the pre-processed reads mapped back to the consensus matches is generated (**Sample_name/05_mapping_to_consensus/Sample_name_aln.sorted.bam** and **Sample_name/05_mapping_to_consensus/Sample_name_aln.sorted.bam.bai**) and coverage statistics are derived. A final summary file is generated which combines the previously generated final_polished_consensus_megablast_top_hit.txt file with coverage statistics, flags and confidence scores for each consensus blast match. This file includes the following additional columns: 
-- query_match_length: length of consensus match used as reference when mapping back pre-processed reads 
-- qseq_mapping_read_count: number of reads mapping back to the consensus match  
-- qseq_mean_depth: mean read coverage of each base when mapping back to the consensus match  
-- qseq_pc_mapping_read: the percentage of processed reads that map to the consensus match  
-- qseq_pc_cov_30X: the percentage of bases that attained at least 30X sequence coverage when mapping back to the consensus match  
-- mean_MQ: average mapping quality of reads mapping to the consensus match  
-- num_passing_90: number of mapped reads whose lengths are at least 90% of the consensus match length   
-- 30X_COVERAGE_FLAG: see FLAGS section below  
-- MAPPED_READ_COUNT_FLAG: see FLAGS section below   
-- MEAN_COVERAGE_FLAG: see FLAGS section below    
-- TARGET_ORGANISM_FLAG: see FLAGS section below  
-- TARGET_SIZE_FLAG: see FLAGS section below    
-- READ_LENGTH_FLAG: see FLAGS section below    
-- MEAN_MQ_FLAG: see FLAGS section below    
-- TOTAL_CONF_SCORE: a scoring system which assigns different weight to each flag colour for the 30X coverage flag, the target size, the mapped read count flag, the mean coverage flag, the read length flag and the mean MQ flag. It is a value bewteen 0 and 12. A higher score indicates a higher confidence in the quality of the consensus sequence  
-- NORMALISED_CONF_SCORE: a value between 0 and 1 that is calculated by normalising the confidence score to the maximum possible score for this sequence. A value of 1 indicates the highest confidence in the quality of the consensus sequence  
+A BAM file of the pre-processed reads mapped back to the consensus matches is generated (**Sample_name/05_mapping_to_consensus/Sample_name_aln.sorted.bam** and **Sample_name/05_mapping_to_consensus/Sample_name_aln.sorted.bam.bai**) and coverage statistics are derived. A final summary file is generated (**Sample_name/05_mapping_to_consensus/Sample_name_top_blast_with_cov_stats.txt**, which combines the previously generated final_polished_consensus_megablast_top_hit.txt file with coverage statistics, flags and confidence scores for each consensus blast match. This file includes the following additional columns: 
+- **query_match_length**: length of consensus match used as reference when mapping back pre-processed reads 
+- **qseq_mapping_read_count**: number of reads mapping back to the consensus match  
+- **qseq_mean_depth**: mean read coverage of each base when mapping back to the consensus match  
+- **qseq_pc_mapping_read**: the percentage of processed reads that map to the consensus match  
+- **qseq_pc_cov_30X**: the percentage of bases that attained at least 30X sequence coverage when mapping back to the consensus match  
+- **mean_MQ**: average mapping quality of reads mapping to the consensus match  
+- **num_passing_90**: number of mapped reads whose lengths are at least 90% of the consensus match length   
+- **30X_COVERAGE_FLAG**: see FLAGS section below  
+- **MAPPED_READ_COUNT_FLAG**: see FLAGS section below   
+- **MEAN_COVERAGE_FLAG**: see FLAGS section below    
+- **TARGET_ORGANISM_FLAG**: see FLAGS section below  
+- **TARGET_SIZE_FLAG**: see FLAGS section below    
+- **READ_LENGTH_FLAG**: see FLAGS section below    
+- **MEAN_MQ_FLAG**: see FLAGS section below    
+- **TOTAL_CONF_SCORE**: a scoring system which assigns different weight to each flag colour for the 30X coverage flag, the target size, the mapped read count flag, the mean coverage flag, the read length flag and the mean MQ flag. It is a value bewteen 0 and 12. A higher score indicates a higher confidence in the quality of the consensus sequence  
+- **NORMALISED_CONF_SCORE**: a value between 0 and 1 that is calculated by normalising the confidence score to the maximum possible score for this sequence. A value of 1 indicates the highest confidence in the quality of the consensus sequence  
 
 #### FLAGS
 **Seven** flags are providded to help with interpretation. They will display GREEN, ORANGE, RED or GREY depending on whether they fill specific criteria:
@@ -707,16 +705,16 @@ A BAM file of the pre-processed reads mapped back to the consensus matches is ge
 | **7. MEAN MQ FLAG** | Average mapping quality of reads mapping to the consensus match | **>= 30** | **10-30** | **< 10** | The consensus returned no blast hits |
 
 ### Outputs from mapping reads back to reference matches step
-By default the quality filtered reads derived during the pre-processing step are mapped back to the
-reference blast match. A bam file is generated using Samtools and [Samtools consensus](https://www.htslib.org/doc/samtools-consensus.html) is used to derive independent guided-reference consensuses that are stored in a file called **SampleName/mapping_back_to_ref/samtools_consensus_from_ref.fasta** file. Their nucleotide sequences can be compared to that of the original consensuses to resolve ambiguities (ie low complexity and repetitive regions). 
+By default the processsed reads are mapped back to the reference blast match. A BAM file is generated using Samtools and [Samtools consensus](https://www.htslib.org/doc/samtools-consensus.html) is used to derive independent guided-reference consensuses that are stored in a file called **SampleName/mapping_back_to_ref/samtools_consensus_from_ref.fasta** file. Their nucleotide sequences can be compared to that of the original consensuses to resolve ambiguities (ie low complexity and repetitive regions). 
 
 ### HTML report output
-(in progress)  
 An HTML report example can be found [here](https://github.com/maelyg/ont_amplicon/blob/master/docs/HTML_report_example.zip). It is provided within a gzipped folder with all associated files. It is too large to open in github, but if you git pull the repository onto your local machine, you can then unzip the folder and open the html file.  
 
-The report consists of 3 main parts: input parameters, input data quality report and Consensus sequences.  
+The report consists of 3 main parts: **input parameters**, **input data quality report** and **Consensus sequences**.  
 
-The **input parameters section** captures the metadata that was provided in the samplesheet: 
+On the top left corner of the report, the **Facility**, **Analyst**, the time at which the **Analysis started**, the time at which the **Analysis completed** and the **Wall time**	are captured.
+
+Just under it, the **input parameters section** displays the metadata that was provided in the samplesheet: 
 - Sample ID  
 - FASTQ files  
 - Target taxon  
@@ -726,9 +724,24 @@ The **input parameters section** captures the metadata that was provided in the 
 - REV primer sequences (optional)  
 - Test (opotional)  
 - Method (optional)  
+ 
+At the bottom of the **Input Parameters**i section, there is also a **View All Parameters** tab. This tab links to a page that displays all default pipeline parameters on the left, and the user-specified parameters for this sample on the right (these correspond to those set in the YAML file provided by the user via the -params-file option). The **View Tool Versions** tab shows the versions of all bioinformatics tools used in the Nextflow pipeline processes.  
 
-At the bottom of the **input parameters section**, there is also a **View all parameters** tab which lists all the default pipeline parameters on the left and the ones specifially set by the user for this sample on the right (which match the parameters set in the yml file specified the user under the -params-file option).  The **View tool versions** displays the version of all the bioinformatics tools that were used by the nextflow pipeline processes.  
+The **input data quality report section** presents the QC results for the sample, including the number of raw reads at the start and the number of cleaned reads after preprocessing. It also indicates what percentage of the original raw reads remain after cleaning. The **Outcome** column corresponds to the **QC_FLAG**. Links to the Nanoplot reports for the raw and preprocessed reads are also available as well as the QC report for all the samples that were analysed at the same time.  
 
+The user can leave comments pertaining to the quality report section of the sample in the **Analyst evaluation** comments section.  
+
+The **Consensus sequences** section lists how many consensuses were recovered and a table shows a selection of columns from the **SampleName/05_mapping_to_consensus/Sample_name_top_blast_with_cov_stats.txt**.  
+Several tabs are also available at the bottom of this section:  
+- The **Consensus statistics** displays additional columns from the ****SampleName/05_mapping_to_consensus/Sample_name_top_blast_with_cov_stats.txt**.  
+- The **All consensus sequences** tabs display the **Sample_name/04_megablast/Sample_name_final_polished_consensus.fasta**.  
+- The **All matching consensus sequences** tab display the **SampleName/05_mapping_to_consensus/SampleName_final_polished_consensus_match.fasta**.  
+- The **Read alignment (BAM)** displays the **Sample_name/05_mapping_to_consensus/Sample_name_aln.sorted.bam**.  
+- The **Flag definitions** tab displays the flags used during the analysis.  
+
+The analyst can add comments related to the consensus section of the sample in the **AAnalyst evaluation**A comments area. Final edited consensus sequences can also be pasted here.
+
+Once the results have been reviewed and all comments recorded, the report can be saved uisng the **Save report** tab located on the right hand side of the report. Please note that to keep the report file size suitable for email, the link to the BAM file will become inactive once the report is saved.  
 
 ## Authors
 Marie-Emilie Gauthier gauthiem@qut.edu.au  
