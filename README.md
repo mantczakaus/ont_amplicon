@@ -707,8 +707,8 @@ A BAM file of the pre-processed reads mapped back to the consensus matches is ge
 ### Outputs from mapping reads back to reference matches step
 By default the processsed reads are mapped back to the reference blast match. A BAM file is generated using Samtools and [Samtools consensus](https://www.htslib.org/doc/samtools-consensus.html) is used to derive independent guided-reference consensuses that are stored in a file called **SampleName/mapping_back_to_ref/samtools_consensus_from_ref.fasta** file. Their nucleotide sequences can be compared to that of the original consensuses to resolve ambiguities (ie low complexity and repetitive regions). 
 
-### HTML report output
-An HTML report example can be found [here](https://github.com/maelyg/ont_amplicon/blob/master/docs/HTML_report_example.zip). It is provided within a gzipped folder with all associated files. It is too large to open in github, but if you git pull the repository onto your local machine, you can then unzip the folder and open the html file.  
+### HTML report output  
+An example HTML report can be found [here](https://github.com/maelyg/ont_amplicon/blob/master/docs/HTML_report_example.zip) in a gzipped folder that includes all necessary files. IDue to its size, it can't be viewed directly on GitHub. However, you can clone the repository to your local machine, extract the folder, and then open the HTML file locally.  
 
 The report consists of 3 main parts: **input parameters**, **input data quality report** and **Consensus sequences**.  
 
@@ -726,6 +726,8 @@ Just under it, the **input parameters section** displays the metadata that was p
 - Method (optional)  
  
 At the bottom of the **Input Parameters**i section, there is also a **View All Parameters** tab. This tab links to a page that displays all default pipeline parameters on the left, and the user-specified parameters for this sample on the right (these correspond to those set in the YAML file provided by the user via the -params-file option). The **View Tool Versions** tab shows the versions of all bioinformatics tools used in the Nextflow pipeline processes.  
+
+<p><img src="docs/images/Example_input_data_quality_report.png" width="625"></p>
 
 The **input data quality report section** presents the QC results for the sample, including the number of raw reads at the start and the number of cleaned reads after preprocessing. It also indicates what percentage of the original raw reads remain after cleaning. The **Outcome** column corresponds to the **QC_FLAG**. Links to the Nanoplot reports for the raw and preprocessed reads are also available as well as the QC report for all the samples that were analysed at the same time.  
 
