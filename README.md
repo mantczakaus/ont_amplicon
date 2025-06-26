@@ -727,9 +727,11 @@ Just under it, the **input parameters section** displays the metadata that was p
  
 At the bottom of the **Input Parameters**i section, there is also a **View All Parameters** tab. This tab links to a page that displays all default pipeline parameters on the left, and the user-specified parameters for this sample on the right (these correspond to those set in the YAML file provided by the user via the -params-file option). The **View Tool Versions** tab shows the versions of all bioinformatics tools used in the Nextflow pipeline processes.  
 
-<p><img src="docs/images/Example_input_data_quality_report.png" width="625"></p>
+<p><img src="docs/images/Example_input_parameters_section.png" width="625"></p>
 
 The **input data quality report section** presents the QC results for the sample, including the number of raw reads at the start and the number of cleaned reads after preprocessing. It also indicates what percentage of the original raw reads remain after cleaning. The **Outcome** column corresponds to the **QC_FLAG**. Links to the Nanoplot reports for the raw and preprocessed reads are also available as well as the QC report for all the samples that were analysed at the same time.  
+
+<p><img src="docs/images/Example_input_data_quality_report.png" width="625"></p>
 
 The user can leave comments pertaining to the quality report section of the sample in the **Analyst evaluation** comments section.  
 
