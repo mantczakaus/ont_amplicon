@@ -739,7 +739,7 @@ Several tabs are also available at the bottom of this section:
 - The **Read alignment (BAM)** displays the **Sample_name/05_mapping_to_consensus/Sample_name_aln.sorted.bam**.  
 - The **Flag definitions** tab displays the flags used during the analysis.  
 
-The analyst can add comments related to the consensus section of the sample in the **AAnalyst evaluation**A comments area. Final edited consensus sequences can also be pasted here.
+The analyst can add comments related to the consensus section of the sample in the **Analyst evaluation**A comments area. Final edited consensus sequences can also be pasted here.
 
 Once the results have been reviewed and all comments recorded, the report can be saved uisng the **Save report** tab located on the right hand side of the report. Please note that to keep the report file size suitable for email, the link to the BAM file will become inactive once the report is saved.  
 
