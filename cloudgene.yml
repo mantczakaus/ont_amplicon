@@ -1,0 +1,41 @@
+# Could possible store API keys in a local file and index them by user email
+
+id: ont_amplicon_assembly
+name: Nanopore amplicon assembly
+description: Per-sample assembly of barcode amplicons from raw Nanopore reads
+version: 0.11
+website: https://github.com/qcif/daff-ont-amplicon
+author: Maely Gauthier and Cameron Hyde
+# logo: https://github.com/qcif/
+
+workflow:
+  steps:
+    - name: Amplicon assembly
+      params:
+        blastdb: /mnt/data/blast/core_nt/core_nt
+        taxdb: /mnt/data/taxdump
+        ncbi_user_email: ${CLOUDGENE_USER_EMAIL}
+        analyst_name: ${CLOUDGENE_USER_FULL_NAME}
+        facility_name: QCIF
+    # - name: Zip workflow reports
+    #   type: command
+    #   stdout: true
+    #   cmd: /usr/bin/bash ${CLOUDGENE_APP_LOCATION}/bin/zip_reports.sh --dir $outdir
+
+  inputs:
+    - id: samplesheet
+      description: Samples CSV
+      type: file
+      accept: .csv
+      details: |
+        File paths should be the relative paths to files that you have uploaded via SFTP
+    - id: facility_name
+      description: Your facility/site name
+      type: string
+      value: QCIF
+      details: Included in the workflow report.
+
+  outputs:
+    - id: outdir
+      description: Outputs
+      type: folder
