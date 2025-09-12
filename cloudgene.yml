@@ -12,12 +12,17 @@ workflow:
   steps:
     - name: Amplicon assembly
       params:
-        blastdb: /mnt/data/blast/core_nt/core_nt
-        taxdb: /mnt/data/taxdump
+        blastn_db: /mnt/data/blast/core_nt/core_nt
         blastn_COI: /mnt/data/metacox1/MetaCOXI
+        taxdump: /mnt/data/taxdump
         ncbi_user_email: ${CLOUDGENE_USER_EMAIL}
         analyst_name: ${CLOUDGENE_USER_FULL_NAME}
-        facility_name: QCIF
+        facility: QCIF
+        merge: true
+        qual_filt: true
+        polishing: true
+        blast_threads: 2
+        mapping_back_to_ref: true
     # - name: Zip workflow reports
     #   type: command
     #   stdout: true
@@ -35,6 +40,15 @@ workflow:
       type: string
       value: QCIF
       details: Included in the workflow report.
+    - id: chopper_options
+      description: Chopper options
+      type: string
+      value: -q 8 -l 100
+      details: |
+        The default value specifies -q 8 (minimum Phred average quality score of 8)
+        and -l 100 (filter reads shorter than 100 bp). Please see the chopper
+        manual for more details.
+      required: false
 
   outputs:
     - id: outdir
