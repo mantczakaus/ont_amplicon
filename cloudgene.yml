@@ -8,12 +8,12 @@ author: Maely Gauthier and Cameron Hyde
 
 workflow:
   steps:
-    - name: Set absolute paths in CSV input file
-      type: command
-      cmd: "/usr/bin/sed 's/uploads\//\/mnt\/data\/user-data\/uploads\//' ${samplesheet_raw} > samplesheet_abspaths.csv"
+    # - name: Set absolute paths in CSV input file
+    #   type: command
+    #   cmd: /usr/bin/sed 's/uploads\//\/mnt\/data\/user-data\/uploads\//' ${samplesheet_raw} > samplesheet_abspaths.csv
     - name: Amplicon assembly
       params:
-        samplesheet: samplesheet_abspaths.csv
+        # samplesheet: samplesheet_abspaths.csv
         blastn_db: /mnt/data/blast/core_nt/core_nt
         blastn_COI: /mnt/data/metacox1/MetaCOXI
         taxdump: /mnt/data/taxdump
@@ -28,10 +28,10 @@ workflow:
     - name: Zip workflow reports
       type: command
       stdout: true
-      cmd: "/usr/bin/bash ${CLOUDGENE_APP_LOCATION}/bin/zip_reports.sh --dir $outdir"
+      cmd: /usr/bin/bash ${CLOUDGENE_APP_LOCATION}/bin/zip_reports.sh --dir $outdir
 
   inputs:
-    - id: samplesheet_raw
+    - id: samplesheet
       description: Samples CSV
       type: file
       accept: .csv
