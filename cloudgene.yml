@@ -8,9 +8,9 @@ author: Maely Gauthier and Cameron Hyde
 
 workflow:
   steps:
-    # - name: Set absolute paths in CSV input file
-    #   type: command
-    #   cmd: /usr/bin/sed 's/uploads\//\/mnt\/data\/user-data\/uploads\//' ${samplesheet_raw} > samplesheet_abspaths.csv
+    - name: Expand file paths in samplesheet CSV
+      type: command
+      cmd: /usr/bin/bash ${CLOUDGENE_APP_LOCATION}/bin/expand_paths.sh $samplesheet
     - name: Amplicon assembly
       params:
         # samplesheet: samplesheet_abspaths.csv
