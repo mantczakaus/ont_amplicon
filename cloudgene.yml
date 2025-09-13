@@ -10,8 +10,13 @@ author: Maely Gauthier and Cameron Hyde
 
 workflow:
   steps:
+    - name: Set absolute paths in CSV input file
+      type: command
+      stdout: true
+      cmd: /usr/bin/sed 's/uploads\//\/mnt\/data\/user-data\/uploads\//' ${samplesheet_raw} > '$outdir/samplesheet_abspaths.csv'
     - name: Amplicon assembly
       params:
+        samplesheet: ${outdir}/samplesheet_abspaths.csv
         blastn_db: /mnt/data/blast/core_nt/core_nt
         blastn_COI: /mnt/data/metacox1/MetaCOXI
         taxdump: /mnt/data/taxdump
@@ -29,12 +34,12 @@ workflow:
     #   cmd: /usr/bin/bash ${CLOUDGENE_APP_LOCATION}/bin/zip_reports.sh --dir $outdir
 
   inputs:
-    - id: samplesheet
+    - id: samplesheet_raw
       description: Samples CSV
       type: file
       accept: .csv
       details: |
-        File paths should be the relative paths to files that you have uploaded via SFTP
+        File paths should be the relative paths (begin with 'uploads/') to files that you have uploaded via SFTP
     - id: facility_name
       description: Your facility/site name
       type: string
