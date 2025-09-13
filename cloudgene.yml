@@ -28,10 +28,10 @@ workflow:
         polishing: true
         blast_threads: 2
         mapping_back_to_ref: true
-    # - name: Zip workflow reports
-    #   type: command
-    #   stdout: true
-    #   cmd: /usr/bin/bash ${CLOUDGENE_APP_LOCATION}/bin/zip_reports.sh --dir $outdir
+    - name: Zip workflow reports
+      type: command
+      stdout: true
+      cmd: /usr/bin/bash ${CLOUDGENE_APP_LOCATION}/bin/zip_reports.sh --dir $outdir
 
   inputs:
     - id: samplesheet_raw
