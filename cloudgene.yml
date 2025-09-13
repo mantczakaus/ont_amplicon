@@ -12,11 +12,10 @@ workflow:
   steps:
     - name: Set absolute paths in CSV input file
       type: command
-      stdout: true
-      cmd: /usr/bin/sed 's/uploads\//\/mnt\/data\/user-data\/uploads\//' ${samplesheet_raw} > '$outdir/samplesheet_abspaths.csv'
+      cmd: /usr/bin/sed 's/uploads\//\/mnt\/data\/user-data\/uploads\//' $samplesheet_raw > samplesheet_abspaths.csv
     - name: Amplicon assembly
       params:
-        samplesheet: ${outdir}/samplesheet_abspaths.csv
+        samplesheet: samplesheet_abspaths.csv
         blastn_db: /mnt/data/blast/core_nt/core_nt
         blastn_COI: /mnt/data/metacox1/MetaCOXI
         taxdump: /mnt/data/taxdump
