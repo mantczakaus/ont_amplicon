@@ -1,5 +1,3 @@
-# Could possible store API keys in a local file and index them by user email
-
 id: ont_amplicon_assembly
 name: Nanopore amplicon assembly
 description: Per-sample assembly of barcode amplicons from raw Nanopore reads
@@ -38,7 +36,8 @@ workflow:
       type: file
       accept: .csv
       details: |
-        File paths should be the relative paths (begin with 'uploads/') to files that you have uploaded via SFTP
+        File paths should be the relative paths (begin with 'uploads/') to files
+        that you have uploaded via SFTP
     - id: facility_name
       description: Your facility/site name
       type: string
