@@ -22,10 +22,10 @@ for d in */; do
     sample=$(basename "$d")
     if [[ -d "$sample/07_html_report" ]]; then
         mkdir -p "reports/$sample"
-        cp "$sample/07_html_report/*_report.html" "reports/$sample"
-        cp "$sample/07_html_report/run_qc_report.html" "reports/$sample"
-        cp "$sample/07_html_report/*_bam-alignment.html" "reports/$sample"
-        cp "$sample/03_polishing/*_final_polished_consensus.fasta" "reports/$sample"
+        cp "$sample"/07_html_report/*_report.html "reports/$sample"
+        cp "$sample"/07_html_report/run_qc_report.html "reports/$sample"
+        cp "$sample"/07_html_report/*_bam-alignment.html "reports/$sample"
+        cp "$sample"/03_polishing/*_final_polished_consensus.fasta "reports/$sample"
     fi
 done
 

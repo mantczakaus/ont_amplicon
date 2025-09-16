@@ -8,12 +8,12 @@ author: Maely Gauthier and Cameron Hyde
 
 workflow:
   steps:
-    - name: Expand file paths in samplesheet CSV
+    - name: Expand file paths in samplesheet
       type: command
       cmd: /usr/bin/bash ${CLOUDGENE_APP_LOCATION}/bin/expand_paths.sh $samplesheet
+      stdout: false
     - name: Amplicon assembly
       params:
-        # samplesheet: samplesheet_abspaths.csv
         blastn_db: /mnt/data/blast/core_nt/core_nt
         blastn_COI: /mnt/data/metacox1/MetaCOXI
         taxdump: /mnt/data/taxdump
