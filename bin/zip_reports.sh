@@ -32,6 +32,4 @@ done
 zip -r reports.zip reports/ > /dev/null
 
 echo "Primary workflow outputs have been zipped"
-echo 'You can download all workflow reports and sequences by clicking the following files under "Results" tab:'
-echo "- reports.zip"
-echo "- sequences.zip"
+echo 'You can download all workflow reports and sequences by clicking on "reports.zip" under the "Results" tab.'
