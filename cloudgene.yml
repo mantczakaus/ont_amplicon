@@ -8,7 +8,7 @@ author: Maely Gauthier and Cameron Hyde
 
 workflow:
   steps:
-    - name: Expand file paths in samplesheet
+    - name: Prepare input data
       type: command
       cmd: /usr/bin/bash ${CLOUDGENE_APP_LOCATION}/bin/expand_paths.sh $samplesheet
       stdout: false
