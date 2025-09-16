@@ -30,6 +30,7 @@ for d in */; do
 done
 
 zip -r reports.zip reports/ > /dev/null
+rm -r reports/
 
 echo "Primary workflow outputs have been zipped"
 echo 'You can download all workflow reports and sequences by clicking on "reports.zip" under the "Results" tab.'
