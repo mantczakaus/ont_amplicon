@@ -38,6 +38,7 @@ workflow:
       details: |
         File paths should be the relative paths (begin with 'uploads/') to files
         that you have uploaded via SFTP
+      help: https://raw.githubusercontent.com/qcif/daff-ont-amplicon/refs/heads/master/tests/index_mtdt.csv
     - id: facility_name
       description: Your facility/site name
       type: string
