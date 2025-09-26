@@ -1,0 +1,83 @@
+id: ont_amplicon_assembly
+name: Nanopore amplicon assembly
+description: Per-sample assembly of barcode amplicons from raw Nanopore reads
+version: 0.11
+website: https://github.com/qcif/daff-ont-amplicon
+author: Maely Gauthier and Cameron Hyde
+# logo: https://github.com/qcif/
+
+workflow:
+  steps:
+    - name: Prepare input data
+      type: command
+      cmd: /usr/bin/bash ${CLOUDGENE_APP_LOCATION}/bin/expand_paths.sh $samplesheet
+      stdout: false
+    - name: Amplicon assembly
+      params:
+        blastn_db: /mnt/data/blast/core_nt/core_nt
+        blastn_COI: /mnt/data/metacox1/MetaCOXI
+        taxdump: /mnt/data/taxdump
+        ncbi_user_email: ${CLOUDGENE_USER_EMAIL}
+        analyst_name: ${CLOUDGENE_USER_FULL_NAME}
+    - name: Zip workflow reports
+      type: command
+      stdout: true
+      cmd: /usr/bin/bash ${CLOUDGENE_APP_LOCATION}/bin/zip_reports.sh --dir $outdir
+
+  inputs:
+    - id: samplesheet
+      description: Samples CSV
+      type: file
+      accept: .csv
+      help: https://raw.githubusercontent.com/qcif/daff-ont-amplicon/refs/heads/cloudgene/tests/ont_index_mtdt_cloudgene.csv
+      details: |
+        Click on '?' for an example file. Right click and 'Save Link As...' to download. File paths should be the relative paths (begin with 'uploads/') to files
+        that you have uploaded via SFTP.
+    - id: facility
+      description: Your facility/site name
+      type: string
+      value: QCIF
+      details: Included in the workflow report.
+    - id: merge
+      description: Merge fastq files with the same sample name
+      type: checkbox
+      values:
+        true: valueTrue
+        false: valueFalse
+    - id: qual_filt
+      description: Run quality filtering step using chopper
+      type: checkbox
+      values:
+        true: valueTrue
+        false: valueFalse
+    - id: chopper_options
+      description: Chopper options
+      type: string
+      value: -q 8 -l 100
+      details: |
+        The default value specifies -q 8 (minimum Phred average quality score of 8)
+        and -l 100 (filter reads shorter than 100 bp). Please see the chopper
+        manual for more details.
+      required: false
+    - id: polishing
+      description: Run polishing step
+      type: checkbox
+      values:
+        true: valueTrue
+        false: valueFalse
+    - id: blast_threads
+      description: Number of threads for BLASTn
+      type: number
+      value: 2
+      details: Number of threads to use for BLASTn
+    - id: mapping_back_to_ref
+      description: Mapped back to reference blast match
+      type: checkbox
+      values:
+        true: valueTrue
+        false: valueFalse
+
+  outputs:
+    - id: outdir
+      description: Outputs
+      type: folder

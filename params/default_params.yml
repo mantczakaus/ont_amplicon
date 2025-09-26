@@ -16,7 +16,6 @@ preprocessing_only: false
 porechop_options: null
 porechop_custom_primers: false
 porechop_custom_primers_path: ~/ont_amplicon/bin/adapters.txt
-chopper_options: null
 analysis_mode: clustering
 rattle_clustering_options: null
 rattle_clustering_min_length: null 
