@@ -29,9 +29,10 @@ workflow:
       description: Samples CSV
       type: file
       accept: .csv
+      help: https://raw.githubusercontent.com/qcif/daff-ont-amplicon/refs/heads/cloudgene/tests/ont_index_mtdt_cloudgene.csv
       details: |
-        File paths should be the relative paths (begin with 'uploads/') to files
-        that you have uploaded via SFTP
+        Click on '?' for an example file. Right click and 'Save Link As...' to download. File paths should be the relative paths (begin with 'uploads/') to files
+        that you have uploaded via SFTP.
     - id: facility
       description: Your facility/site name
       type: string
