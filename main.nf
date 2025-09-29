@@ -235,26 +235,24 @@ process BLASTN2 {
   def tmp_blast_output = assembly.getBaseName() + "_megablast_top_10_hits_temp.txt"
   def blast_output = assembly.getBaseName() + "_megablast_top_10_hits.txt"
   def status_file = sampleid + "_blast_status.txt"
+    """
+    STATUS="failed"
+    echo "failed" > "${status_file}"
+    blastn -query ${assembly} \
+      -db ${params.blastn_db} \
+      -out ${tmp_blast_output} \
+      -evalue 1e-3 \
+      -num_threads ${params.blast_threads} \
+      -outfmt '6 qseqid sgi sacc length nident pident mismatch gaps gapopen qstart qend qlen sstart send slen sstrand evalue bitscore qcovhsp stitle staxids qseq sseq sseqid qcovs qframe sframe' \
+      -max_target_seqs 10
 
-  
-  """
-  STATUS="failed"
-  echo "failed" > "${status_file}"
-  blastn -query ${assembly} \
-    -db ${params.blastn_db} \
-    -out ${tmp_blast_output} \
-    -evalue 1e-3 \
-    -num_threads ${params.blast_threads} \
-    -outfmt '6 qseqid sgi sacc length nident pident mismatch gaps gapopen qstart qend qlen sstart send slen sstrand evalue bitscore qcovhsp stitle staxids qseq sseq sseqid qcovs qframe sframe' \
-    -max_target_seqs 10
-
-  cat <(printf "qseqid\tsgi\tsacc\tlength\tnident\tpident\tmismatch\tgaps\tgapopen\tqstart\tqend\tqlen\tsstart\tsend\tslen\tsstrand\tevalue\tbitscore\tqcovhsp\tstitle\tstaxids\tqseq\tsseq\tsseqid\tqcovs\tqframe\tsframe\n") ${tmp_blast_output} > ${blast_output}
-  if [[ \$(wc -l < *_megablast_top_10_hits.txt) -ge 2 ]]
-    then
-      STATUS="passed"
-      echo "passed" > "${status_file}"
-  fi
-  """
+    cat <(printf "qseqid\tsgi\tsacc\tlength\tnident\tpident\tmismatch\tgaps\tgapopen\tqstart\tqend\tqlen\tsstart\tsend\tslen\tsstrand\tevalue\tbitscore\tqcovhsp\tstitle\tstaxids\tqseq\tsseq\tsseqid\tqcovs\tqframe\tsframe\n") ${tmp_blast_output} > ${blast_output}
+    if [[ \$(wc -l < *_megablast_top_10_hits.txt) -ge 2 ]]
+      then
+        STATUS="passed"
+        echo "passed" > "${status_file}"
+    fi
+    """
 }
 
 process CHOPPER {
@@ -339,7 +337,7 @@ process CUTADAPT {
 //cutadapt -n 2 -j ${task.cpus} -g "${fwd_primer_trimmed};max_error_rate=0.1;min_overlap=10" -a "${rev_primer_trimmed};max_error_rate=0.1;min_overlap=10" --trim-n -o ${sampleid}_final_polished_consensus.fasta ${consensus} > ${sampleid}_cutadapt.log
 
     """
-    if fwd_primer != null && rev_primer != null;
+    if ${fwd_primer} != null && ${rev_primer} != null;
       then
         cutadapt -n 2 -j ${task.cpus} -g "${fwd_primer};max_error_rate=0.1" -a "${rev_primer};max_error_rate=0.1" --trim-n -o ${sampleid}_final_polished_consensus.fasta ${consensus} > ${sampleid}_cutadapt.log
     else
@@ -355,7 +353,7 @@ process EXTRACT_BLAST_HITS {
   containerOptions "${bindOptions}"
 
   input:
-    tuple val(sampleid), path(blast_results), val(target_organism), val(target_gene), val(target_size)
+    tuple val(sampleid), path(blast_results), path(status), val(target_organism), val(target_gene), val(target_size)
 
   output:
     tuple val(sampleid), path("${sampleid}*_megablast_top_hits_tmp.txt"), emit: topblast
@@ -420,10 +418,10 @@ process FASTQ2FASTA {
   label "setting_1"
 
   input:
-  tuple val(sampleid), path(fastq)
+    tuple val(sampleid), path(fastq)
 
   output:
-  tuple val(sampleid), path("${sampleid}.fasta"), emit: fasta
+    tuple val(sampleid), path("${sampleid}.fasta"), emit: fasta
 
   script:
     """
@@ -437,11 +435,11 @@ process CLUSTER2FASTA {
   label "setting_1"
 
   input:
-  tuple val(sampleid), path(fastq), path(assembly), path(status)
+    tuple val(sampleid), path(fastq), path(assembly), path(status)
 
   output:
-  tuple val(sampleid), path(fastq), path("${sampleid}_rattle.fasta"), emit: fasta
-  tuple val(sampleid), path("${sampleid}_rattle.fasta"), emit: fasta2
+    tuple val(sampleid), path(fastq), path("${sampleid}_rattle.fasta"), emit: fasta
+    tuple val(sampleid), path("${sampleid}_rattle.fasta"), emit: fasta2
 
   script:
     """
@@ -573,10 +571,10 @@ process MINIMAP2_RACON {
   label "setting_2"
 
   input:
-  tuple val(sampleid), path(fastq), path(assembly)
+    tuple val(sampleid), path(fastq), path(assembly)
 
   output:
-  tuple val(sampleid), path(fastq), path(assembly), path("${sampleid}_pre-racon.paf"), emit: draft_mapping
+    tuple val(sampleid), path(fastq), path(assembly), path("${sampleid}_pre-racon.paf"), emit: draft_mapping
 
   script:
     """
@@ -940,21 +938,21 @@ process SEQTK {
   label "setting_2"
 
   input:
-  tuple val(sampleid), path(contig_seqids), path(fastq)
-  output:
-  tuple val(sampleid), path("${sampleid}.fasta"), emit: fasta
-  tuple val(sampleid), path(contig_seqids), emit: contig_seqids
+    tuple val(sampleid), path(contig_seqids), path(fastq)
+    output:
+    tuple val(sampleid), path("${sampleid}.fasta"), emit: fasta
+    tuple val(sampleid), path(contig_seqids), emit: contig_seqids
 
   script:
-  """
-  if [[ ! -s ${contig_seqids} ]]; then
-    touch ${sampleid}.fasta
-  else
-    seqtk seq -A -C ${fastq} > ${sampleid}_all_reads.fasta
-    cut -f1 ${contig_seqids} | sort | uniq > reads_ids.txt
-    seqtk subseq ${sampleid}_all_reads.fasta reads_ids.txt > ${sampleid}.fasta
-  fi
-  """
+    """
+    if [[ ! -s ${contig_seqids} ]]; then
+      touch ${sampleid}.fasta
+    else
+      seqtk seq -A -C ${fastq} > ${sampleid}_all_reads.fasta
+      cut -f1 ${contig_seqids} | sort | uniq > reads_ids.txt
+      seqtk subseq ${sampleid}_all_reads.fasta reads_ids.txt > ${sampleid}.fasta
+    fi
+    """
 }
 
 process SUBSAMPLE {
@@ -968,10 +966,10 @@ process SUBSAMPLE {
     tuple val(sampleid), path("${sampleid}_downsampled.fastq.gz"), emit: subsampled_fq
 
   script:
-  """
-  seqkit sample -2 ${fastq} -n ${params.reads_downsampling_size} \
-  | gzip  > ${sampleid}_downsampled.fastq.gz
-  """
+    """
+    seqkit sample -2 ${fastq} -n ${params.reads_downsampling_size} \
+    | gzip  > ${sampleid}_downsampled.fastq.gz
+    """
 }
 
 // Main workflow definition
@@ -1180,7 +1178,7 @@ workflow {
         }
 
         //Remove trailing Ns and primer sequences from consensus sequence
-          CUTADAPT ( consensus.join(ch_primers) )
+        CUTADAPT ( consensus.join(ch_primers) )
 
         //Blast steps for samples targetting COI
         ch_coi_for_blast = (CUTADAPT.out.trimmed.join(ch_coi))
@@ -1199,10 +1197,10 @@ workflow {
         //Merge blast results from all samples
         ch_blast_merged = BLASTN.out.blast_results.mix(BLASTN2.out.blast_results.ifEmpty([]))
 
-        ch_blast_merged2 = ch_blast_merged.map { sampleid, blast_results, status -> [sampleid, blast_results] }
+        //ch_blast_merged2 = ch_blast_merged.map { sampleid, blast_results, status -> [sampleid, blast_results] }
 
         //Extract top blast hit, assign taxonomy information to identify consensus that match target organism
-        EXTRACT_BLAST_HITS ( ch_blast_merged2.join(ch_targets) )
+        EXTRACT_BLAST_HITS ( ch_blast_merged.join(ch_targets) )
         //Add consensus sequence to blast results summary table
         FASTA2TABLE ( EXTRACT_BLAST_HITS.out.topblast.join(consensus) )
 
