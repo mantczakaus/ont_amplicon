@@ -36,7 +36,6 @@ workflow:
     - id: facility
       description: Your facility/site name
       type: string
-      value: QCIF
       details: Included in the workflow report.
     - id: merge
       description: Merge fastq files with the same sample name
